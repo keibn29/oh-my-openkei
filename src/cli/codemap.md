@@ -59,7 +59,6 @@ CLI install command
 - maps each built-in agent name to provider-specific model/variant
 - injects skill list from recommended + custom skill registries and ensures `agent-browser` for designer
 - injects default MCP sets from `DEFAULT_AGENT_MCPS`
-- includes tmux block (`layout`, `main_pane_size`) when enabled
 
 `writeLiteConfig()` writes target file atomically and supports `--reset`/dry-run branching in `install.ts`.
 
@@ -67,7 +66,7 @@ CLI install command
 
 - Output file produced by install (`oh-my-opencode-slim.json`) is consumed by runtime `config/loader.ts`.
 - Permission defaults for installed/available skills are shared with `agents/index.ts` via `cli/skills.ts`.
-- Generated provider/multiplexer settings are consumed by OpenCode session runtime via `src/index.ts` bootstrap.
+- Generated provider settings are consumed by OpenCode session runtime via `src/index.ts` bootstrap.
 
 ## Notes for architecture/docs accuracy
 

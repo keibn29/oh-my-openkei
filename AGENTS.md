@@ -71,10 +71,9 @@ oh-my-opencode-slim/
 │   ├── council/      # Council manager (multi-LLM session orchestration)
 │   ├── hooks/        # OpenCode lifecycle hooks
 │   ├── mcp/          # MCP server definitions
-│   ├── multiplexer/  # Tmux/Zellij pane integration for child sessions
 │   ├── skills/       # Skill definitions (included in package publish)
 │   ├── tools/        # Tool definitions (council, webfetch, AST-grep, etc.)
-│   └── utils/        # Shared utilities (tmux, session helpers)
+│   └── utils/        # Shared utilities (logging, env, session helpers)
 ├── dist/             # Built JavaScript and declarations
 ├── docs/             # User-facing documentation
 ├── biome.json        # Biome configuration
@@ -99,77 +98,6 @@ oh-my-opencode-slim/
 4. Run `bun run typecheck` to verify types
 5. Run `bun test` to verify tests pass
 6. Commit changes
-
-## Tmux Session Lifecycle Management
-
-When working with tmux integration, understanding the session lifecycle is crucial for preventing orphaned processes and ghost panes.
-
-### Session Lifecycle Flow
-
-```
-Task Launch:
-  session.create() → tmux pane spawned → task runs
-
-Task Completes Normally:
-  session.status (idle) → extract results → session.abort()
-  → session.deleted event → tmux pane closed
-
-Task Cancelled:
-  cancel() → session.abort() → session.deleted event
-  → tmux pane closed
-
-Session Deleted Externally:
-  session.deleted event → task cleanup → tmux pane closed
-```
-
-### Key Implementation Details
-
-**1. Graceful Shutdown (src/utils/tmux.ts)**
-```typescript
-// Always send Ctrl+C before killing pane
-spawn([tmux, "send-keys", "-t", paneId, "C-c"])
-await delay(250)
-spawn([tmux, "kill-pane", "-t", paneId])
-```
-
-**2. Session Abort Timing (src/council/council-manager.ts)**
-- Call `session.abort()` AFTER extracting task results
-- This ensures content is preserved before session termination
-- Triggers `session.deleted` event for cleanup
-
-**3. Event Handlers (src/index.ts)**
-The multiplexer session handler must stay wired up:
-- `multiplexerSessionManager.onSessionDeleted()` - closes tmux/zellij panes
-
-### Testing Tmux Integration
-
-After making changes to session management:
-
-```bash
-# 1. Build the plugin
-bun run build
-
-# 2. Run from local fork (in ~/.config/opencode/opencode.jsonc):
-# "plugin": ["file:///path/to/oh-my-opencode-slim"]
-
-# 3. Launch test tasks
-@explorer count files in src/
-@librarian search for Bun documentation
-
-# 4. Verify no orphans
-ps aux | grep "opencode attach" | grep -v grep
-# Should return 0 processes after tasks complete
-```
-
-### Common Issues
-
-**Ghost panes remaining open:**
-- Check that `session.abort()` is called after result extraction
-- Verify `session.deleted` handler is wired in src/index.ts
-
-**Orphaned opencode attach processes:**
-- Ensure graceful shutdown sends Ctrl+C before kill-pane
-- Check that tmux pane closes before process termination
 
 ## Pre-Push Code Review
 
@@ -244,9 +172,7 @@ OpenCode has a built-in `/review` command that automatically performs comprehens
 - The main plugin export is `src/index.ts`
 - Agent factories are in `src/agents/` — each agent has its own file + optional `.test.ts`
 - Skills are located in `src/skills/` (included in package publish)
-- Multiplexer session management is in `src/multiplexer/`
 - Council manager (multi-LLM orchestration) is in `src/council/`
-- Tmux utilities are in `src/utils/tmux.ts`
 - 468 tests across 35 files — run `bun test` to verify
 
 ## Repository Map

@@ -23,8 +23,7 @@ Prompt templates and tool schemas are defined in `agents/` and `tools/`.
 
 - Reads injected plugin context (`PluginInput`) and optional:
   - config (`PluginConfig`),
-  - `SubagentDepthTracker`,
-  - `tmuxEnabled` flag for pane launch pacing.
+  - `SubagentDepthTracker`.
 - Owns runtime helpers:
   - `runCouncil()` orchestration entry,
   - `runCouncillors()` fan-out strategy,
@@ -49,7 +48,7 @@ runCouncil(prompt, presetName?, parentSessionId)
   ├─> resolve runtime policy
   │     timeout, execution mode, retry budget
   ├─> run councillors in selected mode
-  │     - runAgentSession: create -> register depth -> optional tmux delay
+  │     - runAgentSession: create -> register depth
   │       -> prompt -> extract text -> session abort in finally
   │     - runCouncillorWithRetry: retries only "Empty response from provider"
   │       up to `councillor_retries`
@@ -94,8 +93,7 @@ Legacy schema behavior:
 - **Tool caller:** `tools/council.ts` creates `council_session` and calls
   `runCouncil(prompt, preset, parentSessionId)`.
 - **Plugin init:** `src/index.ts` constructs `CouncilManager` with runtime config,
-  `SubagentDepthTracker`, and multiplexer capability before exposing `council_session`.
+  and `SubagentDepthTracker` before exposing `council_session`.
 - **Depth lifecycle:** `SubagentDepthTracker` is also used in plugin event hooks to register/
   cleanup child sessions as they are created/deleted.
-- **Runtime constants:** `config/constants.ts` provides launch delays (`TMUX_SPAWN_DELAY_MS`,
-  `COUNCILLOR_STAGGER_MS`) used to avoid multiplexer collision.
+- **Runtime constants:** `config/constants.ts` provides launch delays (`COUNCILLOR_STAGGER_MS`) for staggered councillor launches.

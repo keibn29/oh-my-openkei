@@ -40,5 +40,5 @@ conversation context.
 - Input payload expectations are minimal (`{ tool: string }` + `{ output: unknown }`)
   to stay aligned with tool-callback shape and avoid side-effecting unrelated
   callbacks.
-- This hook remains independent of orchestration engines and multiplexer/session
+- This hook remains independent of orchestration engines and session
   managers.

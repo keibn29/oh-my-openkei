@@ -9,7 +9,7 @@ Complete reference for all configuration files and options in oh-my-opencode-sli
 | File | Purpose |
 |------|---------|
 | `~/.config/opencode/opencode.json` | OpenCode core settings (plugin registration, providers) |
-| `~/.config/opencode/oh-my-opencode-slim.json` | Plugin settings — agents, multiplexer, MCPs, council |
+| `~/.config/opencode/oh-my-opencode-slim.json` | Plugin settings — agents, MCPs, council |
 | `~/.config/opencode/oh-my-opencode-slim.jsonc` | Same, but with JSONC (comments + trailing commas). Takes precedence over `.json` if both exist |
 | `.opencode/oh-my-opencode-slim.json` | Project-local overrides (optional, checked first) |
 
@@ -67,11 +67,6 @@ All config files support **JSONC** (JSON with Comments):
       "explorer": { "model": "openai/gpt-5.4-mini" },
     },
   },
-
-  "multiplexer": {
-    "type": "tmux",
-    "layout": "main-vertical",
-  },
 }
 ```
 
@@ -81,11 +76,7 @@ All config files support **JSONC** (JSON with Comments):
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `preset` | string | — | Active preset name (e.g. `"openai"`, `"best"`) |
-
-### Runtime Preset Switching
-
-Presets can also be switched at runtime without restarting using the `/preset` command. See [Preset Switching](preset-switching.md) for details.
+| `preset` | string | — | Active preset name (e.g. `"openai"`, `"best"`). Set in config file at startup. |
 
 | `presets` | object | — | Named preset configurations |
 |-----------|--------|---|-----------------------------|
@@ -102,12 +93,6 @@ Presets can also be switched at runtime without restarting using the `/preset` c
 | `agents.<agent>.displayName` | string | — | Custom user-facing alias for the agent in the active config |
 | `showStartupToast` | boolean | `true` | Show the startup activation toast (`oh-my-opencode-slim is active`) when OpenCode starts |
 | `autoUpdate` | boolean | `true` | Automatically install plugin updates in the background; set to `false` for notification-only mode |
-| `multiplexer.type` | string | `"none"` | Multiplexer mode: `auto`, `tmux`, `zellij`, or `none` |
-| `multiplexer.layout` | string | `"main-vertical"` | Layout preset: `main-vertical`, `main-horizontal`, `tiled`, `even-horizontal`, `even-vertical` |
-| `multiplexer.main_pane_size` | number | `60` | Main pane size as percentage (20–80) |
-| `tmux.enabled` | boolean | `false` | Legacy alias for `multiplexer.type = "tmux"` |
-| `tmux.layout` | string | `"main-vertical"` | Legacy alias for `multiplexer.layout` |
-| `tmux.main_pane_size` | number | `60` | Legacy alias for `multiplexer.main_pane_size` |
 | `sessionManager.maxSessionsPerAgent` | integer | `2` | Maximum remembered resumable child sessions per specialist type in the current orchestrator session (1–10). See [Session Management](session-management.md) |
 | `sessionManager.readContextMinLines` | integer | `10` | Minimum number of lines read from a file before it appears in resumable-session context (0–1000) |
 | `sessionManager.readContextMaxFiles` | integer | `8` | Maximum number of recent read-context files shown per remembered child session (0–50) |
@@ -125,15 +110,6 @@ Presets can also be switched at runtime without restarting using the `/preset` c
 | `council.timeout` | number | `180000` | Per-councillor timeout (ms) |
 | `council.councillor_execution_mode` | string | `"parallel"` | Run councillors in `parallel` or `serial`; use `serial` for single-model setups |
 | `council.councillor_retries` | number | `3` | Max retries per councillor on empty provider response (0–5) |
-| `todoContinuation.maxContinuations` | integer | `5` | Max consecutive auto-continuations before stopping (1–50) |
-| `todoContinuation.cooldownMs` | integer | `3000` | Delay in ms before auto-continuing — gives user time to abort (0–30000) |
-| `todoContinuation.autoEnable` | boolean | `false` | Automatically enable auto-continue when session has enough todos |
-| `todoContinuation.autoEnableThreshold` | integer | `4` | Number of todos that triggers auto-enable (only used when `autoEnable` is true, 1–50) |
-| `interview.maxQuestions` | integer | `2` | Max questions per interview round (1–10) |
-| `interview.outputFolder` | string | `"interview"` | Directory where interview markdown files are written (relative to project root) |
-| `interview.autoOpenBrowser` | boolean | `true` | Automatically open the interview UI in your default browser during interactive runs; suppressed in tests and CI |
-| `interview.port` | integer | `0` | Interview server port (0–65535). `0` = OS-assigned random port (per-session mode). Any value > 0 enables [dashboard mode](interview.md#dashboard-mode) |
-| `interview.dashboard` | boolean | `false` | Enable [dashboard mode](interview.md#dashboard-mode) on the default port (43211). Setting `port` > 0 also enables dashboard mode. If both are set, `port` takes precedence |
 
 ### Council configuration note
 

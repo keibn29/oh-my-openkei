@@ -30,11 +30,8 @@ resolution, and helper APIs used by agents, council, and runtime subsystems.
 3. Validate with schema. Invalid/malformed files are warned and ignored by
    returning `null` for that file.
 4. Merge user+project configs where project takes precedence:
-   nested merges for `agents`, `tmux`, `multiplexer`, `interview`, `sessionManager`,
-   `fallback`, `council`.
+   nested merges for `agents`, `sessionManager`, `fallback`, `council`.
    top-level arrays/values are overridden.
-5. If `tmux` is enabled and no explicit `multiplexer` is configured,
-   migrate to `multiplexer` (`tmux` compatibility path).
 6. Apply env override `OH_MY_OPENCODE_SLIM_PRESET` over config file preset.
 7. If preset exists, merge preset agents into `agents` so explicit root agents
    still win (`deepMerge(preset, config.agents)`).
@@ -58,9 +55,6 @@ resolution, and helper APIs used by agents, council, and runtime subsystems.
   - `model` string or ordered fallback array (string or `{id, variant}`)
   - `temperature`, `variant`, `options`, `skills`, `mcps`, `displayName`
   - custom agent prompts (`prompt`, `orchestratorPrompt`) only.
-- Multiplexer:
-  - new unified `multiplexer` schema (`auto|tmux|zellij|none`)
-  - legacy `tmux` schema retained and migrated at load time.
 - Council:
   - `CouncilConfigSchema` now normalizes deprecated `master*` fields into
     `_legacyMasterModel` metadata for compatibility
@@ -76,7 +70,7 @@ src/index.ts
       ├─> MCP defaults/filters in src/config/agent-mcps.ts
       ├─> Council session behavior in src/council/*
       ├─> Fallback/session behavior in runtime hooks
-      └─> Multiplexer behavior in src/multiplexer/*
+      └─> Session behavior in src/hooks/*
 ```
 
 ### Key collaborators
@@ -95,7 +89,7 @@ src/index.ts
 ## File structure
 
 - `index.ts` — exported config surface
-- `loader.ts` — load, merge, prompt resolution, tmux migration
+- `loader.ts` — load, merge, prompt resolution
 - `schema.ts` — plugin config + agent override schemas
 - `council-schema.ts` — council-specific and legacy compatibility schema
 - `constants.ts` — defaults, names, delegation rules, timeouts

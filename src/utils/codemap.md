@@ -4,7 +4,6 @@ Cross-cutting runtime utilities used by orchestration, hooks, and plugin I/O.
 
 ## Responsibility
 
-- **tmux.ts**: Multiplexer-safe pane lifecycle helpers (`spawnPane`, `closePane`) used by tmux and zellij adapters.
 - **subagent-depth.ts**: Tracks delegated session depth and enforces max nested delegation depth.
 - **agent-variant.ts**: Normalizes agent names and applies optional variant labels without overriding existing body configuration.
 - **env.ts**: Unified environment lookup across Bun/Node with empty-string filtering.
@@ -48,12 +47,6 @@ Cross-cutting runtime utilities used by orchestration, hooks, and plugin I/O.
 - `markUsed`, `resolve`, `drop`, `dropTask`, `clearParent` keep the store consistent on reuse and teardown.
 - `formatForPrompt` returns grouped and ranked prompt text (`### Resumable Sessions ...`) for use in system transforms.
 
-### `tmux.ts`
-
-- `spawnPane` flow: validate enabled state → check multiplexer availability → resolve binary → execute attach command with layout handling.
-- `closePane` flow: send SIGINT-equivalent key sequence → delay → terminate pane → rebalance layout if needed.
-- `isServerRunning` flow: bounded `/health` checks with retries and caching.
-
 ### `polling.ts`
 
 - `pollUntilStable(fn, options)` repeatedly calls async predicate and tracks consecutive true states.
@@ -75,7 +68,6 @@ Cross-cutting runtime utilities used by orchestration, hooks, and plugin I/O.
 ## Integration
 
 - **Consumers**
-  - `src/multiplexer/*`: `SubagentDepthTracker` and `tmux.ts` integration.
   - `src/council/council-manager.ts`: depth control and session extraction helpers.
   - `src/hooks/*`: marker detection, polling, and session-aware state helpers.
   - `src/hooks/task-session-manager`: `SessionManager`, `parseTaskIdFromTaskOutput`, and `deriveTaskSessionLabel` provide resumable-session workflow; the plugin’s system-transform passes the hook output through `collapseSystemInPlace` after this manager injects prompts.

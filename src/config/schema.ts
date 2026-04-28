@@ -109,44 +109,6 @@ export const AgentOverrideConfigSchema = z
   })
   .strict();
 
-// Multiplexer type options
-export const MultiplexerTypeSchema = z.enum(['auto', 'tmux', 'zellij', 'none']);
-export type MultiplexerType = z.infer<typeof MultiplexerTypeSchema>;
-
-// Layout options (shared across multiplexers)
-export const MultiplexerLayoutSchema = z.enum([
-  'main-horizontal', // Main pane on top, agents stacked below
-  'main-vertical', // Main pane on left, agents stacked on right
-  'tiled', // All panes equal size grid
-  'even-horizontal', // All panes side by side
-  'even-vertical', // All panes stacked vertically
-]);
-
-export type MultiplexerLayout = z.infer<typeof MultiplexerLayoutSchema>;
-
-// Legacy Tmux layout options (for backward compatibility)
-export const TmuxLayoutSchema = MultiplexerLayoutSchema;
-export type TmuxLayout = MultiplexerLayout;
-
-// Multiplexer integration configuration (new unified config)
-export const MultiplexerConfigSchema = z.object({
-  type: MultiplexerTypeSchema.default('none'),
-  layout: MultiplexerLayoutSchema.default('main-vertical'),
-  main_pane_size: z.number().min(20).max(80).default(60), // percentage for main pane
-});
-
-export type MultiplexerConfig = z.infer<typeof MultiplexerConfigSchema>;
-
-// Legacy Tmux integration configuration (for backward compatibility)
-// When tmux.enabled is true, it's equivalent to multiplexer.type = 'tmux'
-export const TmuxConfigSchema = z.object({
-  enabled: z.boolean().default(false),
-  layout: TmuxLayoutSchema.default('main-vertical'),
-  main_pane_size: z.number().min(20).max(80).default(60), // percentage for main pane
-});
-
-export type TmuxConfig = z.infer<typeof TmuxConfigSchema>;
-
 export type AgentOverrideConfig = z.infer<typeof AgentOverrideConfigSchema>;
 
 /** Normalized model entry with optional per-model variant. */
@@ -166,21 +128,6 @@ export type WebsearchConfig = z.infer<typeof WebsearchConfigSchema>;
 export const McpNameSchema = z.enum(['websearch', 'context7', 'grep_app']);
 export type McpName = z.infer<typeof McpNameSchema>;
 
-export const InterviewConfigSchema = z.object({
-  maxQuestions: z.number().int().min(1).max(10).default(2),
-  outputFolder: z.string().min(1).default('interview'),
-  autoOpenBrowser: z
-    .boolean()
-    .default(true)
-    .describe(
-      'Automatically open the interview UI in your default browser during interactive runs. Disabled automatically in tests and CI.',
-    ),
-  port: z.number().int().min(0).max(65535).default(0),
-  dashboard: z.boolean().default(false),
-});
-
-export type InterviewConfig = z.infer<typeof InterviewConfigSchema>;
-
 export const SessionManagerConfigSchema = z.object({
   maxSessionsPerAgent: z.number().int().min(1).max(10).default(2),
   readContextMinLines: z.number().int().min(0).max(1000).default(10),
@@ -188,45 +135,6 @@ export const SessionManagerConfigSchema = z.object({
 });
 
 export type SessionManagerConfig = z.infer<typeof SessionManagerConfigSchema>;
-
-// Todo continuation configuration
-export const TodoContinuationConfigSchema = z.object({
-  maxContinuations: z
-    .number()
-    .int()
-    .min(1)
-    .max(50)
-    .default(5)
-    .describe(
-      'Maximum consecutive auto-continuations before stopping to ask user',
-    ),
-  cooldownMs: z
-    .number()
-    .int()
-    .min(0)
-    .max(30_000)
-    .default(3000)
-    .describe('Delay in ms before auto-continuing (gives user time to abort)'),
-  autoEnable: z
-    .boolean()
-    .default(false)
-    .describe(
-      'Automatically enable auto-continue when the orchestrator session has enough todos',
-    ),
-  autoEnableThreshold: z
-    .number()
-    .int()
-    .min(1)
-    .max(50)
-    .default(4)
-    .describe(
-      'Number of todos that triggers auto-enable (only used when autoEnable is true)',
-    ),
-});
-
-export type TodoContinuationConfig = z.infer<
-  typeof TodoContinuationConfigSchema
->;
 
 export const FailoverConfigSchema = z.object({
   enabled: z.boolean().default(true),
@@ -307,15 +215,8 @@ export const PluginConfigSchema = z
           "By default, 'observer' is disabled. Remove it from this list and configure a vision-capable model to enable.",
       ),
     disabled_mcps: z.array(z.string()).optional(),
-    // Multiplexer config (new unified config - preferred)
-    multiplexer: MultiplexerConfigSchema.optional(),
-    // Legacy tmux config (for backward compatibility)
-    // When tmux.enabled is true, it's equivalent to multiplexer.type = 'tmux'
-    tmux: TmuxConfigSchema.optional(),
     websearch: WebsearchConfigSchema.optional(),
-    interview: InterviewConfigSchema.optional(),
     sessionManager: SessionManagerConfigSchema.optional(),
-    todoContinuation: TodoContinuationConfigSchema.optional(),
     fallback: FailoverConfigSchema.optional(),
     council: CouncilConfigSchema.optional(),
   })

@@ -113,9 +113,6 @@ bunx oh-my-opencode-slim@latest install --no-tui --skills=yes
 
 **Examples:**
 ```bash
-# Interactive install (asks about tmux and skills)
-bunx oh-my-opencode-slim@latest install
-
 # Non-interactive with default skills
 bunx oh-my-opencode-slim@latest install --no-tui --skills=yes
 
@@ -227,18 +224,6 @@ Add a `$schema` reference to your config for autocomplete and inline validation:
 ```
 
 Works in VS Code, Neovim (with `jsonls`), and any editor that supports JSON Schema. Catches typos and wrong nesting immediately.
-
-### Tmux Integration Not Working
-
-Make sure you're running OpenCode with the `--port` flag and the port matches your `OPENCODE_PORT` environment variable:
-
-```bash
-tmux
-export OPENCODE_PORT=4096
-opencode --port 4096
-```
-
-See the [Multiplexer Integration Guide](multiplexer-integration.md) for more details.
 
 ---
 

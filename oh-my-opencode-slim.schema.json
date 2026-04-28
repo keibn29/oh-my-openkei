@@ -388,64 +388,6 @@
         "type": "string"
       }
     },
-    "multiplexer": {
-      "type": "object",
-      "properties": {
-        "type": {
-          "default": "none",
-          "type": "string",
-          "enum": [
-            "auto",
-            "tmux",
-            "zellij",
-            "none"
-          ]
-        },
-        "layout": {
-          "default": "main-vertical",
-          "type": "string",
-          "enum": [
-            "main-horizontal",
-            "main-vertical",
-            "tiled",
-            "even-horizontal",
-            "even-vertical"
-          ]
-        },
-        "main_pane_size": {
-          "default": 60,
-          "type": "number",
-          "minimum": 20,
-          "maximum": 80
-        }
-      }
-    },
-    "tmux": {
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "default": false,
-          "type": "boolean"
-        },
-        "layout": {
-          "default": "main-vertical",
-          "type": "string",
-          "enum": [
-            "main-horizontal",
-            "main-vertical",
-            "tiled",
-            "even-horizontal",
-            "even-vertical"
-          ]
-        },
-        "main_pane_size": {
-          "default": 60,
-          "type": "number",
-          "minimum": 20,
-          "maximum": 80
-        }
-      }
-    },
     "websearch": {
       "type": "object",
       "properties": {
@@ -456,37 +398,6 @@
             "exa",
             "tavily"
           ]
-        }
-      }
-    },
-    "interview": {
-      "type": "object",
-      "properties": {
-        "maxQuestions": {
-          "default": 2,
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 10
-        },
-        "outputFolder": {
-          "default": "interview",
-          "type": "string",
-          "minLength": 1
-        },
-        "autoOpenBrowser": {
-          "default": true,
-          "description": "Automatically open the interview UI in your default browser during interactive runs. Disabled automatically in tests and CI.",
-          "type": "boolean"
-        },
-        "port": {
-          "default": 0,
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 65535
-        },
-        "dashboard": {
-          "default": false,
-          "type": "boolean"
         }
       }
     },
@@ -509,37 +420,6 @@
           "default": 8,
           "type": "integer",
           "minimum": 0,
-          "maximum": 50
-        }
-      }
-    },
-    "todoContinuation": {
-      "type": "object",
-      "properties": {
-        "maxContinuations": {
-          "default": 5,
-          "description": "Maximum consecutive auto-continuations before stopping to ask user",
-          "type": "integer",
-          "minimum": 1,
-          "maximum": 50
-        },
-        "cooldownMs": {
-          "default": 3000,
-          "description": "Delay in ms before auto-continuing (gives user time to abort)",
-          "type": "integer",
-          "minimum": 0,
-          "maximum": 30000
-        },
-        "autoEnable": {
-          "default": false,
-          "description": "Automatically enable auto-continue when the orchestrator session has enough todos",
-          "type": "boolean"
-        },
-        "autoEnableThreshold": {
-          "default": 4,
-          "description": "Number of todos that triggers auto-enable (only used when autoEnable is true)",
-          "type": "integer",
-          "minimum": 1,
           "maximum": 50
         }
       }

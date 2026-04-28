@@ -18,12 +18,7 @@ This is the exact configuration the author runs day-to-day.
         "designer": { "model": "github-copilot/gemini-3.1-pro-preview", "skills": [ "agent-browser" ], "mcps": [] },
         "fixer": { "model": "openai/gpt-5.3-codex-spark", "variant": "low", "skills": [], "mcps": [] }
     }
-  },
-  "multiplexer": {
-    "type": "auto",
-    "layout": "main-vertical",
-    "main_pane_size": 60
-  },
+  }
   "council": {
     "presets": {
       "default": {
@@ -32,12 +27,5 @@ This is the exact configuration the author runs day-to-day.
         "gamma": { "model": "fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo" }
       }
     }
-  },
-  "todoContinuation": {
-    "maxContinuations": 50,
-    "cooldownMs": 3000,
-    "autoEnable": false,
-    "autoEnableThreshold": 4
-  } 
-}
+  }
 ```
