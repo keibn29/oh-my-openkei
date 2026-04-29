@@ -19,7 +19,7 @@
 
 | Agent | Role |
 |-------|------|
-| **Orchestrator** | Default primary — handles planning, implementation, and delegation |
+| **Orchestrator** | Default primary — delegation-first coordinator for planning, routing, integration, and fallback execution |
 | **Planner** | Interview-first planning specialist — gathers requirements, builds plans, delegates research/clarification, does not implement |
 
 ## ⚙️ Config & Reference

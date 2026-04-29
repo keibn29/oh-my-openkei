@@ -1,35 +1,28 @@
-<div align="center">
-  <img src="img/team.jpeg" alt="Pantheon agents" style="border-radius: 10px;">
-  <p><i>Seven divine beings emerged from the dawn of code, each an immortal master of their craft await your command to forge order from chaos and build what was once thought impossible.</i></p>
-  <p><b>Open Multi Agent Suite</b> · Mix any models · Auto delegate tasks</p>
+# oh-my-openkei
 
-  <p><sub>by <b>Kei</b></sub></p>
-  <p>
-    <a href="https://boringdystopia.ai/"><img src="https://img.shields.io/badge/boringdystopia.ai-111111?style=for-the-badge&logo=vercel&logoColor=white" alt="boringdystopia.ai"></a>&nbsp;
-    <a href="https://x.com/alvinunreal"><img src="https://img.shields.io/badge/X-@alvinunreal-000000?style=for-the-badge&logo=x&logoColor=white" alt="X @alvinunreal"></a>&nbsp;
-    <a href="https://t.me/boringdystopiadevelopment"><img src="https://img.shields.io/badge/Telegram-Join%20channel-2CA5E0?style=for-the-badge&logo=telegram&logoColor=white" alt="Telegram Join channel"></a>&nbsp;
-  </p>
-</div>
+**Open Multi Agent Suite** · Mix any models · Auto delegate tasks
+
+by **Kei** · [boringdystopia.ai](https://boringdystopia.ai/) · [X @alvinunreal](https://x.com/alvinunreal) · [Telegram](https://t.me/boringdystopiadevelopment)
 
 ---
 
 ## What's This Plugin
 
-oh-my-openkei is an agent orchestration plugin for OpenCode. It includes a built-in team of specialized agents that can scout a codebase, look up fresh documentation, review architecture, handle UI work, and execute well-scoped implementation tasks under one orchestrator.
+oh-my-openkei is an agent orchestration plugin for OpenCode. It includes a built-in team of specialized agents that scout codebases, look up documentation, review architecture, handle UI work, and execute implementation tasks under one orchestrator.
 
-The main idea is simple: instead of forcing one model to do everything, the plugin routes each part of the job to the agent best suited for it, balancing **quality, speed and cost**.
+Instead of forcing one model to do everything, the plugin routes each part of the job to the best-suited agent, balancing **quality, speed, and cost**.
 
-To explore the agents themselves, see **[Meet the Pantheon](#meet-the-pantheon)**. For the full feature set, see **[Features & Workflows](#features-and-workflows)** below.
+To explore the agents, see **[Meet the Pantheon](#meet-the-pantheon)**. For the full feature set, see **[Features & Workflows](#features-and-workflows)**.
+
+---
 
 ### Quick Start
 
-Copy and paste this prompt to your LLM agent (Claude Code, AmpCode, Cursor, etc.):
-
+Copy and paste this prompt to your LLM agent:
 
 ```
 Install and configure oh-my-openkei: https://raw.githubusercontent.com/keibn29/oh-my-openkei/refs/heads/master/README.md
 ```
-
 
 ### Manual Installation
 
@@ -39,28 +32,23 @@ bunx oh-my-openkei@latest install
 
 ### Getting Started
 
-The installer generates an OpenAI preset by default, using `openai/gpt-5.5` for the higher-judgment agents and `openai/gpt-5.4-mini` for the faster scoped agents.
+The installer generates an OpenAI preset by default, using `openai/gpt-5.5` for higher-judgment agents and `openai/gpt-5.4-mini` for faster scoped agents.
 
-Then:
-
-1. **Log in to the providers you want to use if you haven't already**:
-
+1. **Log in to providers**:
    ```bash
    opencode auth login
    ```
-2. **Refresh and list the models OpenCode can see**:
-
+2. **Refresh available models**:
    ```bash
    opencode models --refresh
    ```
 3. **Open your plugin config** at `~/.config/opencode/oh-my-openkei.json`
-
 4. **Update the models you want for each agent**
 
 > [!TIP]
-> Want to understand how automatic delegation works in practice? Review the **[Orchestrator prompt](https://github.com/keibn29/oh-my-openkei/blob/master/src/agents/orchestrator.ts#L28)** — it contains the delegation rules, specialist routing logic, and the thresholds for when the main agent should hand work off to subagents.
+> Want to understand how automatic delegation works in practice? Review the **[Orchestrator prompt](https://github.com/keibn29/oh-my-openkei/blob/master/src/agents/orchestrator.ts#L28)** — it contains the delegation rules, specialist routing logic, and the delegation-first operating model for the main agent.
 
-The default generated configuration looks like this:
+The default generated configuration:
 
 ```jsonc
 {
@@ -81,17 +69,13 @@ The default generated configuration looks like this:
 }
 ```
 
-Session management is enabled by default even though it is not shown in the
-starter config. See **[Session Management](docs/session-management.md)** if you
-want to customize how many resumable child-agent sessions are remembered.
+Session management is enabled by default even though it is not shown in the starter config. See **[Session Management](docs/session-management.md)** if you want to customize how many resumable child-agent sessions are remembered.
 
 ### For Alternative Providers
 
-To use Kimi, GitHub Copilot, ZAI Coding Plan, or a mixed-provider setup, use **[Configuration](docs/configuration.md)** for the full reference. If you want a ready-made starting point, check the **[Author's Preset](docs/authors-preset.md)** and **[$30 Preset](docs/thirty-dollars-preset.md)** - the `$30` preset is the best cheap setup.
+To use Kimi, GitHub Copilot, ZAI Coding Plan, or a mixed-provider setup, use **[Configuration](docs/configuration.md)** for the full reference. For ready-made starting points, check the **[Author's Preset](docs/authors-preset.md)** and **[$30 Preset](docs/thirty-dollars-preset.md)** — the `$30` preset is the best cheap setup.
 
-The configuration guide also covers custom subagents via `agents.<name>`, where
-you can define both a normal `prompt` and an `orchestratorPrompt` block for
-delegation.
+The configuration guide also covers custom subagents via `agents.<name>`, where you can define both a normal `prompt` and an `orchestratorPrompt` block for delegation.
 
 You can also mix and match any models per agent. For model suggestions, see the **Recommended Models** listed under each agent below.
 
@@ -109,11 +93,6 @@ Then run:
 ping all agents
 ```
 
-<div align="center">
-  <img src="img/ping.png" alt="Ping all agents" width="600">
-  <p><i>Confirmation that all configured agents are online and ready.</i></p>
-</div>
-
 If any agent fails to respond, check your provider authentication and config file.
 
 ---
@@ -126,136 +105,48 @@ If any agent fails to respond, check your provider authentication and config fil
 
 **Orchestrator** and **Planner** are the primary agents — each is a distinct reasoning and coordination layer. You choose which one to use based on your workflow. All other agents are subagents delegated to by the primary.
 
-- **Orchestrator** (default): Handles everything — planning, implementation, and delegation. Best for straightforward build-and-ship tasks.
+- **Orchestrator** (default): Delegation-first coordinator. Handles intake, planning, routing, and result integration. Falls back to direct work only when no suitable subagent exists.
 - **Planner**: Interview-first planning specialist. Gathers requirements through structured questioning, builds a plan, and delegates research/clarification to subagents. Does not implement code itself. Best for ambiguous or high-stakes work where careful upfront planning pays off.
 
 #### Interaction Flow
 
 ```
-User / OpenCode
-       │
-       ▼
-┌─────────────────────────────────────┐
-│         Primary Agent               │ ◄── Orchestrator (default) or Planner
-│    (opencode conversation)          │
-└───────────┬─────────────────────────┘
-            │
-            ├──────────────────────────────┐
-            │                              │
-            ▼                              ▼
-    ┌───────────────┐            ┌───────────────┐
-    │   Explorer    │            │    Oracle     │
-    │  (codebase     │            │  (architecture│
-    │   scouting)    │            │   & strategy) │
-    └───────┬───────┘            └───────┬───────┘
-            │                              │
-            └──────────┬───────────────────┘
-                       ▼
-            ┌───────────────────┐
-            │    Librarian      │
-            │ (ext. knowledge & │
-            │   documentation)  │
-            └─────────┬─────────┘
-                      │
-          ┌─────────────┴─────────────┐
-          ▼                           ▼
-    ┌──────────────┐          ┌──────────────┐
-    │   Designer   │          │    Oracle    │
-    │ (UI/UX dir.) │          │  (strategy) │
-    └──────┬───────┘          └──────┬───────┘
-           │                         │
-    ┌──────┴───────┐          ┌─────┴─────────┐
-    ▼              ▼          ▼               ▼
-┌───────────┐ ┌───────────┐              │
-│Frontend   │ │Backend   │              │
-│Developer  │ │Developer │              │
-└───────────┘ └───────────┘              │
+User / OpenCode → Primary Agent (Orchestrator or Planner)
+                        │
+      ┌─────────────────┼─────────────────┐
+      ▼                 ▼                 ▼
+  Explorer          Oracle           Librarian
+  (scout)        (architecture)    (research)
+      │                 │                 │
+      └─────────────────┼─────────────────┘
+                        ▼
+                   ┌─────────┐
+                   │ Designer│
+                   │ (UI/UX) │
+                   └────┬────┘
+                  ┌─────┴─────┐
+                  ▼           ▼
+            Frontend      Backend
+            Developer     Developer
 
- ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─
- Optional / On-demand (not auto-delegated):
-   • Council   — multi-LLM parallel consensus
-   • Observer  — multimodal visual analysis
+On-demand (not auto-delegated): Council · Observer
 ```
 
-#### Orchestrator: The Embodiment Of Order
+#### Orchestrator
 
-<table>
-  <tr>
-    <td width="30%" align="center" valign="top">
-      <img src="img/orchestrator.png" width="240" style="border-radius: 10px;">
-      <br><sub><i>Forged in the void of complexity.</i></sub>
-    </td>
-    <td width="70%" valign="top">
-      The Orchestrator was born when the first codebase collapsed under its own complexity. Neither god nor mortal would claim responsibility - so The Orchestrator emerged from the void, forging order from chaos. It determines the optimal path to any goal, balancing speed, quality, and cost. It guides the team, summoning the right specialist for each task and delegating to achieve the best possible outcome.
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Role:</b> <code>Master delegator and strategic coordinator</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Prompt:</b> <a href="src/agents/orchestrator.ts"><code>orchestrator.ts</code></a>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Default Model:</b> <code>openai/gpt-5.5</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Recommended Models:</b> <code>openai/gpt-5.5</code> <code>anthropic/claude-opus-4.6</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Model Guidance:</b> Choose your default, strongest all-around coding model. Orchestrator is both the main coding agent and the delegator, so it needs strong implementation ability, good judgment, and reliable instruction-following.
-    </td>
-  </tr>
-</table>
+**Role:** Master delegator and strategic coordinator  
+**Prompt:** [orchestrator.ts](src/agents/orchestrator.ts)  
+**Default Model:** `openai/gpt-5.5`  
+**Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.6`  
+**Model Guidance:** Choose your strongest coordination model. Orchestrator should excel at routing, delegation discipline, judgment, and reliable instruction-following; direct implementation ability is still useful, but mainly as a fallback when no suitable subagent exists.
 
----
+#### Planner
 
-#### Planner: The Architect of Intent
-
-<table>
-  <tr>
-    <td width="30%" align="center" valign="top">
-      <img src="img/planner.png" width="240" style="border-radius: 10px;">
-      <br><sub><i>The mind that asks before it builds.</i></sub>
-    </td>
-    <td width="70%" valign="top">
-      The Planner emerged from the recognition that the most expensive mistake is building the wrong thing. Before writing a single line, the Planner interviews the user — probing requirements, constraints, priorities, and trade-offs — to construct a well-grounded plan. It does not implement code directly. Instead, it directs the work by delegating research, exploration, and clarification to the specialist subagents, then synthesizes their findings into a complete, actionable blueprint.
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Role:</b> <code>Interview-first planning specialist — gathers requirements, builds plans, delegates research, does not implement</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Prompt:</b> <code>planner.ts</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Default Model:</b> <code>openai/gpt-5.5</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Recommended Models:</b> <code>openai/gpt-5.5</code> <code>anthropic/claude-opus-4.6</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Model Guidance:</b> Choose your strongest all-around coding model. Planner drives planning and delegation, so it needs excellent judgment, structured thinking, and reliable instruction-following. Implementation ability is not required.
-    </td>
-  </tr>
-</table>
+**Role:** Interview-first planning specialist — gathers requirements, builds plans, delegates research, does not implement  
+**Prompt:** [planner.ts](src/agents/planner.ts)  
+**Default Model:** `openai/gpt-5.5`  
+**Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.6`  
+**Model Guidance:** Choose your strongest all-around coding model. Planner drives planning and delegation, so it needs excellent judgment, structured thinking, and reliable instruction-following. Implementation ability is not required.
 
 ---
 
@@ -263,342 +154,88 @@ User / OpenCode
 
 The following agents are delegated to by the primary agents based on task type.
 
-#### Explorer: The Eternal Wanderer
+#### Explorer
 
-<table>
-  <tr>
-    <td width="30%" align="center" valign="top">
-      <img src="img/explorer.png" width="240" style="border-radius: 10px;">
-      <br><sub><i>The wind that carries knowledge.</i></sub>
-    </td>
-    <td width="70%" valign="top">
-      The Explorer is an immortal wanderer who has traversed the corridors of a million codebases since the dawn of programming. Cursed with the gift of eternal curiosity, they cannot rest until every file is known, every pattern understood, every secret revealed. Legends say they once searched the entire internet in a single heartbeat. They are the wind that carries knowledge, the eyes that see all, the spirit that never sleeps.
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Role:</b> <code>Codebase reconnaissance</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Prompt:</b> <a href="src/agents/explorer.ts"><code>explorer.ts</code></a>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Default Model:</b> <code>openai/gpt-5.4-mini</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Recommended Models:</b> <code>cerebras/zai-glm-4.7</code> <code>fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo</code> <code>openai/gpt-5.4-mini</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Model Guidance:</b> Choose a fast, low-cost model. Explorer handles broad scouting work, so speed and efficiency usually matter more than using your strongest reasoning model.
-    </td>
-  </tr>
-</table>
+**Role:** Codebase reconnaissance  
+**Prompt:** [explorer.ts](src/agents/explorer.ts)  
+**Default Model:** `openai/gpt-5.4-mini`  
+**Recommended Models:** `cerebras/zai-glm-4.7`, `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
+**Model Guidance:** Choose a fast, low-cost model. Explorer handles broad scouting work, so speed and efficiency usually matter more than using your strongest reasoning model.
 
----
+#### Oracle
 
-#### Oracle: The Guardian of Paths
-
-<table>
-  <tr>
-    <td width="30%" align="center" valign="top">
-      <img src="img/oracle.png" width="240" style="border-radius: 10px;">
-      <br><sub><i>The voice at the crossroads.</i></sub>
-    </td>
-    <td width="70%" valign="top">
-      The Oracle stands at the crossroads of every architectural decision. They have walked every road, seen every destination, know every trap that lies ahead. When you stand at the precipice of a major refactor, they are the voice that whispers which way leads to ruin and which way leads to glory. They don't choose for you - they illuminate the path so you can choose wisely.
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Role:</b> <code>Strategic advisor and debugger of last resort</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Prompt:</b> <a href="src/agents/oracle.ts"><code>oracle.ts</code></a>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Default Model:</b> <code>openai/gpt-5.5 (high)</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Recommended Models:</b> <code>openai/gpt-5.5 (high)</code> <code>google/gemini-3.1-pro-preview (high)</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Model Guidance:</b> Choose your strongest high-reasoning model for architecture, hard debugging, trade-offs, and code review.
-    </td>
-  </tr>
-</table>
+**Role:** Strategic advisor and debugger of last resort  
+**Prompt:** [oracle.ts](src/agents/oracle.ts)  
+**Default Model:** `openai/gpt-5.5` (high)  
+**Recommended Models:** `openai/gpt-5.5` (high), `google/gemini-3.1-pro-preview` (high)  
+**Model Guidance:** Choose your strongest high-reasoning model for architecture, hard debugging, trade-offs, and code review.
 
 ---
 
 ### Supporting Agents
 
-#### Council: The Chorus of Minds
+#### Council
 
 > [!NOTE]
-> **Why doesn't Orchestrator auto-call Council more often?** This is intentional. Council runs multiple models at once, so automatic delegation is kept strict because it is usually the highest-cost path in the system. In practice, Council is meant to be used manually when you want it, for example: <code>@council compare these two architectures</code>.
+> **Why doesn't Orchestrator auto-call Council more often?** This is intentional. Council runs multiple models at once, so automatic delegation is kept strict because it is usually the highest-cost path in the system. In practice, Council is meant to be used manually when you want it, for example: `@council compare these two architectures`.
 
-<table>
-  <tr>
-    <td width="30%" align="center" valign="top">
-      <img src="img/council.png" width="240" style="border-radius: 10px;">
-      <br><sub><i>Many minds, one verdict.</i></sub>
-    </td>
-    <td width="70%" valign="top">
-      The Council is not a lone being but a chamber of minds summoned when one answer is not enough. It sends your question to multiple models in parallel, gathers their competing judgments, and then the Council agent itself distills the strongest ideas into a single verdict. Where a solitary agent may miss a path, the Council cross-examines possibility itself.
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Role:</b> <code>Multi-LLM consensus and synthesis</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Prompt:</b> <a href="src/agents/council.ts"><code>council.ts</code></a>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Guide:</b> <a href="docs/council.md"><code>docs/council.md</code></a>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Default Setup:</b> <code>Config-driven</code> — councillors come from <code>council.presets</code> and the Council agent model comes from your normal <code>council</code> agent config
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Recommended Setup:</b> <code>Strong Council model</code> + <code>diverse councillors</code> across providers
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Model Guidance:</b> Use a strong synthesis model for the Council agent and diverse models as councillors. The value of Council comes from comparing different model perspectives, not just picking the single strongest model everywhere.
-    </td>
-  </tr>
-</table>
+**Role:** Multi-LLM consensus and synthesis  
+**Prompt:** [council.ts](src/agents/council.ts)  
+**Guide:** [docs/council.md](docs/council.md)  
+**Default Setup:** Config-driven — councillors come from `council.presets` and the Council agent model comes from your normal `council` agent config  
+**Recommended Setup:** Strong Council model + diverse councillors across providers  
+**Model Guidance:** Use a strong synthesis model for the Council agent and diverse models as councillors. The value of Council comes from comparing different model perspectives, not just picking the single strongest model everywhere.
 
----
+#### Librarian
 
-#### Librarian: The Weaver of Knowledge
+**Role:** External knowledge retrieval  
+**Prompt:** [librarian.ts](src/agents/librarian.ts)  
+**Default Model:** `openai/gpt-5.4-mini`  
+**Recommended Models:** `cerebras/zai-glm-4.7`, `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
+**Model Guidance:** Choose a fast, low-cost model. Librarian handles research and documentation lookups, so speed and efficiency usually matter more than using your strongest reasoning model.
 
-<table>
-  <tr>
-    <td width="30%" align="center" valign="top">
-      <img src="img/librarian.png" width="240" style="border-radius: 10px;">
-      <br><sub><i>The weaver of understanding.</i></sub>
-    </td>
-    <td width="70%" valign="top">
-      The Librarian was forged when humanity realized that no single mind could hold all knowledge. They are the weaver who connects disparate threads of information into a tapestry of understanding. They traverse the infinite library of human knowledge, gathering insights from every corner and binding them into answers that transcend mere facts. What they return is not information - it's understanding.
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Role:</b> <code>External knowledge retrieval</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Prompt:</b> <a href="src/agents/librarian.ts"><code>librarian.ts</code></a>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Default Model:</b> <code>openai/gpt-5.4-mini</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Recommended Models:</b> <code>cerebras/zai-glm-4.7</code> <code>fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo</code> <code>openai/gpt-5.4-mini</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Model Guidance:</b> Choose a fast, low-cost model. Librarian handles research and documentation lookups, so speed and efficiency usually matter more than using your strongest reasoning model.
-    </td>
-  </tr>
-</table>
+#### Designer
 
----
+**Role:** UI/UX direction, layout/interaction decisions, visual polish, and accessibility judgment  
+**Prompt:** [designer.ts](src/agents/designer.ts)  
+**Default Model:** `openai/gpt-5.4-mini`  
+**Recommended Models:** `google/gemini-3.1-pro-preview`, `kimi-for-coding/k2p5`  
+**Model Guidance:** Choose a model strong at UI/UX direction, layout/interaction judgment, visual polish, and design decision-making. Designer serves as the spec/decision authority; implementation work with clear direction goes to `@frontend-developer`.
 
-#### Designer: The Guardian of Aesthetics
+#### Frontend Developer
 
-<table>
-  <tr>
-    <td width="30%" align="center" valign="top">
-      <img src="img/designer.png" width="240" style="border-radius: 10px;">
-      <br><sub><i>Beauty is essential.</i></sub>
-    </td>
-    <td width="70%" valign="top">
-      The Designer is an immortal guardian of beauty in a world that often forgets it matters. They have seen a million interfaces rise and fall, and they remember which ones were remembered and which were forgotten. They carry the sacred duty to ensure that every pixel serves a purpose, every animation tells a story, every interaction delights. Beauty is not optional - it's essential.
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Role:</b> <code>UI/UX direction, layout/interaction decisions, visual polish, and accessibility judgment</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Prompt:</b> <a href="src/agents/designer.ts"><code>designer.ts</code></a>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Default Model:</b> <code>openai/gpt-5.4-mini</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Recommended Models:</b> <code>google/gemini-3.1-pro-preview</code> <code>kimi-for-coding/k2p5</code> 
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Model Guidance:</b> Choose a model strong at UI/UX direction, layout/interaction judgment, visual polish, and design decision-making. Designer serves as the spec/decision authority; implementation work with clear direction goes to @frontend-developer.
-    </td>
-  </tr>
-</table>
+**Role:** Client-side implementation and frontend tests — executes what @designer decides  
+**Prompt:** [frontend-developer.ts](src/agents/frontend-developer.ts)  
+**Default Model:** `openai/gpt-5.4-mini`  
+**Recommended Models:** `google/gemini-3.1-pro-preview`, `kimi-for-coding/k2p5`  
+**Model Guidance:** Choose a model strong at client-side implementation, component architecture, and styling execution. Receives bounded frontend tasks from Orchestrator once design direction is established.
 
----
+#### Backend Developer
 
-#### Frontend Developer: The Builder of Interfaces
+**Role:** Backend implementation specialist  
+**Prompt:** [backend-developer.ts](src/agents/backend-developer.ts)  
+**Default Model:** `openai/gpt-5.4-mini`  
+**Recommended Models:** `cerebras/zai-glm-4.7`, `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
+**Model Guidance:** Choose a fast, reliable coding model for routine backend tasks. Receives bounded server-side tasks from Orchestrator such as API implementation, database work, and service logic changes.
 
-<table>
-  <tr>
-    <td width="30%" align="center" valign="top">
-      <img src="img/fixer.png" width="240" style="border-radius: 10px;">
-      <br><sub><i>Where vision meets the screen.</i></sub>
-    </td>
-    <td width="70%" valign="top">
-      The Frontend Developer emerged from the lineage of builders who understood that the user is the true measure of software. They execute client-side implementation, styling, and visual polish per established design direction — browser automation, component logic, forms, and everything that manifests in the interface between code and human.
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Role:</b> <code>Client-side implementation and frontend tests — executes what @designer decides</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Prompt:</b> <a href="src/agents/frontend-developer.ts"><code>frontend-developer.ts</code></a>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Default Model:</b> <code>openai/gpt-5.4-mini</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Recommended Models:</b> <code>google/gemini-3.1-pro-preview</code> <code>kimi-for-coding/k2p5</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Model Guidance:</b> Choose a model strong at client-side implementation, component architecture, and styling execution. Receives bounded frontend tasks from Orchestrator once design direction is established.
-    </td>
-  </tr>
-</table>
-
----
-
-#### Backend Developer: The Builder of Foundations
-
-<table>
-  <tr>
-    <td width="30%" align="center" valign="top">
-      <img src="img/fixer.png" width="240" style="border-radius: 10px;">
-      <br><sub><i>The strength beneath the surface.</i></sub>
-    </td>
-    <td width="70%" valign="top">
-      The Backend Developer carries the ancient knowledge of how to build systems that endure. They focus on server-side logic, data layers, APIs, and the infrastructure that powers everything users never see but always rely on.
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Role:</b> <code>Backend implementation specialist</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Prompt:</b> <a href="src/agents/backend-developer.ts"><code>backend-developer.ts</code></a>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Default Model:</b> <code>openai/gpt-5.4-mini</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Recommended Models:</b> <code>cerebras/zai-glm-4.7</code> <code>fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo</code> <code>openai/gpt-5.4-mini</code>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Model Guidance:</b> Choose a fast, reliable coding model for routine backend tasks. Receives bounded server-side tasks from Orchestrator such as API implementation, database work, and service logic changes.
-    </td>
-  </tr>
-</table>
-
----
-
-#### Observer: The Silent Witness
+#### Observer
 
 > [!NOTE]
 > **Why a separate agent?** If your Orchestrator model is not multimodal, enable Observer to handle images, screenshots, PDFs, and other visual files. Observer is disabled by default and gives the Orchestrator a dedicated multimodal reader without forcing you to change your main reasoning model. Set `disabled_agents: []` and an `observer` model in your configuration.
 
-<table>
-  <tr>
-    <td width="30%" align="center" valign="top">
-      <img src="img/observer.jpg" width="240" style="border-radius: 10px;">
-      <br><sub><i>The eye that reads what others cannot.</i></sub>
-    </td>
-    <td width="70%" valign="top">
-
-**Read-only visual analysis** — interprets images, screenshots, PDFs, and diagrams. Returns structured observations to the orchestrator without loading raw file bytes into the main context window.
+**Role:** Read-only visual analysis — interprets images, screenshots, PDFs, and diagrams. Returns structured observations to the orchestrator without loading raw file bytes into the main context window.
 
 - Images, screenshots, diagrams → `read` tool (native image support)
 - PDFs and binary documents → `read` tool (text + structure extraction)
 - **Disabled by default** — enable with `"disabled_agents": []` and configure a vision-capable model
 
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Prompt:</b> <a href="src/agents/observer.ts"><code>observer.ts</code></a>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Default Model:</b> <code>openai/gpt-5.4-mini</code> — <i>configure a vision-capable model to enable</i>
-    </td>
-  </tr>
-  <tr>
-    <td colspan="2">
-      <b>Model Guidance:</b> Choose a vision-capable model if you want the agent to read screenshots, images, PDFs, and other visual files.
-    </td>
-  </tr>
-</table>
+**Prompt:** [observer.ts](src/agents/observer.ts)  
+**Default Model:** `openai/gpt-5.4-mini` — configure a vision-capable model to enable  
+**Model Guidance:** Choose a vision-capable model if you want the agent to read screenshots, images, PDFs, and other visual files.
 
 ---
+
+<a id="features-and-workflows"></a>
 
 ## 📚 Documentation
 
@@ -609,8 +246,6 @@ Use this section as a map: start with installation, then jump to features, confi
 | Doc | What it covers |
 |-----|----------------|
 | **[Installation Guide](docs/installation.md)** | Install the plugin, use CLI flags, reset config, and troubleshoot setup |
-
-<a id="features-and-workflows"></a>
 
 ### ✨ Features & Workflows
 
@@ -641,89 +276,9 @@ Use this section as a map: start with installation, then jump to features, confi
 
 ## 🏛️ Contributors
 
-<div align="center">
-  <p><i>The builders, debuggers, writers, and wanderers who have earned their place in the pantheon.</i></p>
-  <p><sub>Every merged contribution leaves a mark on the realm.</sub></p>
+Thanks to all the builders, debuggers, writers, and wanderers who have earned their place in the pantheon. Every merged contribution leaves a mark on the realm.
 
-  <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
-[![All Contributors](https://img.shields.io/badge/all_contributors-44-orange.svg?style=flat-square)](#contributors-)
-<!-- ALL-CONTRIBUTORS-BADGE:END -->
-</div>
-
-<br>
-
-<!-- ALL-CONTRIBUTORS-LIST:START - Do not remove or modify this section -->
-<!-- prettier-ignore-start -->
-<!-- markdownlint-disable -->
-<table>
-  <tbody>
-    <tr>
-      <td align="center" valign="top" width="16.66%"><a href="https://boringdystopia.ai/"><img src="https://avatars.githubusercontent.com/u/204474669?v=4?s=100" width="100px;" alt="Alvin"/><br /><sub><b>Alvin</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=alvinunreal" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/alvinreal"><img src="https://avatars.githubusercontent.com/u/262747402?v=4?s=100" width="100px;" alt="alvinreal"/><br /><sub><b>alvinreal</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=alvinreal" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/imarshallwidjaja"><img src="https://avatars.githubusercontent.com/u/60992624?v=4?s=100" width="100px;" alt="imw"/><br /><sub><b>imw</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=imarshallwidjaja" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/adikpb"><img src="https://avatars.githubusercontent.com/u/67222969?v=4?s=100" width="100px;" alt="Adithya Kozham Burath Bijoy"/><br /><sub><b>Adithya Kozham Burath Bijoy</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=adikpb" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/ReqX"><img src="https://avatars.githubusercontent.com/u/14987124?v=4?s=100" width="100px;" alt="ReqX"/><br /><sub><b>ReqX</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=ReqX" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/abhideepm"><img src="https://avatars.githubusercontent.com/u/28213051?v=4?s=100" width="100px;" alt="Abhideep Maity"/><br /><sub><b>Abhideep Maity</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=abhideepm" title="Code">💻</a></td>
-    </tr>
-    <tr>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/Daltonganger"><img src="https://avatars.githubusercontent.com/u/17501732?v=4?s=100" width="100px;" alt="Ruben"/><br /><sub><b>Ruben</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=Daltonganger" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://horizzon3507.vercel.app/"><img src="https://avatars.githubusercontent.com/u/148660626?v=4?s=100" width="100px;" alt="Gabriel Rodrigues"/><br /><sub><b>Gabriel Rodrigues</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=horizzon3507" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/jmvbambico"><img src="https://avatars.githubusercontent.com/u/45126068?v=4?s=100" width="100px;" alt="John Michael Vincent Bambico"/><br /><sub><b>John Michael Vincent Bambico</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=jmvbambico" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/mfold111"><img src="https://avatars.githubusercontent.com/u/261528848?v=4?s=100" width="100px;" alt="Molt Founders"/><br /><sub><b>Molt Founders</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=mfold111" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://me.mashiro.best/"><img src="https://avatars.githubusercontent.com/u/22992947?v=4?s=100" width="100px;" alt="Muen Yu"/><br /><sub><b>Muen Yu</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=MuenYu" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/NocturnesLK"><img src="https://avatars.githubusercontent.com/u/102891073?v=4?s=100" width="100px;" alt="NocturnesLK"/><br /><sub><b>NocturnesLK</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=NocturnesLK" title="Code">💻</a></td>
-    </tr>
-    <tr>
-      <td align="center" valign="top" width="16.66%"><a href="http://riccardosallusti.it/"><img src="https://avatars.githubusercontent.com/u/466102?v=4?s=100" width="100px;" alt="Riccardo Sallusti"/><br /><sub><b>Riccardo Sallusti</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=rizal72" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/Yusyuriv"><img src="https://avatars.githubusercontent.com/u/3993179?v=4?s=100" width="100px;" alt="Yan Li"/><br /><sub><b>Yan Li</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=Yusyuriv" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/nghyane"><img src="https://avatars.githubusercontent.com/u/59473462?v=4?s=100" width="100px;" alt="Hoàng Văn Anh Nghĩa"/><br /><sub><b>Hoàng Văn Anh Nghĩa</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=nghyane" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/Jyers"><img src="https://avatars.githubusercontent.com/u/76993396?v=4?s=100" width="100px;" alt="Jacob Myers"/><br /><sub><b>Jacob Myers</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=Jyers" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/kassieclaire"><img src="https://avatars.githubusercontent.com/u/59930829?v=4?s=100" width="100px;" alt="Kassie Povinelli"/><br /><sub><b>Kassie Povinelli</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=kassieclaire" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/KyleHilliard"><img src="https://avatars.githubusercontent.com/u/178682772?v=4?s=100" width="100px;" alt="KyleHilliard"/><br /><sub><b>KyleHilliard</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=KyleHilliard" title="Code">💻</a></td>
-    </tr>
-    <tr>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/j5hjun"><img src="https://avatars.githubusercontent.com/u/169322508?v=4?s=100" width="100px;" alt="j5hjun"/><br /><sub><b>j5hjun</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=j5hjun" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/marcFernandez"><img src="https://avatars.githubusercontent.com/u/32362792?v=4?s=100" width="100px;" alt="marcFernandez"/><br /><sub><b>marcFernandez</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=marcFernandez" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/mister-test"><img src="https://avatars.githubusercontent.com/u/212316706?v=4?s=100" width="100px;" alt="mister-test"/><br /><sub><b>mister-test</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=mister-test" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/n24q02m"><img src="https://avatars.githubusercontent.com/u/135627235?v=4?s=100" width="100px;" alt="n24q02m"/><br /><sub><b>n24q02m</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=n24q02m" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/oribarilan"><img src="https://avatars.githubusercontent.com/u/8760762?v=4?s=100" width="100px;" alt="oribi"/><br /><sub><b>oribi</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=oribarilan" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/pelidan"><img src="https://avatars.githubusercontent.com/u/45832535?v=4?s=100" width="100px;" alt="pelidan"/><br /><sub><b>pelidan</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=pelidan" title="Code">💻</a></td>
-    </tr>
-    <tr>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/xLillium"><img src="https://avatars.githubusercontent.com/u/16964936?v=4?s=100" width="100px;" alt="xLillium"/><br /><sub><b>xLillium</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=xLillium" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/CoolZxp"><img src="https://avatars.githubusercontent.com/u/54017765?v=4?s=100" width="100px;" alt="⁢4.435km/s"/><br /><sub><b>⁢4.435km/s</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=CoolZxp" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/drindr"><img src="https://avatars.githubusercontent.com/u/34709601?v=4?s=100" width="100px;" alt="Drin"/><br /><sub><b>Drin</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=drindr" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://hzu.lol/"><img src="https://avatars.githubusercontent.com/u/42469039?v=4?s=100" width="100px;" alt="Hakim Zulkufli"/><br /><sub><b>Hakim Zulkufli</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=hakimzulkufli" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://bit.ly/2N1ynXZ"><img src="https://avatars.githubusercontent.com/u/14874913?v=4?s=100" width="100px;" alt="Simon Klakegg"/><br /><sub><b>Simon Klakegg</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=sklakegg" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/sudorest"><img src="https://avatars.githubusercontent.com/u/214225921?v=4?s=100" width="100px;" alt="Kiwi"/><br /><sub><b>Kiwi</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=sudorest" title="Code">💻</a></td>
-    </tr>
-    <tr>
-      <td align="center" valign="top" width="16.66%"><a href="https://trade.xyz/?ref=BZ1RJRXWO"><img src="https://avatars.githubusercontent.com/u/7317522?v=4?s=100" width="100px;" alt="Raxxoor"/><br /><sub><b>Raxxoor</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=dhaern" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/nyanyani"><img src="https://avatars.githubusercontent.com/u/11475482?v=4?s=100" width="100px;" alt="nyanyani"/><br /><sub><b>nyanyani</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=nyanyani" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://nettee.io/"><img src="https://avatars.githubusercontent.com/u/3953668?v=4?s=100" width="100px;" alt="nettee"/><br /><sub><b>nettee</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=nettee" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/atomlink-ye"><img src="https://avatars.githubusercontent.com/u/48194045?v=4?s=100" width="100px;" alt="Link"/><br /><sub><b>Link</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=atomlink-ye" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/blaszewski"><img src="https://avatars.githubusercontent.com/u/14119531?v=4?s=100" width="100px;" alt="Bartosz Łaszewski"/><br /><sub><b>Bartosz Łaszewski</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=blaszewski" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/huilang021x"><img src="https://avatars.githubusercontent.com/u/77293911?v=4?s=100" width="100px;" alt="huilang021x"/><br /><sub><b>huilang021x</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=huilang021x" title="Code">💻</a></td>
-    </tr>
-    <tr>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/dkovacevic15"><img src="https://avatars.githubusercontent.com/u/24757821?v=4?s=100" width="100px;" alt="Dusan Kovacevic"/><br /><sub><b>Dusan Kovacevic</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=dkovacevic15" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/jwcrystal"><img src="https://avatars.githubusercontent.com/u/121911854?v=4?s=100" width="100px;" alt="jwcrystal"/><br /><sub><b>jwcrystal</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=jwcrystal" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://zenstudio.cv/"><img src="https://avatars.githubusercontent.com/u/10528635?v=4?s=100" width="100px;" alt="Nguyen Canh Toan"/><br /><sub><b>Nguyen Canh Toan</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=ZenStudioLab" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/tom-dyar"><img src="https://avatars.githubusercontent.com/u/8899513?v=4?s=100" width="100px;" alt="Thomas Dyar"/><br /><sub><b>Thomas Dyar</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=tom-dyar" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/zuuky"><img src="https://avatars.githubusercontent.com/u/6713415?v=4?s=100" width="100px;" alt="zero"/><br /><sub><b>zero</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=zuuky" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/DenisBalan"><img src="https://avatars.githubusercontent.com/u/33955091?v=4?s=100" width="100px;" alt="Denis Balan"/><br /><sub><b>Denis Balan</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=DenisBalan" title="Code">💻</a></td>
-    </tr>
-    <tr>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/gustavocaiano"><img src="https://avatars.githubusercontent.com/u/104129313?v=4?s=100" width="100px;" alt="Gustavo Caiano"/><br /><sub><b>Gustavo Caiano</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=gustavocaiano" title="Code">💻</a></td>
-      <td align="center" valign="top" width="16.66%"><a href="https://github.com/ThomasMldr"><img src="https://avatars.githubusercontent.com/u/6631765?v=4?s=100" width="100px;" alt="Thomas Mulder"/><br /><sub><b>Thomas Mulder</b></sub></a><br /><a href="https://github.com/keibn29/oh-my-openkei/commits?author=ThomasMldr" title="Code">💻</a></td>
-    </tr>
-  </tbody>
-</table>
-
-<!-- markdownlint-restore -->
-<!-- prettier-ignore-end -->
-
-<!-- ALL-CONTRIBUTORS-LIST:END -->
+[View all 44 contributors on GitHub](https://github.com/keibn29/oh-my-openkei/graphs/contributors)
 
 ---
 

@@ -94,8 +94,8 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
   1. UI/UX decisions, spec refinement, layout/interaction/polish judgment, accessibility judgment, and UI/UX review → @designer FIRST
   2. Once direction is clear: client-side implementation and frontend tests → @frontend-developer
 - **Domain scope:** Components, client state, routing, styling, forms, browser-facing behavior, frontend tests
-- **Delegate when:** For implementation work, think and triage first. If the change is non-trivial or multi-file, hand bounded execution to @frontend-developer • Writing or updating frontend tests • Tasks that touch frontend components, styling, or client-side logic. Parallelization benefits: Task involves multiple folders and multiple files modification, scoping work per folder and spawning parallel @frontend-developers for each folder.
-- **Don't delegate when:** Needs discovery/research/decisions • Single small change (<20 lines, one file) • Unclear requirements needing iteration • Backend/server-side work (use @backend-developer) • Tight integration with your current work • Sequential dependencies • Needs a design/UX decision first (route to @designer instead)
+- **Delegate when:** Any client-side implementation work once direction is clear • Small or large frontend changes • Writing or updating frontend tests • Tasks that touch frontend components, styling, or client-side logic. Parallelization benefits: Task involves multiple folders and multiple files modification, scoping work per folder and spawning parallel @frontend-developers for each folder.
+- **Don't delegate when:** Needs discovery/research/decisions • Backend/server-side work (use @backend-developer) • Needs a design/UX decision first (route to @designer instead)
 - **Stop short when:** UX/visual direction, interaction intent, styling direction, or UX expectations are ambiguous — do not decide autonomously; hand back to {owner} to route through @designer first`,
   },
   {
@@ -107,9 +107,9 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
 - Stats: 2x faster code edits, 1/2 cost of {owner}, 0.8x quality of {owner}
 - Tools/Constraints: Execution-focused—no research, no architectural decisions
 - **Domain scope:** APIs, services, DB/schema/migrations, auth/permissions, jobs, CLI/server code, backend tests
-- **Delegate when:** For implementation work, think and triage first. If the change is non-trivial or multi-file, hand bounded execution to @backend-developer • Writing or updating backend tests • Tasks that touch APIs, databases, or server-side logic. Parallelization benefits: Task involves multiple folders and multiple files modification, scoping work per folder and spawning parallel @backend-developers for each folder.
-- **Don't delegate when:** Needs discovery/research/decisions • Single small change (<20 lines, one file) • Unclear requirements needing iteration • Frontend/client-side work (use @frontend-developer) • Tight integration with your current work • Sequential dependencies
-- **Rule of thumb:** Server/data code? → @backend-developer. Client/UI code? → @frontend-developer. Explaining > doing? → yourself.`,
+- **Delegate when:** Any backend/server-side implementation work • Small or large backend changes • Writing or updating backend tests • Tasks that touch APIs, databases, or server-side logic. Parallelization benefits: Task involves multiple folders and multiple files modification, scoping work per folder and spawning parallel @backend-developers for each folder.
+- **Don't delegate when:** Needs discovery/research/decisions • Frontend/client-side work (use @frontend-developer)
+- **Rule of thumb:** Server/data code? → @backend-developer. Client/UI code? → @frontend-developer. Strategy/review instead of execution? → @oracle.`,
   },
   {
     name: 'council',

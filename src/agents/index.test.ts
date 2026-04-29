@@ -365,6 +365,26 @@ describe('orchestrator agent', () => {
     ]);
     expect(orchestrator?.config.model).toBeUndefined();
   });
+
+  test('orchestrator prompt is delegation-first with self-work as fallback only', () => {
+    const agents = createAgents();
+    const orchestrator = agents.find((a) => a.name === 'orchestrator');
+    const prompt = orchestrator?.config.prompt as string;
+
+    expect(prompt).toContain(
+      'If a specialist is a reasonable fit, delegate before considering direct work.',
+    );
+    expect(prompt).toContain(
+      'Default to delegation even for small, simple, single-file, or fast-turnaround tasks',
+    );
+    expect(prompt).toContain(
+      'You may personally explore the codebase, research docs, write code, edit files, or do deep file reading only when no suitable specialist exists',
+    );
+    expect(prompt).not.toContain(
+      'Skip delegation if overhead ≥ doing it yourself',
+    );
+    expect(prompt).toContain('otherwise do it yourself');
+  });
 });
 
 describe('planner agent', () => {
