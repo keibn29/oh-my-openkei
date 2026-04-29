@@ -176,8 +176,7 @@ export function createPlannerAgent(
 
   const definition: AgentDefinition = {
     name: 'planner',
-    description:
-      'AI planning specialist that produces decision-complete plans through exploration and targeted interviewing — does not implement code directly',
+    description: 'Interview-first planning specialist',
     config: {
       temperature: 0.1,
       prompt,

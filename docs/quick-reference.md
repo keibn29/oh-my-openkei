@@ -20,8 +20,8 @@
 | Agent | Role |
 |-------|------|
 | **Orchestrator** | Default primary — delegation-first coordinator for planning, routing, integration, and fallback execution |
-| **Planner** | Mandatory-interview planning specialist — always asks at least one clarifying question before any plan, produces `<planner-plan>...</planner-plan>` wrapped plans (or saves to file), delegates research/clarification, does not implement |
-| **Sprinter** | Fast self-executing specialist — handles Q&A and tasks directly, prioritizes speed over delegation |
+| **Planner** | Interview-first planner — asks clarifying questions and returns structured `<planner-plan>` output |
+| **Sprinter** | Fast self-executing agent — optimized for quick Q&A and direct tasks |
 
 ## ⚙️ Config & Reference
 

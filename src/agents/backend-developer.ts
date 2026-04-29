@@ -67,8 +67,7 @@ export function createBackendDeveloperAgent(
 
   return {
     name: 'backend-developer',
-    description:
-      'Fast implementation specialist for backend/server-side code. Handles APIs, services, DB/schema, auth, jobs, and server-side logic.',
+    description: 'Backend implementation specialist',
     config: {
       model,
       temperature: 0.2,

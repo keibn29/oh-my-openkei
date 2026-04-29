@@ -55,8 +55,7 @@ export function createSprinterAgent(
 
   const definition: AgentDefinition = {
     name: 'sprinter',
-    description:
-      'Fast, self-executing coding specialist for quick Q&A and direct task execution — prioritizes speed over deep delegation',
+    description: 'Fast self-executing coding agent',
     config: {
       variant: 'low',
       temperature: 0.1,

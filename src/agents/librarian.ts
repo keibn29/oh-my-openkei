@@ -37,8 +37,7 @@ export function createLibrarianAgent(
 
   return {
     name: 'librarian',
-    description:
-      'External documentation and library research. Use for official docs lookup, GitHub examples, and understanding library internals.',
+    description: 'Docs and library research specialist',
     config: {
       model,
       temperature: 0.1,

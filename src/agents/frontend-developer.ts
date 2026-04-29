@@ -70,8 +70,7 @@ export function createFrontendDeveloperAgent(
 
   return {
     name: 'frontend-developer',
-    description:
-      'Fast implementation specialist for frontend/client-side code. Handles components, styling, forms, routing, and browser-facing behavior.',
+    description: 'Frontend implementation specialist',
     config: {
       model,
       temperature: 0.2,

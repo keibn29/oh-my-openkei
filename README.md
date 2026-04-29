@@ -105,11 +105,11 @@ If any agent fails to respond, check your provider authentication and config fil
 
 ### Primary Agents
 
-**Orchestrator**, **Planner**, and **Sprinter** are the primary agents. You choose which one to use based on your workflow. All other agents are subagents delegated to by the primary when needed.
+**Orchestrator**, **Planner**, and **Sprinter** are the primary agents. Choose one based on how you want to work.
 
-- **Orchestrator** (default): Delegation-first coordinator. Handles intake, planning, routing, and result integration. Falls back to direct work only when no suitable subagent exists.
-- **Planner**: Mandatory-interview planning specialist. Always asks at least one clarifying question before producing any plan, gathers requirements through structured questioning, produces plans wrapped in `<planner-plan>` tags (or saves to a file when requested), and delegates research/clarification to subagents. Does not implement code itself. If the user specifies a plan structure, Planner follows it; otherwise it uses the default (Summary, Key Changes, Public Interfaces, Test Plan, Assumptions). Best for ambiguous or high-stakes work where careful upfront planning pays off.
-- **Sprinter**: Fast self-executing primary agent. Optimized for quick Q&A, light coding tasks, and direct execution with minimal thinking overhead. Does not delegate to subagents — handles everything directly itself.
+- **Orchestrator** (default): Delegation-first coordinator for planning, routing, and result integration.
+- **Planner**: Interview-first planner that asks clarifying questions and returns structured `<planner-plan>` output.
+- **Sprinter**: Fast self-executing agent for quick Q&A and direct tasks.
 
 #### Interaction Flow
 
@@ -137,7 +137,7 @@ On-demand (not auto-delegated): Council · Observer
 
 #### Orchestrator
 
-**Role:** Master delegator and strategic coordinator  
+**Role:** Delegation-first coordinator  
 **Prompt:** [orchestrator.ts](src/agents/orchestrator.ts)  
 **Default Model:** `openai/gpt-5.5`  
 **Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.6`  
@@ -145,7 +145,7 @@ On-demand (not auto-delegated): Council · Observer
 
 #### Planner
 
-**Role:** Mandatory-interview planning specialist — always asks at least one clarifying question before producing any plan, gathers requirements through structured questioning, produces `<planner-plan>` wrapped plans (or saves to a file when requested), follows user-specified structure or defaults to Summary/Key Changes/Public Interfaces/Test Plan/Assumptions, delegates research, does not implement
+**Role:** Interview-first planner that asks clarifying questions and returns structured `<planner-plan>` output  
 **Prompt:** [planner.ts](src/agents/planner.ts)
 **Default Model:** `openai/gpt-5.5`  
 **Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.6`  
@@ -153,7 +153,7 @@ On-demand (not auto-delegated): Council · Observer
 
 #### Sprinter
 
-**Role:** Fast self-executing primary agent for quick Q&A and direct task execution  
+**Role:** Fast self-executing agent for quick Q&A and direct tasks  
 **Prompt:** [sprinter.ts](src/agents/sprinter.ts)  
 **Default Model:** `openai/gpt-5.3-codex` (`low`)  
 **Recommended Models:** `openai/gpt-5.3-codex`, `github-copilot/grok-code-fast-1`, `kimi-for-coding/k2p5`  

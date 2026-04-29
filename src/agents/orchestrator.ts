@@ -192,8 +192,7 @@ export function createOrchestratorAgent(
 
   const definition: AgentDefinition = {
     name: 'orchestrator',
-    description:
-      'AI coding orchestrator that delegates tasks to specialist agents for optimal quality, speed, and cost',
+    description: 'Delegation-first coding coordinator',
     config: {
       temperature: 0.1,
       prompt,

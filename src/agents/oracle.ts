@@ -39,8 +39,7 @@ export function createOracleAgent(
 
   return {
     name: 'oracle',
-    description:
-      'Strategic technical advisor. Use for architecture decisions, complex debugging, code review, simplification, and engineering guidance.',
+    description: 'Architecture and code review advisor',
     config: {
       model,
       temperature: 0.1,

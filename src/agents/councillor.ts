@@ -60,8 +60,7 @@ export function createCouncillorAgent(
 
   return {
     name: 'councillor',
-    description:
-      'Read-only council advisor. Examines codebase and provides independent analysis. Spawned internally by the council system.',
+    description: 'Read-only council advisor',
     config: {
       model,
       temperature: 0.2,

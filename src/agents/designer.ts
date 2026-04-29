@@ -77,8 +77,7 @@ export function createDesignerAgent(
 
   return {
     name: 'designer',
-    description:
-      'UI/UX direction, spec, review, and accessibility judgment. Handles layout/interaction decisions and design decisions when intent is unclear; delegates substantial execution to @frontend-developer.',
+    description: 'UI/UX direction and design decisions',
     config: {
       model,
       temperature: 0.7,
