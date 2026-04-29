@@ -211,7 +211,13 @@ export const WebsearchConfigSchema = z.object({
 export type WebsearchConfig = z.infer<typeof WebsearchConfigSchema>;
 
 // MCP names
-export const McpNameSchema = z.enum(['websearch', 'context7', 'grep_app']);
+export const McpNameSchema = z.enum([
+  'websearch',
+  'context7',
+  'grep_app',
+  'figma',
+  'serena',
+]);
 export type McpName = z.infer<typeof McpNameSchema>;
 
 export const SessionManagerConfigSchema = z.object({

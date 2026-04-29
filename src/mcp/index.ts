@@ -1,6 +1,8 @@
 import type { McpName, WebsearchConfig } from '../config';
 import { context7 } from './context7';
+import { figma } from './figma';
 import { grep_app } from './grep-app';
+import { serena } from './serena';
 import type { McpConfig } from './types';
 import { createWebsearchConfig, websearch } from './websearch';
 
@@ -10,6 +12,8 @@ const allBuiltinMcps: Record<McpName, McpConfig> = {
   websearch,
   context7,
   grep_app,
+  figma,
+  serena,
 };
 
 /**

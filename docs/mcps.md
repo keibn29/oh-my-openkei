@@ -11,6 +11,8 @@ Built-in Model Context Protocol (MCP) servers ship with oh-my-openkei and give a
 | `websearch` | Real-time web search via Exa AI | `https://mcp.exa.ai/mcp` |
 | `context7` | Official library documentation (up-to-date) | `https://mcp.context7.com/mcp` |
 | `grep_app` | GitHub code search via grep.app | `https://mcp.grep.app` |
+| `figma` | Design file access and management | `https://mcp.figma.com/mcp` |
+| `serena` | Semantic code exploration and editing | `uvx --from git+https://github.com/oraios/serena serena start-mcp-server` |
 
 ---
 
@@ -22,9 +24,9 @@ Built-in Model Context Protocol (MCP) servers ship with oh-my-openkei and give a
 | `planner` | `*`, `!context7` |
 | `sprinter` | `*`, `!context7` |
 | `librarian` | `websearch`, `context7`, `grep_app` |
-| `designer` | none |
+| `designer` | `figma` |
 | `oracle` | none |
-| `explorer` | none |
+| `explorer` | `serena` |
 | `frontend-developer` | none |
 | `backend-developer` | none |
  | `councillor` | none |

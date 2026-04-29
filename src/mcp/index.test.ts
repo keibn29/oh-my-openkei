@@ -9,16 +9,20 @@ describe('createBuiltinMcps', () => {
     expect(names).toContain('websearch');
     expect(names).toContain('context7');
     expect(names).toContain('grep_app');
+    expect(names).toContain('figma');
+    expect(names).toContain('serena');
   });
 
   test('returns all MCPs with empty disabled list', () => {
     const mcps = createBuiltinMcps([]);
     const names = Object.keys(mcps);
 
-    expect(names.length).toBe(3);
+    expect(names.length).toBe(5);
     expect(names).toContain('websearch');
     expect(names).toContain('context7');
     expect(names).toContain('grep_app');
+    expect(names).toContain('figma');
+    expect(names).toContain('serena');
   });
 
   test('excludes single disabled MCP', () => {
@@ -28,6 +32,8 @@ describe('createBuiltinMcps', () => {
     expect(names).not.toContain('websearch');
     expect(names).toContain('context7');
     expect(names).toContain('grep_app');
+    expect(names).toContain('figma');
+    expect(names).toContain('serena');
   });
 
   test('excludes multiple disabled MCPs', () => {
@@ -37,11 +43,19 @@ describe('createBuiltinMcps', () => {
     expect(names).not.toContain('websearch');
     expect(names).not.toContain('grep_app');
     expect(names).toContain('context7');
-    expect(names.length).toBe(1);
+    expect(names).toContain('figma');
+    expect(names).toContain('serena');
+    expect(names.length).toBe(3);
   });
 
   test('excludes all MCPs when all disabled', () => {
-    const mcps = createBuiltinMcps(['websearch', 'context7', 'grep_app']);
+    const mcps = createBuiltinMcps([
+      'websearch',
+      'context7',
+      'grep_app',
+      'figma',
+      'serena',
+    ]);
     const names = Object.keys(mcps);
 
     expect(names.length).toBe(0);
@@ -52,10 +66,12 @@ describe('createBuiltinMcps', () => {
     const names = Object.keys(mcps);
 
     // All valid MCPs should still be present
-    expect(names.length).toBe(3);
+    expect(names.length).toBe(5);
     expect(names).toContain('websearch');
     expect(names).toContain('context7');
     expect(names).toContain('grep_app');
+    expect(names).toContain('figma');
+    expect(names).toContain('serena');
   });
 
   test('MCP configs have required properties', () => {
@@ -92,5 +108,21 @@ describe('createBuiltinMcps', () => {
 
     expect(grep_app).toBeDefined();
     expect('url' in grep_app).toBe(true);
+  });
+
+  test('figma MCP has correct structure', () => {
+    const mcps = createBuiltinMcps();
+    const figmaConfig = mcps.figma;
+
+    expect(figmaConfig).toBeDefined();
+    expect('url' in figmaConfig).toBe(true);
+  });
+
+  test('serena MCP has correct structure', () => {
+    const mcps = createBuiltinMcps();
+    const serenaConfig = mcps.serena;
+
+    expect(serenaConfig).toBeDefined();
+    expect('command' in serenaConfig).toBe(true);
   });
 });

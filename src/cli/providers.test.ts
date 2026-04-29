@@ -4,14 +4,26 @@ import { describe, expect, test } from 'bun:test';
 import { generateLiteConfig, MODEL_MAPPINGS } from './providers';
 
 describe('providers', () => {
-  test('MODEL_MAPPINGS has exactly 4 providers', () => {
+  test('MODEL_MAPPINGS maps all agents to default models', () => {
     const keys = Object.keys(MODEL_MAPPINGS);
-    expect(keys.sort()).toEqual(['copilot', 'kimi', 'openai', 'zai-plan']);
+    expect(keys).toContain('orchestrator');
+    expect(keys).toContain('planner');
+    expect(keys).toContain('sprinter');
+    expect(keys).toContain('oracle');
+    expect(keys).toContain('council');
+    expect(keys).toContain('librarian');
+    expect(keys).toContain('explorer');
+    expect(keys).toContain('designer');
+    expect(keys).toContain('frontend-developer');
+    expect(keys).toContain('backend-developer');
+    // Each entry has model and optional variant
+    for (const entry of Object.values(MODEL_MAPPINGS)) {
+      expect(typeof entry.model).toBe('string');
+    }
   });
 
   test('generateLiteConfig always generates default preset', () => {
     const config = generateLiteConfig({
-      hasTmux: false,
       installSkills: false,
       installCustomSkills: false,
       reset: false,
@@ -45,16 +57,15 @@ describe('providers', () => {
     expect(agents['frontend-developer'].model).toBe(
       'opencode-go/deepseek-v4-flash',
     );
-    expect(agents['frontend-developer'].variant).toBeUndefined();
+    expect(agents['frontend-developer'].variant).toBe('high');
     expect(agents['backend-developer'].model).toBe(
       'opencode-go/deepseek-v4-flash',
     );
-    expect(agents['backend-developer'].variant).toBeUndefined();
+    expect(agents['backend-developer'].variant).toBe('high');
   });
 
   test('generateLiteConfig uses correct OpenAI models', () => {
     const config = generateLiteConfig({
-      hasTmux: false,
       installSkills: false,
       installCustomSkills: false,
       reset: false,
@@ -116,7 +127,6 @@ describe('providers', () => {
 
   test('generateLiteConfig includes mcps field', () => {
     const config = generateLiteConfig({
-      hasTmux: false,
       installSkills: false,
       installCustomSkills: false,
       reset: false,
@@ -131,7 +141,6 @@ describe('providers', () => {
 
   test('generateLiteConfig default includes correct mcps', () => {
     const config = generateLiteConfig({
-      hasTmux: false,
       installSkills: false,
       installCustomSkills: false,
       reset: false,
@@ -142,6 +151,7 @@ describe('providers', () => {
     expect(agents.librarian.mcps).toContain('websearch');
     expect(agents.librarian.mcps).toContain('context7');
     expect(agents.librarian.mcps).toContain('grep_app');
-    expect(agents.designer.mcps).toEqual([]);
+    expect(agents.designer.mcps).toEqual(['figma']);
+    expect(agents.explorer.mcps).toEqual(['serena']);
   });
 });

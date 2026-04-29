@@ -62,8 +62,8 @@ The default generated configuration:
       "oracle": { "model": "openai/gpt-5.5-fast", "variant": "high", "skills": ["simplify"], "mcps": [] },
       "council": { "model": "openai/gpt-5.4-fast", "variant": "xhigh", "skills": [], "mcps": [] },
       "librarian": { "model": "minimax-coding-plan/MiniMax-M2.7", "skills": [], "mcps": ["websearch", "context7", "grep_app"] },
-      "explorer": { "model": "minimax-coding-plan/MiniMax-M2.7", "skills": [], "mcps": [] },
-      "designer": { "model": "opencode-go/kimi-k2.6", "skills": ["agent-browser"], "mcps": [] },
+      "explorer": { "model": "minimax-coding-plan/MiniMax-M2.7", "skills": [], "mcps": ["serena"] },
+      "designer": { "model": "opencode-go/kimi-k2.6", "skills": ["agent-browser"], "mcps": ["figma"] },
       "frontend-developer": { "model": "opencode-go/deepseek-v4-flash", "skills": ["vercel-react-best-practices", "karpathy-guidelines"], "mcps": [] },
       "backend-developer": { "model": "opencode-go/deepseek-v4-flash", "skills": ["backend-developer", "karpathy-guidelines"], "mcps": [] }
     }
@@ -273,7 +273,7 @@ Use this section as a map: start with installation, then jump to features, confi
 | **[Configuration](docs/configuration.md)** | Config file locations, JSONC support, prompt overrides, and full option reference |
 | **[Maintainer Guide](docs/maintainers.md)** | Issue triage rules, label meanings, support routing, and repo maintenance workflow |
 | **[Skills](docs/skills.md)** | Built-in and recommended skills such as `simplify`, `agent-browser`, and `codemap` |
-| **[MCPs](docs/mcps.md)** | `websearch`, `context7`, `grep_app`, and how MCP permissions work per agent |
+| **[MCPs](docs/mcps.md)** | `websearch`, `context7`, `grep_app`, `figma`, `serena`, and how MCP permissions work per agent |
 | **[Tools](docs/tools.md)** | Built-in tool capabilities like `webfetch`, LSP tools, code search, and formatters |
 
 ### 💡 Example Presets

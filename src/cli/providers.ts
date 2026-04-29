@@ -6,9 +6,7 @@ import type { InstallConfig } from './types';
 const SCHEMA_URL =
   'https://unpkg.com/oh-my-openkei@latest/oh-my-openkei.schema.json';
 
-// Model mappings by provider - only 4 supported providers
 export const MODEL_MAPPINGS = {
-  openai: {
     orchestrator: { model: 'openai/gpt-5.4-fast', variant: 'xhigh' },
     planner: { model: 'openai/gpt-5.5-fast', variant: 'xhigh' },
     sprinter: { model: 'openai/gpt-5.3-codex', variant: 'low' },
@@ -17,63 +15,8 @@ export const MODEL_MAPPINGS = {
     librarian: { model: 'minimax-coding-plan/MiniMax-M2.7' },
     explorer: { model: 'minimax-coding-plan/MiniMax-M2.7' },
     designer: { model: 'opencode-go/kimi-k2.6' },
-    'frontend-developer': { model: 'opencode-go/deepseek-v4-flash' },
-    'backend-developer': { model: 'opencode-go/deepseek-v4-flash' },
-  },
-  kimi: {
-    orchestrator: { model: 'kimi-for-coding/k2p5' },
-    planner: { model: 'kimi-for-coding/k2p5' },
-    sprinter: { model: 'kimi-for-coding/k2p5', variant: 'low' },
-    oracle: { model: 'kimi-for-coding/k2p5', variant: 'high' },
-    librarian: { model: 'kimi-for-coding/k2p5', variant: 'low' },
-    explorer: { model: 'kimi-for-coding/k2p5', variant: 'low' },
-    designer: { model: 'kimi-for-coding/k2p5', variant: 'medium' },
-    'frontend-developer': {
-      model: 'kimi-for-coding/k2p5',
-      variant: 'low',
-    },
-    'backend-developer': {
-      model: 'kimi-for-coding/k2p5',
-      variant: 'low',
-    },
-  },
-  copilot: {
-    orchestrator: { model: 'github-copilot/claude-opus-4.6' },
-    planner: { model: 'github-copilot/claude-opus-4.6' },
-    sprinter: { model: 'github-copilot/grok-code-fast-1', variant: 'low' },
-    oracle: { model: 'github-copilot/claude-opus-4.6', variant: 'high' },
-    librarian: { model: 'github-copilot/grok-code-fast-1', variant: 'low' },
-    explorer: { model: 'github-copilot/grok-code-fast-1', variant: 'low' },
-    designer: {
-      model: 'github-copilot/gemini-3.1-pro-preview',
-      variant: 'medium',
-    },
-    'frontend-developer': {
-      model: 'github-copilot/claude-sonnet-4.6',
-      variant: 'low',
-    },
-    'backend-developer': {
-      model: 'github-copilot/claude-sonnet-4.6',
-      variant: 'low',
-    },
-  },
-  'zai-plan': {
-    orchestrator: { model: 'zai-coding-plan/glm-5' },
-    planner: { model: 'zai-coding-plan/glm-5' },
-    sprinter: { model: 'zai-coding-plan/glm-5', variant: 'low' },
-    oracle: { model: 'zai-coding-plan/glm-5', variant: 'high' },
-    librarian: { model: 'zai-coding-plan/glm-5', variant: 'low' },
-    explorer: { model: 'zai-coding-plan/glm-5', variant: 'low' },
-    designer: { model: 'zai-coding-plan/glm-5', variant: 'medium' },
-    'frontend-developer': {
-      model: 'zai-coding-plan/glm-5',
-      variant: 'low',
-    },
-    'backend-developer': {
-      model: 'zai-coding-plan/glm-5',
-      variant: 'low',
-    },
-  },
+    'frontend-developer': { model: 'opencode-go/deepseek-v4-flash', variant: 'high' },
+    'backend-developer': { model: 'opencode-go/deepseek-v4-flash', variant: 'high' },
 } as const;
 
 export function generateLiteConfig(
@@ -122,18 +65,16 @@ export function generateLiteConfig(
     };
   };
 
-  const buildPreset = (mappingName: keyof typeof MODEL_MAPPINGS) => {
-    const mapping = MODEL_MAPPINGS[mappingName];
+  const buildPreset = () => {
     return Object.fromEntries(
-      Object.entries(mapping).map(([agentName, modelInfo]) => [
+      Object.entries(MODEL_MAPPINGS).map(([agentName, modelInfo]) => [
         agentName,
         createAgentConfig(agentName, modelInfo),
       ]),
     );
   };
 
-  // Always use OpenAI mapping as the default preset
-  (config.presets as Record<string, unknown>).default = buildPreset('openai');
+  (config.presets as Record<string, unknown>).default = buildPreset();
 
   return config;
 }

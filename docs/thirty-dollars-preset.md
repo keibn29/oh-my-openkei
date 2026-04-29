@@ -17,8 +17,8 @@ It uses Codex Plus for the OpenAI models and GitHub Copilot for the premium coun
         "oracle": { "model": "openai/gpt-5.5", "variant": "high", "skills": [], "mcps": [] },
         "council": { "model": "openai/gpt-5.5" },
         "librarian": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": [ "websearch", "context7", "grep_app" ] },
-        "explorer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": [] },
-        "designer": { "model": "github-copilot/gemini-3.1-pro-preview", "skills": [ "agent-browser" ], "mcps": [] },
+        "explorer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": ["serena"] },
+        "designer": { "model": "github-copilot/gemini-3.1-pro-preview", "skills": [ "agent-browser" ], "mcps": ["figma"] },
         "frontend-developer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": [] },
         "backend-developer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": [] }
       }
