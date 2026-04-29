@@ -146,8 +146,30 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
     if (config.fallback?.enabled !== false) {
       const chains =
         (config.fallback?.chains as Record<string, string[] | undefined>) ?? {};
+
+      // Backward compat: map legacy 'fixer' chain to 'frontend-developer'
+      // and 'backend-developer' when no explicit chains exist for either.
+      // explicit non-empty chain always wins; never write a phantom entry.
+      const legacyFixerChain = chains.fixer;
+      if (legacyFixerChain) {
+        if (
+          !('frontend-developer' in chains) ||
+          (chains['frontend-developer']?.length ?? 0) === 0
+        ) {
+          chains['frontend-developer'] = legacyFixerChain;
+        }
+        if (
+          !('backend-developer' in chains) ||
+          (chains['backend-developer']?.length ?? 0) === 0
+        ) {
+          chains['backend-developer'] = legacyFixerChain;
+        }
+      }
+
       for (const [agentName, chainModels] of Object.entries(chains)) {
         if (!chainModels?.length) continue;
+        // Skip legacy fixer — it was already used for backward-compat mapping
+        if (agentName === 'fixer') continue;
         const existing = runtimeChains[agentName] ?? [];
         const seen = new Set(existing);
         for (const m of chainModels) {
@@ -354,6 +376,34 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
 
       for (const [agentName, chainModels] of Object.entries(fallbackChains)) {
         if (!chainModels || chainModels.length === 0) continue;
+
+        // Backward compat: map legacy 'fixer' chain to 'frontend-developer'
+        // and 'backend-developer' when no explicit chains exist for either.
+        // explicit non-empty chain always wins; never write a phantom entry.
+        // Only process 'fixer' here — the new agent names are handled below.
+        if (agentName === 'fixer') {
+          if (
+            !('frontend-developer' in fallbackChains) ||
+            (fallbackChains['frontend-developer']?.length ?? 0) === 0
+          ) {
+            fallbackChains['frontend-developer'] = chainModels;
+          }
+          if (
+            !('backend-developer' in fallbackChains) ||
+            (fallbackChains['backend-developer']?.length ?? 0) === 0
+          ) {
+            fallbackChains['backend-developer'] = chainModels;
+          }
+        }
+      }
+
+      for (const [agentName, chainModels] of Object.entries(fallbackChains)) {
+        if (!chainModels || chainModels.length === 0) continue;
+
+        // Skip legacy fixer — it was already used for backward-compat mapping
+        // to frontend-developer / backend-developer above. Never create a
+        // phantom configAgent['fixer'] entry.
+        if (agentName === 'fixer') continue;
 
         if (!effectiveArrays[agentName]) {
           // Agent has no _modelArray — seed from its current string model

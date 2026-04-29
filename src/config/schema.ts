@@ -8,7 +8,8 @@ const FALLBACK_AGENT_NAMES = [
   'designer',
   'explorer',
   'librarian',
-  'fixer',
+  'frontend-developer',
+  'backend-developer',
 ] as const;
 
 const MANUAL_AGENT_NAMES = [
@@ -17,7 +18,8 @@ const MANUAL_AGENT_NAMES = [
   'designer',
   'explorer',
   'librarian',
-  'fixer',
+  'frontend-developer',
+  'backend-developer',
 ] as const;
 
 export const ProviderModelIdSchema = z
@@ -56,9 +58,75 @@ export const ManualPlanSchema = z
     designer: ManualAgentPlanSchema,
     explorer: ManualAgentPlanSchema,
     librarian: ManualAgentPlanSchema,
-    fixer: ManualAgentPlanSchema,
+    'frontend-developer': ManualAgentPlanSchema.optional(),
+    'backend-developer': ManualAgentPlanSchema.optional(),
+    // Legacy fixer key — accepted for backward compat, stripped from output
+    fixer: ManualAgentPlanSchema.optional(),
   })
-  .strict();
+  // NOTE: strict() must come before transform so unknown input keys are
+  // rejected before the transform strips them. superRefine runs after
+  // transform (which is post-transform validation), so it sees the already-
+  // transformed output.
+  .strict()
+  .transform((value) => {
+    // Partial migration backfill: if fixer exists, fill in whichever of
+    // frontend-developer or backend-developer is missing. If both are missing,
+    // fan out to both. Strip fixer from normalized output.
+    const hasFrontend = 'frontend-developer' in value;
+    const hasBackend = 'backend-developer' in value;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { fixer, ...rest } = value as any;
+    if ('fixer' in value && value.fixer) {
+      if (!hasFrontend && !hasBackend) {
+        // Both missing — fan out to both
+        return {
+          ...rest,
+          'frontend-developer': value.fixer,
+          'backend-developer': value.fixer,
+        };
+      }
+      if (!hasFrontend) {
+        // Only backend present — backfill frontend
+        return { ...rest, 'frontend-developer': value.fixer };
+      }
+      if (!hasBackend) {
+        // Only frontend present — backfill backend
+        return { ...rest, 'backend-developer': value.fixer };
+      }
+    }
+    return rest;
+  })
+  .superRefine((data, ctx) => {
+    const required = [
+      'orchestrator',
+      'oracle',
+      'designer',
+      'explorer',
+      'librarian',
+      'frontend-developer',
+      'backend-developer',
+    ];
+    for (const key of required) {
+      if (!(key in data) || (data as any)[key] === undefined) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Required agent plan missing: ${key}`,
+          path: [key],
+        });
+      }
+    }
+    const known = new Set([...required, 'fixer']);
+    for (const key of Object.keys(data as object)) {
+      if (!known.has(key)) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.unrecognized_keys,
+          message: `Unrecognized key: ${key}`,
+          keys: [key],
+          path: [],
+        });
+      }
+    }
+  });
 
 export type ManualAgentName = (typeof MANUAL_AGENT_NAMES)[number];
 export type ManualAgentPlan = z.infer<typeof ManualAgentPlanSchema>;
@@ -73,7 +141,8 @@ const FallbackChainsSchema = z
     designer: AgentModelChainSchema.optional(),
     explorer: AgentModelChainSchema.optional(),
     librarian: AgentModelChainSchema.optional(),
-    fixer: AgentModelChainSchema.optional(),
+    'frontend-developer': AgentModelChainSchema.optional(),
+    'backend-developer': AgentModelChainSchema.optional(),
   })
   .catchall(AgentModelChainSchema);
 

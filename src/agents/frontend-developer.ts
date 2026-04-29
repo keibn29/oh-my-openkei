@@ -1,8 +1,8 @@
 import type { AgentDefinition } from './orchestrator';
 
-const FIXER_PROMPT = `You are Fixer - a fast, focused implementation specialist.
+const FRONTEND_DEVELOPER_PROMPT = `You are Frontend Developer - a fast, focused implementation specialist for client-facing code.
 
-**Role**: Execute code changes efficiently. You receive complete context from research agents and clear task specifications from the Orchestrator. Your job is to implement, not plan or research.
+**Role**: Execute frontend code changes efficiently. You receive complete context from research agents and clear task specifications from the Orchestrator. Your job is to implement, not plan or research.
 
 **Behavior**:
 - Execute the task specification provided by the Orchestrator
@@ -13,6 +13,13 @@ const FIXER_PROMPT = `You are Fixer - a fast, focused implementation specialist.
 - Run relevant validation when requested or clearly applicable (otherwise note as skipped with reason)
 - Report completion with summary of changes
 
+**Domain scope**:
+- Components, client-side state management, routing, and navigation
+- Styling (CSS, Tailwind, styled-components, etc.)
+- Forms, inputs, and user interactions
+- Browser-facing behavior, client-side APIs, and frontend tests
+- Any code that runs in the browser or UI framework context
+
 **Constraints**:
 - NO external research (no websearch, context7, grep_app)
 - NO delegation or spawning subagents
@@ -20,6 +27,11 @@ const FIXER_PROMPT = `You are Fixer - a fast, focused implementation specialist.
 - If context is insufficient: use grep/glob/read directly — do not delegate
 - Only ask for missing inputs you truly cannot retrieve yourself
 - Do not act as the primary reviewer; implement requested changes and surface obvious issues briefly
+- **Stop short — do not decide autonomously when:** visual behavior, interaction intent, styling direction, or UX expectations are ambiguous. Hand back to the Orchestrator to route through @designer for a decision first.
+
+**Role Boundary**:
+- **Owns:** Client-side implementation, frontend tests, bounded execution tasks
+- **Does NOT own:** UI/UX decisions, visual direction, layout/interaction decisions (those belong to @designer)
 
 **Output Format**:
 <summary>
@@ -43,23 +55,23 @@ No changes required
 - Validation: [not run - reason]
 </verification>`;
 
-export function createFixerAgent(
+export function createFrontendDeveloperAgent(
   model: string,
   customPrompt?: string,
   customAppendPrompt?: string,
 ): AgentDefinition {
-  let prompt = FIXER_PROMPT;
+  let prompt = FRONTEND_DEVELOPER_PROMPT;
 
   if (customPrompt) {
     prompt = customPrompt;
   } else if (customAppendPrompt) {
-    prompt = `${FIXER_PROMPT}\n\n${customAppendPrompt}`;
+    prompt = `${FRONTEND_DEVELOPER_PROMPT}\n\n${customAppendPrompt}`;
   }
 
   return {
-    name: 'fixer',
+    name: 'frontend-developer',
     description:
-      'Fast implementation specialist. Receives complete context and task spec, executes code changes efficiently.',
+      'Fast implementation specialist for frontend/client-side code. Handles components, styling, forms, routing, and browser-facing behavior.',
     config: {
       model,
       temperature: 0.2,

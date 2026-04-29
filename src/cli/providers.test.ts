@@ -25,8 +25,10 @@ describe('providers', () => {
     expect(agents).toBeDefined();
     expect(agents.orchestrator.model).toBe('openai/gpt-5.5');
     expect(agents.orchestrator.variant).toBeUndefined();
-    expect(agents.fixer.model).toBe('openai/gpt-5.4-mini');
-    expect(agents.fixer.variant).toBe('low');
+    expect(agents['frontend-developer'].model).toBe('openai/gpt-5.4-mini');
+    expect(agents['frontend-developer'].variant).toBe('low');
+    expect(agents['backend-developer'].model).toBe('openai/gpt-5.4-mini');
+    expect(agents['backend-developer'].variant).toBe('low');
   });
 
   test('generateLiteConfig uses correct OpenAI models', () => {
@@ -74,8 +76,10 @@ describe('providers', () => {
     // Explorer should have no bundled skills by default
     expect(agents.explorer.skills).toEqual([]);
 
-    // Fixer should have no bundled skills by default
-    expect(agents.fixer.skills).toEqual([]);
+    // Frontend-developer should have no bundled skills by default
+    expect(agents['frontend-developer'].skills).toEqual([]);
+    // Backend-developer should have no bundled skills by default
+    expect(agents['backend-developer'].skills).toEqual([]);
   });
 
   test('generateLiteConfig includes mcps field', () => {

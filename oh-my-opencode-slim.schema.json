@@ -165,6 +165,60 @@
             "fallback3"
           ]
         },
+        "frontend-developer": {
+          "type": "object",
+          "properties": {
+            "primary": {
+              "type": "string",
+              "pattern": "^[^/\\s]+\\/[^\\s]+$"
+            },
+            "fallback1": {
+              "type": "string",
+              "pattern": "^[^/\\s]+\\/[^\\s]+$"
+            },
+            "fallback2": {
+              "type": "string",
+              "pattern": "^[^/\\s]+\\/[^\\s]+$"
+            },
+            "fallback3": {
+              "type": "string",
+              "pattern": "^[^/\\s]+\\/[^\\s]+$"
+            }
+          },
+          "required": [
+            "primary",
+            "fallback1",
+            "fallback2",
+            "fallback3"
+          ]
+        },
+        "backend-developer": {
+          "type": "object",
+          "properties": {
+            "primary": {
+              "type": "string",
+              "pattern": "^[^/\\s]+\\/[^\\s]+$"
+            },
+            "fallback1": {
+              "type": "string",
+              "pattern": "^[^/\\s]+\\/[^\\s]+$"
+            },
+            "fallback2": {
+              "type": "string",
+              "pattern": "^[^/\\s]+\\/[^\\s]+$"
+            },
+            "fallback3": {
+              "type": "string",
+              "pattern": "^[^/\\s]+\\/[^\\s]+$"
+            }
+          },
+          "required": [
+            "primary",
+            "fallback1",
+            "fallback2",
+            "fallback3"
+          ]
+        },
         "fixer": {
           "type": "object",
           "properties": {
@@ -198,8 +252,7 @@
         "oracle",
         "designer",
         "explorer",
-        "librarian",
-        "fixer"
+        "librarian"
       ],
       "additionalProperties": false
     },
@@ -480,7 +533,14 @@
                 "type": "string"
               }
             },
-            "fixer": {
+            "frontend-developer": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "backend-developer": {
               "minItems": 1,
               "type": "array",
               "items": {

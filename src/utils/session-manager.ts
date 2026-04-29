@@ -37,8 +37,10 @@ function aliasPrefix(agentType: AgentName): string {
       return 'ora';
     case 'designer':
       return 'des';
-    case 'fixer':
-      return 'fix';
+    case 'frontend-developer':
+      return 'fed';
+    case 'backend-developer':
+      return 'bed';
     case 'observer':
       return 'obs';
     case 'council':

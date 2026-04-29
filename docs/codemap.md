@@ -10,7 +10,7 @@ Codemap is designed for repository understanding and hierarchical codemap genera
 
 1. Selects relevant code/config files using LLM judgment
 2. Creates `.slim/codemap.json` for change tracking
-3. Generates `codemap.md` templates (per folder) for fixers to fill in
+3. Generates `codemap.md` templates (per folder) for frontend-developer/backend-developer to fill in
 4. Migrates legacy `.slim/cartography.json` state to `.slim/codemap.json`
 
 ## How to use
@@ -40,7 +40,7 @@ A change-tracking file with hashes for files/folders.
 
 ### `codemap.md` (per folder)
 
-Empty templates created in each folder so a Fixer-style agent can fill in:
+Empty templates created in each folder so Frontend Developer / Backend Developer agents can fill in:
 
 - Responsibility
 - Design patterns

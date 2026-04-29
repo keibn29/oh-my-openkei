@@ -53,22 +53,38 @@ const AGENT_DESCRIPTIONS: Record<string, string> = {
 - **Rule of thumb:** Need senior architect review? → @oracle. Need code review or simplification? → @oracle. Just do it and PR? → yourself.`,
 
   designer: `@designer
-- Role: UI/UX specialist for intentional, polished experiences
+- Role: UI/UX decision specialist — owns direction, layout, interaction decisions, accessibility judgment, and visual polish
 - Permissions: Read/write files
 - Stats: 10x better UI/UX than orchestrator
-- Capabilities: Visual relevant edits, interactions, responsive layouts, design systems with aesthetic intent, deep UI/UX knowledge.
-- **Delegate when:** User-facing interfaces needing polish • Responsive layouts • UX-critical components (forms, nav, dashboards) • Visual consistency systems • Animations/micro-interactions • Landing/marketing pages • Refining functional→delightful • Reviewing existing UI/UX quality
-- **Don't delegate when:** Backend/logic with no visual • Quick prototypes where design doesn't matter yet
-- **Rule of thumb:** Users see it and polish matters? → @designer. Headless/functional? → yourself.`,
+- Capabilities: Visual relevant edits, interactions, responsive layouts, design systems with aesthetic intent, deep UI/UX knowledge
+- **Routing rule:** Delegate design/UX decisions to @designer; delegate implementation execution to @frontend-developer
+- **Delegate when:** User-facing interfaces needing direction • Responsive layouts • UX-critical components (forms, nav, dashboards) • Visual consistency systems • Animations/micro-interactions • Landing/marketing pages • Refining functional→delightful • Reviewing existing UI/UX quality • Design decisions when spec is unclear
+- **Don't delegate when:** Backend/logic with no visual • Quick prototypes where design doesn't matter yet • Large implementation-only tasks where direction is already established (use @frontend-developer instead)
+- **Rule of thumb:** Need a design/UX decision? → @designer. Need implementation of an established direction? → @frontend-developer.`,
 
-  fixer: `@fixer
-- Role: Fast execution specialist for well-defined tasks, which empowers orchestrator with parallel, speedy executions
+  'frontend-developer': `@frontend-developer
+- Role: Fast execution specialist for frontend/client-side code — implements what @designer decides
 - Permissions: Read/write files
 - Stats: 2x faster code edits, 1/2 cost of orchestrator, 0.8x quality of orchestrator
 - Tools/Constraints: Execution-focused—no research, no architectural decisions
-- **Delegate when:** For implementation work, think and triage first. If the change is non-trivial or multi-file, hand bounded execution to @fixer • Writing or updating tests • Tasks that touch test files, fixtures, mocks, or test helpers. Parallelization benefits: Task involves multiple folders and multiple files modificaiton, scoping work per folder and spawning parallel @fixers for each folder.
-- **Don't delegate when:** Needs discovery/research/decisions • Single small change (<20 lines, one file) • Unclear requirements needing iteration • Explaining to fixer > doing • Tight integration with your current work • Sequential dependencies
-- **Rule of thumb:** Explaining > doing? → yourself. Test file modifications and bounded implementation work usually go to @fixer. Bigger or lots of edits, splitting makes sense, parallelized by spawning @fixers per certain scope.`,
+- **Routing rule:** @designer owns UI/UX decisions; @frontend-developer owns client-side implementation execution
+- **Decision vs Execution precedence:**
+  1. UI/UX decisions, spec refinement, layout/interaction/polish judgment, accessibility judgment, and UI/UX review → @designer FIRST
+  2. Once direction is clear: client-side implementation and frontend tests → @frontend-developer
+- **Domain scope:** Components, client state, routing, styling, forms, browser-facing behavior, frontend tests
+- **Delegate when:** For implementation work, think and triage first. If the change is non-trivial or multi-file, hand bounded execution to @frontend-developer • Writing or updating frontend tests • Tasks that touch frontend components, styling, or client-side logic. Parallelization benefits: Task involves multiple folders and multiple files modification, scoping work per folder and spawning parallel @frontend-developers for each folder.
+- **Don't delegate when:** Needs discovery/research/decisions • Single small change (<20 lines, one file) • Unclear requirements needing iteration • Backend/server-side work (use @backend-developer) • Tight integration with your current work • Sequential dependencies • Needs a design/UX decision first (route to @designer instead)
+- **Stop short when:** UX/visual direction, interaction intent, styling direction, or UX expectations are ambiguous — do not decide autonomously; hand back to orchestrator to route through @designer first`,
+
+  'backend-developer': `@backend-developer
+- Role: Fast execution specialist for backend/server-side code
+- Permissions: Read/write files
+- Stats: 2x faster code edits, 1/2 cost of orchestrator, 0.8x quality of orchestrator
+- Tools/Constraints: Execution-focused—no research, no architectural decisions
+- **Domain scope:** APIs, services, DB/schema/migrations, auth/permissions, jobs, CLI/server code, backend tests
+- **Delegate when:** For implementation work, think and triage first. If the change is non-trivial or multi-file, hand bounded execution to @backend-developer • Writing or updating backend tests • Tasks that touch APIs, databases, or server-side logic. Parallelization benefits: Task involves multiple folders and multiple files modification, scoping work per folder and spawning parallel @backend-developers for each folder.
+- **Don't delegate when:** Needs discovery/research/decisions • Single small change (<20 lines, one file) • Unclear requirements needing iteration • Frontend/client-side work (use @frontend-developer) • Tight integration with your current work • Sequential dependencies
+- **Rule of thumb:** Server/data code? → @backend-developer. Client/UI code? → @frontend-developer. Explaining > doing? → yourself.`,
 
   council: `@council
 - Role: Multi-LLM consensus engine that runs several councillors, synthesizes their views, and returns a structured council report.
@@ -96,7 +112,8 @@ const AGENT_DESCRIPTIONS: Record<string, string> = {
 const VALIDATION_ROUTING = [
   '- Route UI/UX validation and review to @designer',
   '- Route code review, simplification, maintainability review, and YAGNI checks to @oracle',
-  '- Route test writing, test updates, and changes touching test files to @fixer',
+  '- Route frontend implementation (components, styling, forms, client logic) to @frontend-developer',
+  '- Route backend implementation (APIs, services, DB, auth, jobs) to @backend-developer',
   '- Route visual/media analysis and interpretation to @observer',
   '- If a request spans multiple lanes, delegate only the lanes that add clear value',
 ];
@@ -105,7 +122,7 @@ const VALIDATION_ROUTING = [
 const PARALLEL_DELEGATION_EXAMPLES = [
   '- Multiple @explorer searches across different domains?',
   '- @explorer + @librarian research in parallel?',
-  '- Multiple @fixer instances for faster, scoped implementation?',
+  '- Multiple @frontend-developer or @backend-developer instances for faster, scoped implementation?',
   '- @observer + @explorer in parallel (visual analysis + code search)?',
 ];
 
@@ -123,7 +140,7 @@ export function buildOrchestratorPrompt(disabledAgents?: Set<string>): string {
 
   // Filter validation routing lines — remove lines mentioning any disabled agent
   const enabledValidationRouting = VALIDATION_ROUTING.filter((line) => {
-    const mentions = [...line.matchAll(/@(\w+)/g)].map((m) => m[1]);
+    const mentions = [...line.matchAll(/@([a-zA-Z0-9_-]+)/g)].map((m) => m[1]);
     if (mentions.length === 0) return true;
     return mentions.every((name) => !disabledAgents?.has(name));
   }).join('\n');
@@ -131,7 +148,9 @@ export function buildOrchestratorPrompt(disabledAgents?: Set<string>): string {
   // Filter parallel delegation examples — remove lines mentioning any disabled agent
   const enabledParallelExamples = PARALLEL_DELEGATION_EXAMPLES.filter(
     (line) => {
-      const mentions = [...line.matchAll(/@(\w+)/g)].map((m) => m[1]);
+      const mentions = [...line.matchAll(/@([a-zA-Z0-9_-]+)/g)].map(
+        (m) => m[1],
+      );
       if (mentions.length === 0) return true;
       return mentions.every((name) => !disabledAgents?.has(name));
     },
@@ -199,7 +218,7 @@ ${enabledValidationRouting}
 ## 6. Verify
 - Run relevant checks/diagnostics for the change
 - Use validation routing when applicable instead of doing all review work yourself
-- If test files are involved, prefer @fixer for bounded test changes and @oracle only for test strategy or quality review
+- If test files are involved, prefer @frontend-developer or @backend-developer for bounded test changes and @oracle only for test strategy or quality review
 - Confirm specialists completed successfully
 - Verify solution meets requirements
 

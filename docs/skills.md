@@ -93,7 +93,10 @@ Control which skills each agent can use in `~/.config/opencode/oh-my-opencode-sl
       "designer": {
         "skills": ["agent-browser"]
       },
-      "fixer": {
+      "frontend-developer": {
+        "skills": []
+      },
+      "backend-developer": {
         "skills": []
       }
     }

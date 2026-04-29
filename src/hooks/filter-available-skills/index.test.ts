@@ -86,7 +86,7 @@ describe('createFilterAvailableSkillsHook', () => {
   test('shows no skills for agents configured with an empty skills list', async () => {
     const config: PluginConfig = {
       agents: {
-        fixer: {
+        'frontend-developer': {
           skills: [],
         },
       },
@@ -100,7 +100,7 @@ describe('createFilterAvailableSkillsHook', () => {
           parts: [{ type: 'text', text: availableSkillsBlock('skill1') }],
         },
         {
-          info: { role: 'user', agent: 'fixer' },
+          info: { role: 'user', agent: 'frontend-developer' },
           parts: [{ type: 'text', text: 'check skills' }],
         },
       ],

@@ -16,7 +16,7 @@ understand:
 
 - Explorer can continue investigating the same part of the codebase.
 - Oracle can keep reviewing the same architecture/debugging thread.
-- Fixer can continue a scoped implementation or test update.
+- Frontend Developer / Backend Developer can continue scoped implementation or test updates.
 - Librarian can continue the same documentation/API research.
 
 Without session management, follow-up delegations usually create fresh child
@@ -89,7 +89,8 @@ That means the generated starter config can stay clean:
     "openai": {
       "orchestrator": { "model": "openai/gpt-5.5" },
       "explorer": { "model": "openai/gpt-5.4-mini" },
-      "fixer": { "model": "openai/gpt-5.4-mini" }
+      "frontend-developer": { "model": "openai/gpt-5.4-mini" },
+      "backend-developer": { "model": "openai/gpt-5.4-mini" }
     }
   }
 }
@@ -148,7 +149,7 @@ Most users should leave the default alone.
 
 Consider changing it when:
 
-- You frequently run multiple independent Explorer/Oracle/Fixer threads in one
+- You frequently run multiple independent Explorer/Oracle/Frontend Developer/Backend Developer threads in one
   long orchestrator session.
 - You want the orchestrator prompt to stay smaller and prefer only one remembered
   thread per specialist.

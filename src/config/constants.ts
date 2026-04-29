@@ -2,6 +2,7 @@
 export const AGENT_ALIASES: Record<string, string> = {
   explore: 'explorer',
   'frontend-ui-ux-engineer': 'designer',
+  fixer: 'frontend-developer', // legacy fallback
 };
 
 export const SUBAGENT_NAMES = [
@@ -9,7 +10,8 @@ export const SUBAGENT_NAMES = [
   'librarian',
   'oracle',
   'designer',
-  'fixer',
+  'frontend-developer',
+  'backend-developer',
   'observer',
   'council',
   'councillor',
@@ -24,7 +26,8 @@ export type AgentName = (typeof ALL_AGENT_NAMES)[number];
 
 // Subagent delegation rules: which agents can spawn which subagents
 // orchestrator: can spawn all subagents (full delegation)
-// fixer: leaf node — prompt forbids delegation; use grep/glob for lookups
+// frontend-developer: leaf node — prompt forbids delegation
+// backend-developer: leaf node — prompt forbids delegation
 // designer: can spawn explorer (for research during design)
 // explorer/librarian/oracle: cannot spawn any subagents (leaf nodes)
 // Unknown agent types not listed here default to explorer-only access
@@ -35,7 +38,8 @@ export const ORCHESTRATABLE_AGENTS = [
   'librarian',
   'oracle',
   'designer',
-  'fixer',
+  'frontend-developer',
+  'backend-developer',
   'observer',
   'council',
 ] as const;
@@ -55,7 +59,8 @@ export function getOrchestratableAgents(
 
 export const SUBAGENT_DELEGATION_RULES: Record<AgentName, readonly string[]> = {
   orchestrator: ORCHESTRATABLE_AGENTS,
-  fixer: [],
+  'frontend-developer': [],
+  'backend-developer': [],
   designer: [],
   explorer: [],
   librarian: [],
@@ -73,7 +78,8 @@ export const DEFAULT_MODELS: Record<AgentName, string | undefined> = {
   librarian: 'openai/gpt-5.4-mini',
   explorer: 'openai/gpt-5.4-mini',
   designer: 'openai/gpt-5.4-mini',
-  fixer: 'openai/gpt-5.4-mini',
+  'frontend-developer': 'openai/gpt-5.4-mini',
+  'backend-developer': 'openai/gpt-5.4-mini',
   observer: 'openai/gpt-5.4-mini',
   council: 'openai/gpt-5.4-mini',
   councillor: 'openai/gpt-5.4-mini',

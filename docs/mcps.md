@@ -23,7 +23,8 @@ Built-in Model Context Protocol (MCP) servers ship with oh-my-opencode-slim and 
 | `designer` | none |
 | `oracle` | none |
 | `explorer` | none |
-| `fixer` | none |
+| `frontend-developer` | none |
+| `backend-developer` | none |
  | `councillor` | none |
 
 ---
@@ -60,7 +61,10 @@ Control which MCPs each agent can use via the `mcps` array in your preset config
       "oracle": {
         "mcps": ["*", "!websearch"]
       },
-      "fixer": {
+      "frontend-developer": {
+        "mcps": []
+      },
+      "backend-developer": {
         "mcps": []
       }
     }

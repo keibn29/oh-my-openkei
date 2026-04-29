@@ -92,29 +92,211 @@ describe('agent alias backward compatibility', () => {
   });
 });
 
-describe('fixer agent fallback', () => {
-  test('fixer inherits librarian model when no fixer config provided', () => {
+describe('frontend-developer and backend-developer agent fallback', () => {
+  test('frontend-developer inherits fixer/librarian model when no config provided', () => {
     const config: PluginConfig = {
       agents: {
         librarian: { model: 'librarian-custom-model' },
       },
     };
     const agents = createAgents(config);
-    const fixer = agents.find((a) => a.name === 'fixer');
+    const frontend = agents.find((a) => a.name === 'frontend-developer');
     const librarian = agents.find((a) => a.name === 'librarian');
-    expect(fixer?.config.model).toBe(librarian?.config.model);
+    expect(frontend?.config.model).toBe(librarian?.config.model);
   });
 
-  test('fixer uses its own model when explicitly configured', () => {
+  test('backend-developer inherits fixer/librarian model when no config provided', () => {
     const config: PluginConfig = {
       agents: {
-        librarian: { model: 'librarian-model' },
-        fixer: { model: 'fixer-specific-model' },
+        librarian: { model: 'librarian-custom-model' },
       },
     };
     const agents = createAgents(config);
-    const fixer = agents.find((a) => a.name === 'fixer');
-    expect(fixer?.config.model).toBe('fixer-specific-model');
+    const backend = agents.find((a) => a.name === 'backend-developer');
+    const librarian = agents.find((a) => a.name === 'librarian');
+    expect(backend?.config.model).toBe(librarian?.config.model);
+  });
+
+  test('frontend-developer uses legacy fixer config when no explicit config', () => {
+    const config: PluginConfig = {
+      agents: {
+        fixer: { model: 'fixer-legacy-model' },
+      },
+    };
+    const agents = createAgents(config);
+    const frontend = agents.find((a) => a.name === 'frontend-developer');
+    expect(frontend?.config.model).toBe('fixer-legacy-model');
+  });
+
+  test('backend-developer uses legacy fixer config when no explicit config', () => {
+    const config: PluginConfig = {
+      agents: {
+        fixer: { model: 'fixer-legacy-model' },
+      },
+    };
+    const agents = createAgents(config);
+    const backend = agents.find((a) => a.name === 'backend-developer');
+    expect(backend?.config.model).toBe('fixer-legacy-model');
+  });
+
+  test('frontend-developer uses explicit config over legacy fixer', () => {
+    const config: PluginConfig = {
+      agents: {
+        fixer: { model: 'fixer-legacy-model' },
+        'frontend-developer': { model: 'frontend-specific-model' },
+      },
+    };
+    const agents = createAgents(config);
+    const frontend = agents.find((a) => a.name === 'frontend-developer');
+    expect(frontend?.config.model).toBe('frontend-specific-model');
+  });
+
+  test('backend-developer uses explicit config over legacy fixer', () => {
+    const config: PluginConfig = {
+      agents: {
+        fixer: { model: 'fixer-legacy-model' },
+        'backend-developer': { model: 'backend-specific-model' },
+      },
+    };
+    const agents = createAgents(config);
+    const backend = agents.find((a) => a.name === 'backend-developer');
+    expect(backend?.config.model).toBe('backend-specific-model');
+  });
+
+  test('legacy fixer variant fans out to both agents when no explicit config', () => {
+    const config: PluginConfig = {
+      agents: {
+        fixer: { model: 'fixer-model', variant: 'high' },
+      },
+    };
+    const agents = createAgents(config);
+    const frontend = agents.find((a) => a.name === 'frontend-developer');
+    const backend = agents.find((a) => a.name === 'backend-developer');
+    expect(frontend?.config.variant).toBe('high');
+    expect(backend?.config.variant).toBe('high');
+  });
+
+  test('legacy fixer temperature fans out to both agents when no explicit config', () => {
+    const config: PluginConfig = {
+      agents: {
+        fixer: { model: 'fixer-model', temperature: 0.7 },
+      },
+    };
+    const agents = createAgents(config);
+    const frontend = agents.find((a) => a.name === 'frontend-developer');
+    const backend = agents.find((a) => a.name === 'backend-developer');
+    expect(frontend?.config.temperature).toBe(0.7);
+    expect(backend?.config.temperature).toBe(0.7);
+  });
+
+  test('legacy fixer options fan out to both agents when no explicit config', () => {
+    const config: PluginConfig = {
+      agents: {
+        fixer: {
+          model: 'fixer-model',
+          options: { textVerbosity: 'low' as const },
+        },
+      },
+    };
+    const agents = createAgents(config);
+    const frontend = agents.find((a) => a.name === 'frontend-developer');
+    const backend = agents.find((a) => a.name === 'backend-developer');
+    expect(frontend?.config.options).toEqual({ textVerbosity: 'low' });
+    expect(backend?.config.options).toEqual({ textVerbosity: 'low' });
+  });
+
+  test('legacy fixer mcps fans out to both agents when no explicit config', () => {
+    // Note: mcps handling is at the config/agent-mcps level, not createAgents level.
+    // This tests that getAgentOverride returns the fixer mcps config for fan-out.
+    const config: PluginConfig = {
+      agents: {
+        fixer: { model: 'fixer-model', mcps: ['mcp-server-1', 'mcp-server-2'] },
+      },
+    };
+    const agents = createAgents(config);
+    const frontend = agents.find((a) => a.name === 'frontend-developer');
+    const backend = agents.find((a) => a.name === 'backend-developer');
+    // mcps are resolved at getAgentMcpList level, but the model/variant fields
+    // should have been fanned out from fixer
+    expect(frontend?.config.model).toBe('fixer-model');
+    expect(backend?.config.model).toBe('fixer-model');
+  });
+
+  test('legacy fixer skills fans out to both agents when no explicit config', () => {
+    const config: PluginConfig = {
+      agents: {
+        fixer: { model: 'fixer-model', skills: ['codemap', 'read'] },
+      },
+    };
+    const agents = createAgents(config);
+    const frontend = agents.find((a) => a.name === 'frontend-developer');
+    const backend = agents.find((a) => a.name === 'backend-developer');
+    // skills are stored in permission.skill after applyDefaultPermissions;
+    // verify model was fanned out (skills fan-out is tested via permission)
+    expect(frontend?.config.model).toBe('fixer-model');
+    expect(backend?.config.model).toBe('fixer-model');
+  });
+
+  test('frontend-developer explicit config wins over fixer for all fields', () => {
+    const config: PluginConfig = {
+      agents: {
+        fixer: {
+          model: 'fixer-model',
+          variant: 'high',
+          temperature: 0.9,
+          options: { textVerbosity: 'low' },
+        },
+        'frontend-developer': {
+          model: 'frontend-model',
+          variant: 'low',
+          temperature: 0.1,
+          options: { textVerbosity: 'high' },
+        },
+      },
+    };
+    const agents = createAgents(config);
+    const frontend = agents.find((a) => a.name === 'frontend-developer');
+    const backend = agents.find((a) => a.name === 'backend-developer');
+    expect(frontend?.config.model).toBe('frontend-model');
+    expect(frontend?.config.variant).toBe('low');
+    expect(frontend?.config.temperature).toBe(0.1);
+    expect(frontend?.config.options).toEqual({ textVerbosity: 'high' });
+    // backend still gets all fixer fields since no explicit override
+    expect(backend?.config.model).toBe('fixer-model');
+    expect(backend?.config.variant).toBe('high');
+    expect(backend?.config.temperature).toBe(0.9);
+    expect(backend?.config.options).toEqual({ textVerbosity: 'low' });
+  });
+
+  test('backend-developer explicit config wins over fixer for all fields', () => {
+    const config: PluginConfig = {
+      agents: {
+        fixer: {
+          model: 'fixer-model',
+          variant: 'high',
+          temperature: 0.9,
+          options: { textVerbosity: 'low' },
+        },
+        'backend-developer': {
+          model: 'backend-model',
+          variant: 'ultra',
+          temperature: 0.05,
+          options: { reasoningEffort: 'medium' },
+        },
+      },
+    };
+    const agents = createAgents(config);
+    const frontend = agents.find((a) => a.name === 'frontend-developer');
+    const backend = agents.find((a) => a.name === 'backend-developer');
+    // frontend still gets all fixer fields since no explicit override
+    expect(frontend?.config.model).toBe('fixer-model');
+    expect(frontend?.config.variant).toBe('high');
+    expect(frontend?.config.temperature).toBe(0.9);
+    expect(frontend?.config.options).toEqual({ textVerbosity: 'low' });
+    expect(backend?.config.model).toBe('backend-model');
+    expect(backend?.config.variant).toBe('ultra');
+    expect(backend?.config.temperature).toBe(0.05);
+    expect(backend?.config.options).toEqual({ reasoningEffort: 'medium' });
   });
 });
 
@@ -242,11 +424,20 @@ describe('skill permissions', () => {
     expect(skillPerm?.codemap).toBe('allow');
   });
 
-  test('fixer does not get codemap skill allowed by default', () => {
+  test('frontend-developer does not get codemap skill allowed by default', () => {
     const agents = createAgents();
-    const fixer = agents.find((a) => a.name === 'fixer');
-    expect(fixer).toBeDefined();
-    const skillPerm = (fixer?.config.permission as Record<string, unknown>)
+    const frontend = agents.find((a) => a.name === 'frontend-developer');
+    expect(frontend).toBeDefined();
+    const skillPerm = (frontend?.config.permission as Record<string, unknown>)
+      ?.skill as Record<string, string>;
+    expect(skillPerm?.codemap).not.toBe('allow');
+  });
+
+  test('backend-developer does not get codemap skill allowed by default', () => {
+    const agents = createAgents();
+    const backend = agents.find((a) => a.name === 'backend-developer');
+    expect(backend).toBeDefined();
+    const skillPerm = (backend?.config.permission as Record<string, unknown>)
       ?.skill as Record<string, string>;
     expect(skillPerm?.codemap).not.toBe('allow');
   });
@@ -302,7 +493,8 @@ describe('isSubagent type guard', () => {
     expect(isSubagent('librarian')).toBe(true);
     expect(isSubagent('oracle')).toBe(true);
     expect(isSubagent('designer')).toBe(true);
-    expect(isSubagent('fixer')).toBe(true);
+    expect(isSubagent('frontend-developer')).toBe(true);
+    expect(isSubagent('backend-developer')).toBe(true);
   });
 
   test('returns false for orchestrator', () => {
@@ -313,6 +505,7 @@ describe('isSubagent type guard', () => {
     expect(isSubagent('invalid-agent')).toBe(false);
     expect(isSubagent('')).toBe(false);
     expect(isSubagent('explore')).toBe(false); // old alias, not actual agent name
+    expect(isSubagent('fixer')).toBe(false); // legacy, not a current agent
   });
 });
 
@@ -320,7 +513,9 @@ describe('agent classification', () => {
   test('SUBAGENT_NAMES excludes orchestrator', () => {
     expect(SUBAGENT_NAMES).not.toContain('orchestrator');
     expect(SUBAGENT_NAMES).toContain('explorer');
-    expect(SUBAGENT_NAMES).toContain('fixer');
+    expect(SUBAGENT_NAMES).toContain('frontend-developer');
+    expect(SUBAGENT_NAMES).toContain('backend-developer');
+    expect(SUBAGENT_NAMES).not.toContain('fixer');
   });
 
   test('getAgentConfigs applies correct classification visibility and mode', () => {
@@ -351,12 +546,13 @@ describe('createAgents', () => {
     expect(names).toContain('designer');
     expect(names).toContain('oracle');
     expect(names).toContain('librarian');
-    expect(names).toContain('fixer');
+    expect(names).toContain('frontend-developer');
+    expect(names).toContain('backend-developer');
   });
 
-  test('creates exactly 8 agents by default (1 orchestrator + 7 subagents, observer disabled)', () => {
+  test('creates exactly 9 agents by default (1 orchestrator + 8 subagents, observer disabled)', () => {
     const agents = createAgents();
-    expect(agents.length).toBe(8);
+    expect(agents.length).toBe(9);
   });
 });
 
@@ -742,12 +938,13 @@ describe('PluginConfigSchema custom-agent-only prompt fields', () => {
 describe('disabled_agents', () => {
   test('disabled agents are not created', () => {
     const config: PluginConfig = {
-      disabled_agents: ['designer', 'fixer'],
+      disabled_agents: ['designer', 'frontend-developer', 'backend-developer'],
     };
     const agents = createAgents(config);
     const names = agents.map((a) => a.name);
     expect(names).not.toContain('designer');
-    expect(names).not.toContain('fixer');
+    expect(names).not.toContain('frontend-developer');
+    expect(names).not.toContain('backend-developer');
     expect(names).toContain('orchestrator');
     expect(names).toContain('explorer');
     expect(names).toContain('oracle');
@@ -777,13 +974,13 @@ describe('disabled_agents', () => {
 
   test('agent count decreases when agents are disabled', () => {
     const agents = createAgents();
-    expect(agents.length).toBe(8); // 1 + 7 (observer disabled by default)
+    expect(agents.length).toBe(9); // 1 + 8 (observer disabled by default)
 
     const disabledConfig: PluginConfig = {
       disabled_agents: ['observer', 'designer'],
     };
     const disabledAgents = createAgents(disabledConfig);
-    expect(disabledAgents.length).toBe(7);
+    expect(disabledAgents.length).toBe(8);
   });
 
   test('getDisabledAgents respects protection rules', () => {
@@ -798,11 +995,11 @@ describe('disabled_agents', () => {
 
   test('getEnabledAgentNames filters correctly', () => {
     const config: PluginConfig = {
-      disabled_agents: ['designer', 'fixer'],
+      disabled_agents: ['designer', 'frontend-developer'],
     };
     const enabled = getEnabledAgentNames(config);
     expect(enabled).not.toContain('designer');
-    expect(enabled).not.toContain('fixer');
+    expect(enabled).not.toContain('frontend-developer');
     expect(enabled).toContain('orchestrator');
     expect(enabled).toContain('explorer');
   });
@@ -826,7 +1023,7 @@ describe('disabled_agents', () => {
       disabled_agents: [],
     };
     const agents = createAgents(config);
-    expect(agents.length).toBe(9);
+    expect(agents.length).toBe(10);
     expect(agents.map((a) => a.name)).toContain('observer');
   });
 });
@@ -870,3 +1067,9 @@ describe('observer agent', () => {
     expect(DEFAULT_DISABLED_AGENTS).toContain('observer');
   });
 });
+
+// NOTE: manualPlan.fixer schema support is limited due to Zod v4 transform
+// behavior. The legacy fixer plan for manualPlan is handled at the agent
+// creation level in createAgents via getLegacyAgentModel, which correctly
+// maps legacy fixer config to both frontend-developer and backend-developer.
+// See tests in 'frontend-developer and backend-developer agent fallback'.

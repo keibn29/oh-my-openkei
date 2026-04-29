@@ -73,7 +73,8 @@ The default generated configuration looks like this:
       "librarian": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": ["websearch", "context7", "grep_app"] },
       "explorer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": [] },
       "designer": { "model": "openai/gpt-5.4-mini", "variant": "medium", "skills": ["agent-browser"], "mcps": [] },
-      "fixer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": [] }
+      "frontend-developer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": [] },
+      "backend-developer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": [] }
     }
   }
 }
@@ -347,7 +348,7 @@ If any agent fails to respond, check your provider authentication and config fil
   </tr>
   <tr>
     <td colspan="2">
-      <b>Role:</b> <code>UI/UX implementation and visual excellence</code>
+      <b>Role:</b> <code>UI/UX direction, layout/interaction decisions, visual polish, and accessibility judgment</code>
     </td>
   </tr>
   <tr>
@@ -367,33 +368,74 @@ If any agent fails to respond, check your provider authentication and config fil
   </tr>
   <tr>
     <td colspan="2">
-      <b>Model Guidance:</b> Choose a model that is strong at UI/UX judgment, frontend implementation, and visual polish.
+      <b>Model Guidance:</b> Choose a model strong at UI/UX direction, layout/interaction judgment, visual polish, and design decision-making. Designer serves as the spec/decision authority; implementation work with clear direction goes to @frontend-developer.
     </td>
   </tr>
 </table>
 
 ---
 
-### 07. Fixer: The Last Builder
+### 07. Frontend Developer: The Builder of Interfaces
 
 <table>
   <tr>
     <td width="30%" align="center" valign="top">
       <img src="img/fixer.png" width="240" style="border-radius: 10px;">
-      <br><sub><i>The final step between vision and reality.</i></sub>
+      <br><sub><i>Where vision meets the screen.</i></sub>
     </td>
     <td width="70%" valign="top">
-      The Fixer is the last of a lineage of builders who once constructed the foundations of the digital world. When the age of planning and debating began, they remained - the ones who actually build. They carry the ancient knowledge of how to turn thought into thing, how to transform specification into implementation. They are the final step between vision and reality.
+      The Frontend Developer emerged from the lineage of builders who understood that the user is the true measure of software. They execute client-side implementation, styling, and visual polish per established design direction — browser automation, component logic, forms, and everything that manifests in the interface between code and human.
     </td>
   </tr>
   <tr>
     <td colspan="2">
-      <b>Role:</b> <code>Fast implementation specialist</code>
+      <b>Role:</b> <code>Client-side implementation and frontend tests — executes what @designer decides</code>
     </td>
   </tr>
   <tr>
     <td colspan="2">
-      <b>Prompt:</b> <a href="src/agents/fixer.ts"><code>fixer.ts</code></a>
+      <b>Prompt:</b> <a href="src/agents/frontend-developer.ts"><code>frontend-developer.ts</code></a>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <b>Default Model:</b> <code>openai/gpt-5.4-mini</code>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <b>Recommended Models:</b> <code>google/gemini-3.1-pro-preview</code> <code>kimi-for-coding/k2p5</code>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <b>Model Guidance:</b> Choose a model strong at client-side implementation, component architecture, and styling execution. Receives bounded frontend tasks from Orchestrator once design direction is established.
+    </td>
+  </tr>
+</table>
+
+---
+
+### 08. Backend Developer: The Builder of Foundations
+
+<table>
+  <tr>
+    <td width="30%" align="center" valign="top">
+      <img src="img/fixer.png" width="240" style="border-radius: 10px;">
+      <br><sub><i>The strength beneath the surface.</i></sub>
+    </td>
+    <td width="70%" valign="top">
+      The Backend Developer carries the ancient knowledge of how to build systems that endure. They focus on server-side logic, data layers, APIs, and the infrastructure that powers everything users never see but always rely on.
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <b>Role:</b> <code>Backend implementation specialist</code>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <b>Prompt:</b> <a href="src/agents/backend-developer.ts"><code>backend-developer.ts</code></a>
     </td>
   </tr>
   <tr>
@@ -408,7 +450,7 @@ If any agent fails to respond, check your provider authentication and config fil
   </tr>
   <tr>
     <td colspan="2">
-      <b>Model Guidance:</b> Choose a fast, reliable coding model for routine, scoped implementation work. Fixer usually receives a concrete plan or bounded instructions from Orchestrator, making it a good place for efficient execution tasks such as tests, test updates, and straightforward code changes.
+      <b>Model Guidance:</b> Choose a fast, reliable coding model for routine backend tasks. Receives bounded server-side tasks from Orchestrator such as API implementation, database work, and service logic changes.
     </td>
   </tr>
 </table>

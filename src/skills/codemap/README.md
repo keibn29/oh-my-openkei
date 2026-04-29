@@ -8,7 +8,7 @@ Codemap helps orchestrators map and understand codebases by:
 
 1. Selecting relevant code/config files using LLM judgment
 2. Creating `.slim/codemap.json` for change tracking
-3. Generating empty `codemap.md` templates for fixers to fill in
+3. Generating empty `codemap.md` templates for frontend-developer/backend-developer to fill in
 
 Legacy `.slim/cartography.json` state is migrated to `.slim/codemap.json` automatically.
 
@@ -48,7 +48,7 @@ node codemap.mjs update --root /repo
 
 ### codemap.md (per folder)
 
-Empty templates created in each folder for fixers to fill with:
+Empty templates created in each folder for frontend-developer/backend-developer to fill with:
 - Responsibility
 - Design patterns
 - Data/control flow

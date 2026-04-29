@@ -13,12 +13,12 @@ import {
   SUBAGENT_NAMES,
 } from '../config';
 import { getAgentMcpList } from '../config/agent-mcps';
-
+import { createBackendDeveloperAgent } from './backend-developer';
 import { createCouncilAgent } from './council';
 import { createCouncillorAgent } from './councillor';
 import { createDesignerAgent } from './designer';
 import { createExplorerAgent } from './explorer';
-import { createFixerAgent } from './fixer';
+import { createFrontendDeveloperAgent } from './frontend-developer';
 import { createLibrarianAgent } from './librarian';
 import { createObserverAgent } from './observer';
 import { createOracleAgent } from './oracle';
@@ -128,6 +128,32 @@ function buildCustomAgentDefinition(
   } as AgentDefinition;
 }
 
+function getLegacyAgentModel(
+  config: PluginConfig | undefined,
+  legacyName: string,
+): string | undefined {
+  const override = getAgentOverride(config, legacyName);
+  if (!override?.model) return undefined;
+  if (Array.isArray(override.model)) {
+    const first = override.model[0];
+    return typeof first === 'string' ? first : first?.id;
+  }
+  return override.model;
+}
+
+function getModelFromAgent(
+  config: PluginConfig | undefined,
+  agentName: string,
+): string | undefined {
+  const override = getAgentOverride(config, agentName);
+  if (!override?.model) return undefined;
+  if (Array.isArray(override.model)) {
+    const first = override.model[0];
+    return typeof first === 'string' ? first : first?.id;
+  }
+  return override.model;
+}
+
 function injectDisplayNames(
   orchestrator: AgentDefinition,
   nameMap: Map<string, string>,
@@ -202,7 +228,8 @@ const SUBAGENT_FACTORIES: Record<SubagentName, AgentFactory> = {
   librarian: createLibrarianAgent,
   oracle: createOracleAgent,
   designer: createDesignerAgent,
-  fixer: createFixerAgent,
+  'frontend-developer': createFrontendDeveloperAgent,
+  'backend-developer': createBackendDeveloperAgent,
   observer: createObserverAgent,
   council: createCouncilAgent,
   councillor: createCouncillorAgent,
@@ -220,18 +247,19 @@ const SUBAGENT_FACTORIES: Record<SubagentName, AgentFactory> = {
 export function createAgents(config?: PluginConfig): AgentDefinition[] {
   const disabled = getDisabledAgents(config);
 
-  // TEMP: If fixer has no config, inherit from librarian's model to avoid breaking
-  // existing users who don't have fixer in their config yet
+  // If frontend-developer or backend-developer has no explicit model config,
+  // inherit from librarian's model to avoid breaking existing users who don't
+  // have them in config yet. Also falls back to legacy 'fixer' agent config
+  // (pre-split era) for backward compatibility.
   const getModelForAgent = (name: SubagentName): string => {
-    if (name === 'fixer' && !getAgentOverride(config, 'fixer')?.model) {
-      const librarianOverride = getAgentOverride(config, 'librarian')?.model;
-      let librarianModel: string | undefined;
-      if (Array.isArray(librarianOverride)) {
-        const first = librarianOverride[0];
-        librarianModel = typeof first === 'string' ? first : first?.id;
-      } else {
-        librarianModel = librarianOverride;
-      }
+    if (
+      (name === 'frontend-developer' || name === 'backend-developer') &&
+      !getAgentOverride(config, name)?.model
+    ) {
+      // Try legacy fixer config first, then librarian
+      const legacyFixerModel = getLegacyAgentModel(config, 'fixer');
+      if (legacyFixerModel) return legacyFixerModel;
+      const librarianModel = getModelFromAgent(config, 'librarian');
       return librarianModel ?? (DEFAULT_MODELS.librarian as string);
     }
     // Subagents always have a defined default model; cast is safe here

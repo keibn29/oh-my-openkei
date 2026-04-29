@@ -34,7 +34,7 @@ Responsibilities:
    - merge `temperature`, `variant`, `options`, `displayName`.
 7. Apply permission defaults per agent (`applyDefaultPermissions`).
 8. Apply compatibility fallbacks:
-   - `fixer` may inherit `librarian` model when not explicitly configured.
+   - `frontend-developer` / `backend-developer` may inherit `librarian` model when not explicitly configured.
    - `council` may inherit deprecated `council.master.model` when no explicit
      `council` override and default remains unresolved.
 9. Build orchestrator using prompt files + disabled-agent filtering.
@@ -104,5 +104,5 @@ src/index.ts
 - `index.ts` (agent registry, overrides, classification, custom agents)
 - `orchestrator.ts` (base prompts, prompt resolution, model-array type)
 - `council.ts`, `councillor.ts` (council tool orchestration + formatting)
-- `explorer.ts`, `librarian.ts`, `oracle.ts`, `designer.ts`, `fixer.ts`,
+- `explorer.ts`, `librarian.ts`, `oracle.ts`, `designer.ts`, `frontend-developer.ts`, `backend-developer.ts`,
   `observer.ts` (specialist factory prompts/config)

@@ -171,8 +171,8 @@ describe('deriveTaskSessionLabel', () => {
 
     expect(
       deriveTaskSessionLabel({
-        agentType: 'fixer',
+        agentType: 'frontend-developer',
       }),
-    ).toBe('recent fixer task');
+    ).toBe('recent frontend-developer task');
   });
 });

@@ -14,7 +14,14 @@ export const MODEL_MAPPINGS = {
     librarian: { model: 'openai/gpt-5.4-mini', variant: 'low' },
     explorer: { model: 'openai/gpt-5.4-mini', variant: 'low' },
     designer: { model: 'openai/gpt-5.4-mini', variant: 'medium' },
-    fixer: { model: 'openai/gpt-5.4-mini', variant: 'low' },
+    'frontend-developer': {
+      model: 'openai/gpt-5.4-mini',
+      variant: 'low',
+    },
+    'backend-developer': {
+      model: 'openai/gpt-5.4-mini',
+      variant: 'low',
+    },
   },
   kimi: {
     orchestrator: { model: 'kimi-for-coding/k2p5' },
@@ -22,7 +29,14 @@ export const MODEL_MAPPINGS = {
     librarian: { model: 'kimi-for-coding/k2p5', variant: 'low' },
     explorer: { model: 'kimi-for-coding/k2p5', variant: 'low' },
     designer: { model: 'kimi-for-coding/k2p5', variant: 'medium' },
-    fixer: { model: 'kimi-for-coding/k2p5', variant: 'low' },
+    'frontend-developer': {
+      model: 'kimi-for-coding/k2p5',
+      variant: 'low',
+    },
+    'backend-developer': {
+      model: 'kimi-for-coding/k2p5',
+      variant: 'low',
+    },
   },
   copilot: {
     orchestrator: { model: 'github-copilot/claude-opus-4.6' },
@@ -33,7 +47,14 @@ export const MODEL_MAPPINGS = {
       model: 'github-copilot/gemini-3.1-pro-preview',
       variant: 'medium',
     },
-    fixer: { model: 'github-copilot/claude-sonnet-4.6', variant: 'low' },
+    'frontend-developer': {
+      model: 'github-copilot/claude-sonnet-4.6',
+      variant: 'low',
+    },
+    'backend-developer': {
+      model: 'github-copilot/claude-sonnet-4.6',
+      variant: 'low',
+    },
   },
   'zai-plan': {
     orchestrator: { model: 'zai-coding-plan/glm-5' },
@@ -41,7 +62,14 @@ export const MODEL_MAPPINGS = {
     librarian: { model: 'zai-coding-plan/glm-5', variant: 'low' },
     explorer: { model: 'zai-coding-plan/glm-5', variant: 'low' },
     designer: { model: 'zai-coding-plan/glm-5', variant: 'medium' },
-    fixer: { model: 'zai-coding-plan/glm-5', variant: 'low' },
+    'frontend-developer': {
+      model: 'zai-coding-plan/glm-5',
+      variant: 'low',
+    },
+    'backend-developer': {
+      model: 'zai-coding-plan/glm-5',
+      variant: 'low',
+    },
   },
 } as const;
 
