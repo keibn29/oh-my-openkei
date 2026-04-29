@@ -75,16 +75,61 @@ The default generated configuration:
   "preset": "default",
   "presets": {
     "default": {
-      "orchestrator": { "model": "openai/gpt-5.4-fast", "variant": "xhigh", "skills": ["*"], "mcps": ["*", "!context7"] },
-      "planner": { "model": "openai/gpt-5.5-fast", "variant": "xhigh", "skills": ["*"], "mcps": ["*", "!context7"] },
-      "sprinter": { "model": "openai/gpt-5.3-codex", "variant": "low", "skills": ["*"], "mcps": ["*", "!context7"] },
-      "oracle": { "model": "openai/gpt-5.5-fast", "variant": "high", "skills": ["simplify"], "mcps": [] },
-      "council": { "model": "openai/gpt-5.4-fast", "variant": "xhigh", "skills": [], "mcps": [] },
-      "librarian": { "model": "minimax-coding-plan/MiniMax-M2.7", "skills": [], "mcps": ["websearch", "context7", "grep_app"] },
-      "explorer": { "model": "minimax-coding-plan/MiniMax-M2.7", "skills": [], "mcps": ["serena"] },
-      "designer": { "model": "opencode-go/kimi-k2.6", "skills": ["agent-browser"], "mcps": ["figma"] },
-      "frontend-developer": { "model": "opencode-go/deepseek-v4-flash", "skills": ["vercel-react-best-practices", "karpathy-guidelines"], "mcps": [] },
-      "backend-developer": { "model": "opencode-go/deepseek-v4-flash", "skills": ["backend-developer", "karpathy-guidelines"], "mcps": [] }
+      "orchestrator": {
+        "model": "openai/gpt-5.4-fast",
+        "variant": "xhigh",
+        "skills": ["*"],
+        "mcps": ["*", "!context7"]
+      },
+      "planner": {
+        "model": "openai/gpt-5.5-fast",
+        "variant": "xhigh",
+        "skills": ["*"],
+        "mcps": ["*", "!context7"]
+      },
+      "sprinter": {
+        "model": "openai/gpt-5.3-codex",
+        "variant": "low",
+        "skills": ["*"],
+        "mcps": ["*", "!context7"]
+      },
+      "oracle": {
+        "model": "openai/gpt-5.5-fast",
+        "variant": "high",
+        "skills": ["simplify"],
+        "mcps": []
+      },
+      "council": {
+        "model": "openai/gpt-5.4-fast",
+        "variant": "xhigh",
+        "skills": [],
+        "mcps": []
+      },
+      "librarian": {
+        "model": "minimax-coding-plan/MiniMax-M2.7",
+        "skills": [],
+        "mcps": ["websearch", "context7", "grep_app"]
+      },
+      "explorer": {
+        "model": "minimax-coding-plan/MiniMax-M2.7",
+        "skills": [],
+        "mcps": ["serena"]
+      },
+      "designer": {
+        "model": "opencode-go/kimi-k2.6",
+        "skills": ["agent-browser"],
+        "mcps": ["figma"]
+      },
+      "frontend-developer": {
+        "model": "opencode-go/deepseek-v4-flash",
+        "skills": ["vercel-react-best-practices", "karpathy-guidelines"],
+        "mcps": []
+      },
+      "backend-developer": {
+        "model": "opencode-go/deepseek-v4-flash",
+        "skills": ["backend-developer", "karpathy-guidelines"],
+        "mcps": []
+      }
     }
   }
 }
@@ -148,15 +193,15 @@ If any agent fails to respond, check your provider authentication and config fil
 
 **Role:** Delegation-first coordinator  
 **Prompt:** [orchestrator.ts](src/agents/orchestrator.ts)  
-**Default Model:** `openai/gpt-5.4-fast` (`xhigh`) 
+**Default Model:** `openai/gpt-5.4-fast` (`xhigh`)  
 **Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.7`  
 **Model Guidance:** Choose your strongest coordination model. Orchestrator should excel at routing, delegation discipline, judgment, and reliable instruction-following; direct implementation ability is still useful, but mainly as a fallback when no suitable subagent exists.
 
 #### Planner
 
 **Role:** Interview-first planner that asks clarifying questions and returns structured `<planner-plan>` output  
-**Prompt:** [planner.ts](src/agents/planner.ts)
-**Default Model:** `openai/gpt-5.5-fast` (`xhigh`)
+**Prompt:** [planner.ts](src/agents/planner.ts)  
+**Default Model:** `openai/gpt-5.5-fast` (`xhigh`)  
 **Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.7`  
 **Model Guidance:** Choose your strongest all-around coding model. Planner drives planning and delegation, so it needs excellent judgment, structured thinking, and reliable instruction-following. Implementation ability is not required.
 
@@ -174,6 +219,14 @@ If any agent fails to respond, check your provider authentication and config fil
 
 The following agents are delegated to by the primary agents based on task type.
 
+#### Oracle
+
+**Role:** Strategic advisor, code reviewer and debugger of last resort  
+**Prompt:** [oracle.ts](src/agents/oracle.ts)  
+**Default Model:** `openai/gpt-5.5-fast` (`high`)  
+**Recommended Models:** `openai/gpt-5.5` (high), `google/gemini-3.1-pro-preview` (high)  
+**Model Guidance:** Choose your strongest high-reasoning model for architecture, hard debugging, trade-offs, and code review.
+
 #### Explorer
 
 **Role:** Codebase reconnaissance  
@@ -190,14 +243,6 @@ The following agents are delegated to by the primary agents based on task type.
 **Recommended Models:** `cerebras/zai-glm-4.7`, `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
 **Model Guidance:** Choose a fast, low-cost model. Librarian handles research and documentation lookups, so speed and efficiency usually matter more than using your strongest reasoning model.
 
-#### Oracle
-
-**Role:** Strategic advisor and debugger of last resort  
-**Prompt:** [oracle.ts](src/agents/oracle.ts)  
-**Default Model:** `openai/gpt-5.5-fast` (`high`)  
-**Recommended Models:** `openai/gpt-5.5` (high), `google/gemini-3.1-pro-preview` (high)  
-**Model Guidance:** Choose your strongest high-reasoning model for architecture, hard debugging, trade-offs, and code review.
-
 #### Designer
 
 **Role:** UI/UX direction, layout/interaction decisions, visual polish, and accessibility judgment  
@@ -210,7 +255,7 @@ The following agents are delegated to by the primary agents based on task type.
 
 **Role:** Client-side implementation and frontend tests — executes what @designer decides  
 **Prompt:** [frontend-developer.ts](src/agents/frontend-developer.ts)  
-**Default Model:** `opencode-go/deepseek-v4-flash` (`high`)
+**Default Model:** `opencode-go/deepseek-v4-flash` (`high`)  
 **Recommended Models:** `google/gemini-3.1-pro-preview`, `kimi-for-coding/k2p5`  
 **Model Guidance:** Choose a model strong at client-side implementation, component architecture, and styling execution. Receives bounded frontend tasks from Orchestrator once design direction is established.
 
@@ -218,14 +263,13 @@ The following agents are delegated to by the primary agents based on task type.
 
 **Role:** Backend implementation specialist  
 **Prompt:** [backend-developer.ts](src/agents/backend-developer.ts)  
-**Default Model:** `opencode-go/deepseek-v4-flash` (`high`)
+**Default Model:** `opencode-go/deepseek-v4-flash` (`high`)  
 **Recommended Models:** `cerebras/zai-glm-4.7`, `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
 **Model Guidance:** Choose a fast, reliable coding model for routine backend tasks. Receives bounded server-side tasks from Orchestrator such as API implementation, database work, and service logic changes.
 
 #### Council
 
-> [!NOTE]
-> **Why doesn't Orchestrator auto-call Council more often?** This is intentional. Council runs multiple models at once, so automatic delegation is kept strict because it is usually the highest-cost path in the system. In practice, Council is meant to be used manually when you want it, for example: `@council compare these two architectures`.
+> [!NOTE] > **Why doesn't Orchestrator auto-call Council more often?** This is intentional. Council runs multiple models at once, so automatic delegation is kept strict because it is usually the highest-cost path in the system. In practice, Council is meant to be used manually when you want it, for example: `@council compare these two architectures`.
 
 **Role:** Multi-LLM consensus and synthesis  
 **Prompt:** [council.ts](src/agents/council.ts)  
@@ -236,8 +280,7 @@ The following agents are delegated to by the primary agents based on task type.
 
 #### Observer
 
-> [!NOTE]
-> **Why a separate agent?** If your Orchestrator model is not multimodal, enable Observer to handle images, screenshots, PDFs, and other visual files. Observer is disabled by default and gives the Orchestrator a dedicated multimodal reader without forcing you to change your main reasoning model. Set `disabled_agents: []` and an `observer` model in your configuration.
+> [!NOTE] > **Why a separate agent?** If your Orchestrator model is not multimodal, enable Observer to handle images, screenshots, PDFs, and other visual files. Observer is disabled by default and gives the Orchestrator a dedicated multimodal reader without forcing you to change your main reasoning model. Set `disabled_agents: []` and an `observer` model in your configuration.
 
 **Role:** Read-only visual analysis — interprets images, screenshots, PDFs, and diagrams. Returns structured observations to the orchestrator without loading raw file bytes into the main context window.
 
@@ -259,32 +302,32 @@ Use this section as a map: start with installation, then jump to features, confi
 
 ### 🚀 Start Here
 
-| Doc | What it covers |
-|-----|----------------|
+| Doc                                            | What it covers                                                          |
+| ---------------------------------------------- | ----------------------------------------------------------------------- |
 | **[Installation Guide](docs/installation.md)** | Install the plugin, use CLI flags, reset config, and troubleshoot setup |
 | **[Quick Reference](docs/quick-reference.md)** | Jump table for install, configuration, skills, MCPs, tools, and presets |
 
 ### ✨ Features & Workflows
 
-| Doc | What it covers |
-|-----|----------------|
-| **[Council](docs/council.md)** | Run multiple models in parallel and synthesize a single answer with `@council` |
-| **[Session Management](docs/session-management.md)** | Reuse recent child-agent sessions with short aliases instead of starting over |
-| **[Codemap](docs/codemap.md)** | Generate hierarchical codemaps to understand large codebases faster |
+| Doc                                                  | What it covers                                                                 |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **[Council](docs/council.md)**                       | Run multiple models in parallel and synthesize a single answer with `@council` |
+| **[Session Management](docs/session-management.md)** | Reuse recent child-agent sessions with short aliases instead of starting over  |
+| **[Codemap](docs/codemap.md)**                       | Generate hierarchical codemaps to understand large codebases faster            |
 
 ### ⚙️ Config & Reference
 
-| Doc | What it covers |
-|-----|----------------|
-| **[Configuration](docs/configuration.md)** | Config file locations, JSONC support, prompt overrides, and full option reference |
-| **[Skills](docs/skills.md)** | Built-in and recommended skills such as `simplify`, `agent-browser`, and `codemap` |
-| **[MCPs](docs/mcps.md)** | `websearch`, `context7`, `grep_app`, `figma`, `serena`, and how MCP permissions work per agent |
-| **[Tools](docs/tools.md)** | Built-in tool capabilities like `webfetch`, LSP tools, code search, and formatters |
+| Doc                                        | What it covers                                                                                 |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
+| **[Configuration](docs/configuration.md)** | Config file locations, JSONC support, prompt overrides, and full option reference              |
+| **[Skills](docs/skills.md)**               | Built-in and recommended skills such as `simplify`, `agent-browser`, and `codemap`             |
+| **[MCPs](docs/mcps.md)**                   | `websearch`, `context7`, `grep_app`, `figma`, `serena`, and how MCP permissions work per agent |
+| **[Tools](docs/tools.md)**                 | Built-in tool capabilities like `webfetch`, LSP tools, code search, and formatters             |
 
 ### 💡 Example Presets
 
-| Doc | What it covers |
-|-----|----------------|
+| Doc                                             | What it covers                                     |
+| ----------------------------------------------- | -------------------------------------------------- |
 | **[$30 Preset](docs/thirty-dollars-preset.md)** | A budget mixed-provider setup for around $30/month |
 
 ---
