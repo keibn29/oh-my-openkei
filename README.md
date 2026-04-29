@@ -148,16 +148,16 @@ If any agent fails to respond, check your provider authentication and config fil
 
 **Role:** Delegation-first coordinator  
 **Prompt:** [orchestrator.ts](src/agents/orchestrator.ts)  
-**Default Model:** `openai/gpt-5.5`  
-**Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.6`  
+**Default Model:** `openai/gpt-5.4-fast` (`xhigh`) 
+**Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.7`  
 **Model Guidance:** Choose your strongest coordination model. Orchestrator should excel at routing, delegation discipline, judgment, and reliable instruction-following; direct implementation ability is still useful, but mainly as a fallback when no suitable subagent exists.
 
 #### Planner
 
 **Role:** Interview-first planner that asks clarifying questions and returns structured `<planner-plan>` output  
 **Prompt:** [planner.ts](src/agents/planner.ts)
-**Default Model:** `openai/gpt-5.5`  
-**Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.6`  
+**Default Model:** `openai/gpt-5.5-fast` (`xhigh`)
+**Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.7`  
 **Model Guidance:** Choose your strongest all-around coding model. Planner drives planning and delegation, so it needs excellent judgment, structured thinking, and reliable instruction-following. Implementation ability is not required.
 
 #### Sprinter
@@ -178,7 +178,7 @@ The following agents are delegated to by the primary agents based on task type.
 
 **Role:** Codebase reconnaissance  
 **Prompt:** [explorer.ts](src/agents/explorer.ts)  
-**Default Model:** `openai/gpt-5.4-mini`  
+**Default Model:** `minimax-coding-plan/MiniMax-M2.7`  
 **Recommended Models:** `cerebras/zai-glm-4.7`, `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
 **Model Guidance:** Choose a fast, low-cost model. Explorer handles broad scouting work, so speed and efficiency usually matter more than using your strongest reasoning model.
 
@@ -186,7 +186,7 @@ The following agents are delegated to by the primary agents based on task type.
 
 **Role:** External knowledge retrieval  
 **Prompt:** [librarian.ts](src/agents/librarian.ts)  
-**Default Model:** `openai/gpt-5.4-mini`  
+**Default Model:** `minimax-coding-plan/MiniMax-M2.7`  
 **Recommended Models:** `cerebras/zai-glm-4.7`, `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
 **Model Guidance:** Choose a fast, low-cost model. Librarian handles research and documentation lookups, so speed and efficiency usually matter more than using your strongest reasoning model.
 
@@ -194,13 +194,33 @@ The following agents are delegated to by the primary agents based on task type.
 
 **Role:** Strategic advisor and debugger of last resort  
 **Prompt:** [oracle.ts](src/agents/oracle.ts)  
-**Default Model:** `openai/gpt-5.5` (high)  
+**Default Model:** `openai/gpt-5.5-fast` (`high`)  
 **Recommended Models:** `openai/gpt-5.5` (high), `google/gemini-3.1-pro-preview` (high)  
 **Model Guidance:** Choose your strongest high-reasoning model for architecture, hard debugging, trade-offs, and code review.
 
----
+#### Designer
 
-### Supporting Agents
+**Role:** UI/UX direction, layout/interaction decisions, visual polish, and accessibility judgment  
+**Prompt:** [designer.ts](src/agents/designer.ts)  
+**Default Model:** `opencode-go/kimi-k2.6`  
+**Recommended Models:** `google/gemini-3.1-pro-preview`, `kimi-for-coding/k2p5`  
+**Model Guidance:** Choose a model strong at UI/UX direction, layout/interaction judgment, visual polish, and design decision-making. Designer serves as the spec/decision authority; implementation work with clear direction goes to `@frontend-developer`.
+
+#### Frontend Developer
+
+**Role:** Client-side implementation and frontend tests — executes what @designer decides  
+**Prompt:** [frontend-developer.ts](src/agents/frontend-developer.ts)  
+**Default Model:** `opencode-go/deepseek-v4-flash` (`high`)
+**Recommended Models:** `google/gemini-3.1-pro-preview`, `kimi-for-coding/k2p5`  
+**Model Guidance:** Choose a model strong at client-side implementation, component architecture, and styling execution. Receives bounded frontend tasks from Orchestrator once design direction is established.
+
+#### Backend Developer
+
+**Role:** Backend implementation specialist  
+**Prompt:** [backend-developer.ts](src/agents/backend-developer.ts)  
+**Default Model:** `opencode-go/deepseek-v4-flash` (`high`)
+**Recommended Models:** `cerebras/zai-glm-4.7`, `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
+**Model Guidance:** Choose a fast, reliable coding model for routine backend tasks. Receives bounded server-side tasks from Orchestrator such as API implementation, database work, and service logic changes.
 
 #### Council
 
@@ -213,30 +233,6 @@ The following agents are delegated to by the primary agents based on task type.
 **Default Setup:** Config-driven — councillors come from `council.presets` and the Council agent model comes from your normal `council` agent config  
 **Recommended Setup:** Strong Council model + diverse councillors across providers  
 **Model Guidance:** Use a strong synthesis model for the Council agent and diverse models as councillors. The value of Council comes from comparing different model perspectives, not just picking the single strongest model everywhere.
-
-#### Designer
-
-**Role:** UI/UX direction, layout/interaction decisions, visual polish, and accessibility judgment  
-**Prompt:** [designer.ts](src/agents/designer.ts)  
-**Default Model:** `openai/gpt-5.4-mini`  
-**Recommended Models:** `google/gemini-3.1-pro-preview`, `kimi-for-coding/k2p5`  
-**Model Guidance:** Choose a model strong at UI/UX direction, layout/interaction judgment, visual polish, and design decision-making. Designer serves as the spec/decision authority; implementation work with clear direction goes to `@frontend-developer`.
-
-#### Frontend Developer
-
-**Role:** Client-side implementation and frontend tests — executes what @designer decides  
-**Prompt:** [frontend-developer.ts](src/agents/frontend-developer.ts)  
-**Default Model:** `openai/gpt-5.4-mini`  
-**Recommended Models:** `google/gemini-3.1-pro-preview`, `kimi-for-coding/k2p5`  
-**Model Guidance:** Choose a model strong at client-side implementation, component architecture, and styling execution. Receives bounded frontend tasks from Orchestrator once design direction is established.
-
-#### Backend Developer
-
-**Role:** Backend implementation specialist  
-**Prompt:** [backend-developer.ts](src/agents/backend-developer.ts)  
-**Default Model:** `openai/gpt-5.4-mini`  
-**Recommended Models:** `cerebras/zai-glm-4.7`, `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
-**Model Guidance:** Choose a fast, reliable coding model for routine backend tasks. Receives bounded server-side tasks from Orchestrator such as API implementation, database work, and service logic changes.
 
 #### Observer
 
