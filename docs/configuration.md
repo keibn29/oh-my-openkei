@@ -1,6 +1,6 @@
 # Configuration Reference
 
-Complete reference for all configuration files and options in oh-my-opencode-slim.
+Complete reference for all configuration files and options in oh-my-openkei.
 
 ---
 
@@ -9,9 +9,9 @@ Complete reference for all configuration files and options in oh-my-opencode-sli
 | File | Purpose |
 |------|---------|
 | `~/.config/opencode/opencode.json` | OpenCode core settings (plugin registration, providers) |
-| `~/.config/opencode/oh-my-opencode-slim.json` | Plugin settings — agents, MCPs, council |
-| `~/.config/opencode/oh-my-opencode-slim.jsonc` | Same, but with JSONC (comments + trailing commas). Takes precedence over `.json` if both exist |
-| `.opencode/oh-my-opencode-slim.json` | Project-local overrides (optional, checked first) |
+| `~/.config/opencode/oh-my-openkei.json` | Plugin settings — agents, MCPs, council |
+| `~/.config/opencode/oh-my-openkei.jsonc` | Same, but with JSONC (comments + trailing commas). Takes precedence over `.json` if both exist |
+| `.opencode/oh-my-openkei.json` | Project-local overrides (optional, checked first) |
 
 > **💡 JSONC recommended:** Use the `.jsonc` extension to add comments and trailing commas. If both `.jsonc` and `.json` exist, `.jsonc` takes precedence.
 
@@ -19,19 +19,19 @@ Complete reference for all configuration files and options in oh-my-opencode-sli
 
 ## Prompt Overriding
 
-Customize agent prompts without modifying source code. Create markdown files in `~/.config/opencode/oh-my-opencode-slim/`:
+Customize agent prompts without modifying source code. Create markdown files in `~/.config/opencode/oh-my-openkei/`:
 
 | File | Effect |
 |------|--------|
 | `{agent}.md` | Replaces the agent's default prompt entirely |
 | `{agent}_append.md` | Appends custom instructions to the default prompt |
 
-When a `preset` is active, the plugin checks `~/.config/opencode/oh-my-opencode-slim/{preset}/` first, then falls back to the root directory.
+When a `preset` is active, the plugin checks `~/.config/opencode/oh-my-openkei/{preset}/` first, then falls back to the root directory.
 
 **Example directory structure:**
 
 ```
-~/.config/opencode/oh-my-opencode-slim/
+~/.config/opencode/oh-my-openkei/
   ├── best/
   │   ├── orchestrator.md        # Preset-specific override (used when preset=best)
   │   └── explorer_append.md
@@ -91,7 +91,7 @@ All config files support **JSONC** (JSON with Comments):
 | `agents.<customAgent>.prompt` | string | — | Full execution prompt for a custom agent |
 | `agents.<customAgent>.orchestratorPrompt` | string | — | Exact `@agent` block injected into the orchestrator prompt; must start with `@<agent-name>` |
 | `agents.<agent>.displayName` | string | — | Custom user-facing alias for the agent in the active config |
-| `showStartupToast` | boolean | `true` | Show the startup activation toast (`oh-my-opencode-slim is active`) when OpenCode starts |
+| `showStartupToast` | boolean | `true` | Show the startup activation toast (`oh-my-openkei is active`) when OpenCode starts |
 | `autoUpdate` | boolean | `true` | Automatically install plugin updates in the background; set to `false` for notification-only mode |
 | `sessionManager.maxSessionsPerAgent` | integer | `2` | Maximum remembered resumable child sessions per specialist type in the current orchestrator session (1–10). See [Session Management](session-management.md) |
 | `sessionManager.readContextMinLines` | integer | `10` | Minimum number of lines read from a file before it appears in resumable-session context (0–1000) |
@@ -146,7 +146,7 @@ see that a new version is available, but the plugin won't install it
 automatically.
 
 > Pinned plugin entries in `opencode.json` (for example
-> `"oh-my-opencode-slim@1.0.1"`) are the true version lock. Those stay pinned
+> `"oh-my-openkei@1.0.1"`) are the true version lock. Those stay pinned
 > regardless of `autoUpdate`.
 
 ### Session Management

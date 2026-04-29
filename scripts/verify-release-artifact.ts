@@ -17,8 +17,8 @@ const repoRoot = path.resolve(__dirname, '..');
 const distDir = path.join(repoRoot, 'dist');
 
 const suspiciousPathPatterns = [
-  /\/Users\/[^\s'"`]+(?:node_modules|oh-my-opencode-slim)[^\s'"`]*/,
-  /\/home\/[^\s'"`]+(?:node_modules|oh-my-opencode-slim)[^\s'"`]*/,
+  /\/Users\/[^\s'"`]+(?:node_modules|oh-my-openkei)[^\s'"`]*/,
+  /\/home\/[^\s'"`]+(?:node_modules|oh-my-openkei)[^\s'"`]*/,
 ];
 
 const packagedRequiredFiles = [
@@ -28,7 +28,7 @@ const packagedRequiredFiles = [
   'dist/index.js',
   'dist/index.d.ts',
   'dist/cli/index.js',
-  'oh-my-opencode-slim.schema.json',
+  'oh-my-openkei.schema.json',
   'src/skills/simplify/SKILL.md',
   'src/skills/codemap/SKILL.md',
 ];
@@ -149,7 +149,7 @@ function verifyFreshInstall(tarballPath: string) {
     const installedEntry = path.join(
       installDir,
       'node_modules',
-      'oh-my-opencode-slim',
+      'oh-my-openkei',
       'dist',
       'index.js',
     );
@@ -164,7 +164,7 @@ function verifyFreshInstall(tarballPath: string) {
     }
 
     const smokeScript = [
-      "import pkg from 'oh-my-opencode-slim';",
+      "import pkg from 'oh-my-openkei';",
       "if (typeof pkg !== 'function') throw new Error('default export is not a function');",
       "console.log('package loads');",
       'process.exit(0);',

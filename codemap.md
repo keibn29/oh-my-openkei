@@ -1,8 +1,8 @@
-# Repository Atlas: oh-my-opencode-slim
+# Repository Atlas: oh-my-openkei
 
 ## Project Responsibility
 
-`oh-my-opencode-slim` is an OpenCode plugin that adds a specialist-agent operating model on top of the host runtime. Its core job is to:
+`oh-my-openkei` is an OpenCode plugin that adds a specialist-agent operating model on top of the host runtime. Its core job is to:
 
 - define orchestrator and specialist agents,
 - load layered plugin configuration and per-agent permissions,
@@ -21,7 +21,7 @@ This codemap intentionally covers the plugin repository itself and excludes the 
 | `src/index.ts` | Main plugin bootstrap: wires agents, tools, MCPs, hooks, council/session managers, task-session tracking, and config merge behavior. |
 | `src/cli/index.ts` | CLI entrypoint for installation/bootstrap workflows. |
 | `src/config/schema.ts` | Source-of-truth runtime config schema used by validation and schema generation. |
-| `scripts/generate-schema.ts` | Generates `oh-my-opencode-slim.schema.json` from the Zod config schema. |
+| `scripts/generate-schema.ts` | Generates `oh-my-openkei.schema.json` from the Zod config schema. |
 
 ## Repository Directory Map
 

@@ -47,7 +47,7 @@ export function createAutoUpdateCheckerHook(
           if (showStartupToast) {
             showToast(
               ctx,
-              `OMO-Slim ${displayVersion} (dev)`,
+              `OpenKEI ${displayVersion} (dev)`,
               'Running in local development mode.',
               'info',
             );
@@ -59,8 +59,8 @@ export function createAutoUpdateCheckerHook(
         if (showStartupToast) {
           showToast(
             ctx,
-            `OMO-Slim ${displayVersion ?? 'unknown'}`,
-            'oh-my-opencode-slim is active.',
+            `OpenKEI ${displayVersion ?? 'unknown'}`,
+            'oh-my-openkei is active.',
             'info',
           );
         }
@@ -120,7 +120,7 @@ async function runBackgroundUpdateCheck(
   if (pluginInfo.isPinned) {
     showToast(
       ctx,
-      `OMO-Slim ${latestVersion}`,
+      `OpenKEI ${latestVersion}`,
       `v${latestVersion} available.\nVersion is pinned. Update your plugin config to apply.`,
       'info',
       8000,
@@ -132,7 +132,7 @@ async function runBackgroundUpdateCheck(
   if (!autoUpdate) {
     showToast(
       ctx,
-      `OMO-Slim ${latestVersion}`,
+      `OpenKEI ${latestVersion}`,
       `v${latestVersion} available. Auto-update is disabled.`,
       'info',
       8000,
@@ -145,7 +145,7 @@ async function runBackgroundUpdateCheck(
   if (!installDir) {
     showToast(
       ctx,
-      `OMO-Slim ${latestVersion}`,
+      `OpenKEI ${latestVersion}`,
       `v${latestVersion} available. Auto-update could not prepare the active install.`,
       'info',
       8000,
@@ -159,7 +159,7 @@ async function runBackgroundUpdateCheck(
   if (installSuccess) {
     showToast(
       ctx,
-      'OMO-Slim Updated!',
+      'OpenKEI Updated!',
       `v${currentVersion} → v${latestVersion}\nRestart OpenCode to apply.`,
       'success',
       8000,
@@ -170,7 +170,7 @@ async function runBackgroundUpdateCheck(
   } else {
     showToast(
       ctx,
-      `OMO-Slim ${latestVersion}`,
+      `OpenKEI ${latestVersion}`,
       `v${latestVersion} available, but auto-update failed to install it. Check logs or retry manually.`,
       'error',
       8000,

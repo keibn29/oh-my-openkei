@@ -2,7 +2,7 @@
 
 Skills are specialized capabilities you can assign to agents. Unlike MCPs (which are running servers), skills are **prompt-based tool configurations** — instructions injected into an agent's system prompt that describe how to use a particular tool.
 
-Skills are installed via the `oh-my-opencode-slim` installer or manually with `npx skills add`.
+Skills are installed via the `oh-my-openkei` installer or manually with `npx skills add`.
 
 ---
 
@@ -63,7 +63,7 @@ See **[Codemap Skill](codemap.md)** for full documentation including manual comm
 
 ## Skills Assignment
 
-Control which skills each agent can use in `~/.config/opencode/oh-my-opencode-slim.json` (or `.jsonc`):
+Control which skills each agent can use in `~/.config/opencode/oh-my-openkei.json` (or `.jsonc`):
 
 | Syntax | Meaning |
 |--------|---------|

@@ -44,14 +44,14 @@ async function appLog(
 ): Promise<void> {
   try {
     await ctx.client.app.log({
-      body: { service: 'oh-my-opencode-slim', level, message },
+      body: { service: 'oh-my-openkei', level, message },
     });
   } catch {
     // client.app.log may deadlock or be unavailable; stderr is the
     // fallback
     const prefix =
       level === 'error' ? 'ERROR' : level === 'warn' ? 'WARN' : 'INFO';
-    console.error(`[oh-my-opencode-slim] ${prefix}: ${message}`);
+    console.error(`[oh-my-openkei] ${prefix}: ${message}`);
   }
 }
 
@@ -77,7 +77,7 @@ async function probeJSDOM(): Promise<string | null> {
   }
 }
 
-const OhMyOpenCodeLite: Plugin = async (ctx) => {
+const OhMyOpenKei: Plugin = async (ctx) => {
   const sessionId = new Date().toISOString().replace(/[-:]/g, '').slice(0, 15);
   initLogger(sessionId);
 
@@ -251,7 +251,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
     await appLog(
       ctx,
       'error',
-      `INIT FAILED: ${String(err)}. Report at github.com/alvinunreal/oh-my-opencode-slim/issues/310`,
+      `INIT FAILED: ${String(err)}. Report at github.com/keibn29/oh-my-openkei/issues/310`,
     );
     throw err;
   }
@@ -277,7 +277,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
       `  mcps:   ${mcpCount} (expected >=${mcpThreshold})`,
       'This usually means a dependency failed to resolve (jsdom, etc).',
       'If you recently updated opencode, see:',
-      '  github.com/alvinunreal/oh-my-opencode-slim/issues/310',
+      '  github.com/keibn29/oh-my-openkei/issues/310',
     ].join('\n');
     log(`[plugin] WARN: ${msg}`);
     await appLog(ctx, 'warn', msg);
@@ -301,7 +301,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
   });
 
   return {
-    name: 'oh-my-opencode-slim',
+    name: 'oh-my-openkei',
 
     agent: agents,
 
@@ -785,7 +785,7 @@ const OhMyOpenCodeLite: Plugin = async (ctx) => {
   };
 };
 
-export default OhMyOpenCodeLite;
+export default OhMyOpenKei;
 
 export type {
   AgentName,

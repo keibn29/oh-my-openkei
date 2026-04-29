@@ -4,7 +4,7 @@ import { RECOMMENDED_SKILLS } from './skills';
 import type { InstallConfig } from './types';
 
 const SCHEMA_URL =
-  'https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json';
+  'https://unpkg.com/oh-my-openkei@latest/oh-my-openkei.schema.json';
 
 // Model mappings by provider - only 4 supported providers
 export const MODEL_MAPPINGS = {

@@ -21,7 +21,7 @@ import type {
   OpenCodeConfig,
 } from './types';
 
-const PACKAGE_NAME = 'oh-my-opencode-slim';
+const PACKAGE_NAME = 'oh-my-openkei';
 
 function isString(value: unknown): value is string {
   return typeof value === 'string';
@@ -220,7 +220,7 @@ export async function addPluginToOpenCodeConfig(): Promise<ConfigMergeResult> {
 
     const pluginEntry = getPluginEntry();
 
-    // Remove existing oh-my-opencode-slim entries
+    // Remove existing oh-my-openkei entries
     const filteredPlugins = plugins.filter(
       (plugin) => !isString(plugin) || !isPluginEntry(plugin),
     );

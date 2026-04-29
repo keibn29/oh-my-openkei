@@ -18,7 +18,7 @@ describe('providers', () => {
     });
 
     expect(config.$schema).toBe(
-      'https://unpkg.com/oh-my-opencode-slim@latest/oh-my-opencode-slim.schema.json',
+      'https://unpkg.com/oh-my-openkei@latest/oh-my-openkei.schema.json',
     );
     expect(config.preset).toBe('openai');
     const agents = (config.presets as any).openai;

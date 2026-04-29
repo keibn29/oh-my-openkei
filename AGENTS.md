@@ -4,7 +4,7 @@ This document provides guidelines for AI agents operating in this repository.
 
 ## Project Overview
 
-**oh-my-opencode-slim** - A lightweight agent orchestration plugin for OpenCode, a slimmed-down fork of oh-my-opencode. Built with TypeScript, Bun, and Biome.
+**oh-my-openkei** - A lightweight agent orchestration plugin for OpenCode, a slimmed-down fork of oh-my-opencode. Built with TypeScript, Bun, and Biome.
 
 ## Commands
 
@@ -63,7 +63,7 @@ bun test -t "test-name-pattern"
 ## Project Structure
 
 ```
-oh-my-opencode-slim/
+oh-my-openkei/
 ├── src/
 │   ├── agents/       # Agent factories (orchestrator, explorer, oracle, etc.)
 │   ├── cli/          # CLI entry point

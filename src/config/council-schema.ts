@@ -169,7 +169,7 @@ export const CouncilConfigSchema = z
 
     // Backward compat: extract master.model so the council agent can use it
     // as a fallback when no explicit council entry exists in the active preset.
-    // See https://github.com/alvinunreal/oh-my-opencode-slim/issues/369
+    // See https://github.com/keibn29/oh-my-openkei/issues/369
     const legacyMasterModel: string | undefined =
       typeof data.master === 'object' &&
       data.master !== null &&

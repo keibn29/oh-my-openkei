@@ -1,6 +1,6 @@
 # MCP Servers
 
-Built-in Model Context Protocol (MCP) servers ship with oh-my-opencode-slim and give agents access to external tools — web search, library documentation, and code search.
+Built-in Model Context Protocol (MCP) servers ship with oh-my-openkei and give agents access to external tools — web search, library documentation, and code search.
 
 ---
 
@@ -31,7 +31,7 @@ Built-in Model Context Protocol (MCP) servers ship with oh-my-opencode-slim and 
 
 ## Configuring MCP Access
 
-Control which MCPs each agent can use via the `mcps` array in your preset config (`~/.config/opencode/oh-my-opencode-slim.json` or `.jsonc`):
+Control which MCPs each agent can use via the `mcps` array in your preset config (`~/.config/opencode/oh-my-openkei.json` or `.jsonc`):
 
 | Syntax | Meaning |
 |--------|---------|

@@ -2,7 +2,7 @@
 
 ## Responsibility
 
-- Provide a startup hook that detects plugin update availability for `oh-my-opencode-slim`, reports status through TUI toasts, and optionally performs a cache-safe `bun install` refresh.
+- Provide a startup hook that detects plugin update availability for `oh-my-openkei`, reports status through TUI toasts, and optionally performs a cache-safe `bun install` refresh.
 - Handle local dev mode and pinned plugin versions distinctly (`file://`, pinned tags, and `latest` channel semantics).
 
 ## Design

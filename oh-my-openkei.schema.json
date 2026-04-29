@@ -625,6 +625,6 @@
       ]
     }
   },
-  "title": "oh-my-opencode-slim",
-  "description": "Configuration schema for oh-my-opencode-slim plugin for OpenCode"
+  "title": "oh-my-openkei",
+  "description": "Configuration schema for oh-my-openkei plugin for OpenCode"
 }

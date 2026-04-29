@@ -28,9 +28,9 @@ function parseArgs(args: string[]): InstallArgs {
 
 function printHelp(): void {
   console.log(`
-oh-my-opencode-slim installer
+oh-my-openkei installer
 
-Usage: bunx oh-my-opencode-slim install [OPTIONS]
+Usage: bunx oh-my-openkei install [OPTIONS]
 
 Options:
   --skills=yes|no        Install recommended and bundled skills (default: yes)
@@ -43,9 +43,9 @@ The installer generates an OpenAI configuration by default.
 For the full config reference, see docs/configuration.md.
 
 Examples:
-  bunx oh-my-opencode-slim install
-  bunx oh-my-opencode-slim install --no-tui --skills=yes
-  bunx oh-my-opencode-slim install --reset
+  bunx oh-my-openkei install
+  bunx oh-my-openkei install --no-tui --skills=yes
+  bunx oh-my-openkei install --reset
 `);
 }
 

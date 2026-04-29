@@ -64,7 +64,7 @@ CLI install command
 
 ## Runtime integration
 
-- Output file produced by install (`oh-my-opencode-slim.json`) is consumed by runtime `config/loader.ts`.
+- Output file produced by install (`oh-my-openkei.json`) is consumed by runtime `config/loader.ts`.
 - Permission defaults for installed/available skills are shared with `agents/index.ts` via `cli/skills.ts`.
 - Generated provider settings are consumed by OpenCode session runtime via `src/index.ts` bootstrap.
 

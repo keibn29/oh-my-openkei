@@ -2,7 +2,7 @@
   "metadata": {
     "version": "1.0.0",
     "last_run": "2026-04-23T20:44:47.448Z",
-    "root": "/Users/alvin/repos/oh-my-opencode-slim",
+    "root": "/Users/kei/Projects/oh-my-openkei",
     "include_patterns": [
       "src/**/*.ts",
       "src/**/*.d.ts",

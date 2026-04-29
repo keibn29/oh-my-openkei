@@ -131,7 +131,7 @@ describe('auto-update-checker/index', () => {
 
     expect(showToast).toHaveBeenCalledWith({
       body: {
-        title: 'OMO-Slim 0.9.11-dev (dev)',
+        title: 'OpenKEI 0.9.11-dev (dev)',
         message: 'Running in local development mode.',
         variant: 'info',
         duration: 3000,
@@ -171,7 +171,7 @@ describe('auto-update-checker/index', () => {
 
     expect(cacheMocks.preparePackageUpdate).toHaveBeenCalledWith(
       '0.9.11',
-      'oh-my-opencode-slim',
+      'oh-my-openkei',
     );
     expect(crossSpawnMock).toHaveBeenCalledWith(
       ['bun', 'install'],
@@ -179,7 +179,7 @@ describe('auto-update-checker/index', () => {
     );
     expect(showToast).toHaveBeenCalledWith({
       body: {
-        title: 'OMO-Slim Updated!',
+        title: 'OpenKEI Updated!',
         message: 'v0.9.1 → v0.9.11\nRestart OpenCode to apply.',
         variant: 'success',
         duration: 8000,
@@ -209,7 +209,7 @@ describe('auto-update-checker/index', () => {
 
     expect(showToast).toHaveBeenCalledWith({
       body: {
-        title: 'OMO-Slim 0.9.11',
+        title: 'OpenKEI 0.9.11',
         message: 'v0.9.11 available. Auto-update is disabled.',
         variant: 'info',
         duration: 8000,
@@ -242,7 +242,7 @@ describe('auto-update-checker/index', () => {
     expect(crossSpawnMock).not.toHaveBeenCalled();
     expect(showToast).toHaveBeenCalledWith({
       body: {
-        title: 'OMO-Slim 0.9.11',
+        title: 'OpenKEI 0.9.11',
         message:
           'v0.9.11 available. Auto-update could not prepare the active install.',
         variant: 'info',
@@ -285,7 +285,7 @@ describe('auto-update-checker/index', () => {
     );
     expect(showToast).toHaveBeenCalledWith({
       body: {
-        title: 'OMO-Slim 0.9.11',
+        title: 'OpenKEI 0.9.11',
         message:
           'v0.9.11 available, but auto-update failed to install it. Check logs or retry manually.',
         variant: 'error',

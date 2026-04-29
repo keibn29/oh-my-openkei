@@ -56,4 +56,4 @@ Empty templates created in each folder for frontend-developer/backend-developer 
 
 ## Installation
 
-Installed automatically via oh-my-opencode-slim installer when custom skills are enabled.
+Installed automatically via oh-my-openkei installer when custom skills are enabled.
