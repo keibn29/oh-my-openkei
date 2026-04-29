@@ -19,8 +19,13 @@ export const SUBAGENT_NAMES = [
 
 export const ORCHESTRATOR_NAME = 'orchestrator' as const;
 export const PLANNER_NAME = 'planner' as const;
+export const SPRINTER_NAME = 'sprinter' as const;
 
-export const PRIMARY_AGENT_NAMES = [ORCHESTRATOR_NAME, PLANNER_NAME] as const;
+export const PRIMARY_AGENT_NAMES = [
+  ORCHESTRATOR_NAME,
+  PLANNER_NAME,
+  SPRINTER_NAME,
+] as const;
 
 /**
  * Planner's allowed delegate subagents (planning-only agent).
@@ -37,6 +42,7 @@ export const PLANNER_DELEGATE_SET = [
 export const ALL_AGENT_NAMES = [
   ORCHESTRATOR_NAME,
   PLANNER_NAME,
+  SPRINTER_NAME,
   ...SUBAGENT_NAMES,
 ] as const;
 
@@ -79,6 +85,7 @@ export function getOrchestratableAgents(
 export const SUBAGENT_DELEGATION_RULES: Record<AgentName, readonly string[]> = {
   orchestrator: ORCHESTRATABLE_AGENTS,
   planner: PLANNER_DELEGATE_SET, // restricted set
+  sprinter: [], // self-executing, no delegation by default
   'frontend-developer': [],
   'backend-developer': [],
   designer: [],
@@ -93,9 +100,11 @@ export const SUBAGENT_DELEGATION_RULES: Record<AgentName, readonly string[]> = {
 // Default models for each agent
 // orchestrator: undefined — resolved at runtime via _modelArray or user config
 // planner: uses same strong model class as orchestrator (runtime-safe default)
+// sprinter: openai/gpt-5.3-codex with low variant for fast Q&A and direct execution
 export const DEFAULT_MODELS: Record<AgentName, string | undefined> = {
   orchestrator: undefined,
   planner: 'openai/gpt-5.5', // strong planning model, runtime-safe default
+  sprinter: 'openai/gpt-5.3-codex',
   oracle: 'openai/gpt-5.5',
   librarian: 'openai/gpt-5.4-mini',
   explorer: 'openai/gpt-5.4-mini',

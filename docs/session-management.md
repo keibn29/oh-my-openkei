@@ -1,6 +1,7 @@
 # Session Management
 
-Session management lets the primary agents (Orchestrator and Planner) keep track
+Session management lets the primary agents (Orchestrator, Planner, and Sprinter)
+keep track
 of recent delegated child sessions so follow-up work can continue in the right
 specialist context instead of starting from scratch every time.
 
@@ -62,7 +63,7 @@ plugin drops the stale entry and falls back to a new session automatically.
 
 Session management is intentionally narrow:
 
-- It only applies to primary-agent-managed `task` delegations (Orchestrator or Planner).
+- It only applies to primary-agent-managed `task` delegations (Orchestrator, Planner, or Sprinter).
 - It is scoped to the current parent orchestrator session.
 - It is in-memory only and disappears when OpenCode/plugin state restarts.
 - It does not change manual `@agent` calls.
@@ -84,14 +85,15 @@ That means the generated starter config can stay clean:
 
 ```jsonc
 {
-  "preset": "openai",
+  "preset": "default",
   "presets": {
-    "openai": {
-      "orchestrator": { "model": "openai/gpt-5.5" },
-      "planner": { "model": "openai/gpt-5.5" },
-      "explorer": { "model": "openai/gpt-5.4-mini" },
-      "frontend-developer": { "model": "openai/gpt-5.4-mini" },
-      "backend-developer": { "model": "openai/gpt-5.4-mini" }
+    "default": {
+      "orchestrator": { "model": "openai/gpt-5.4-fast", "variant": "xhigh" },
+      "planner": { "model": "openai/gpt-5.5-fast", "variant": "xhigh" },
+      "sprinter": { "model": "openai/gpt-5.3-codex", "variant": "low" },
+      "explorer": { "model": "minimax-coding-plan/MiniMax-M2.7" },
+      "frontend-developer": { "model": "opencode-go/deepseek-v4-flash" },
+      "backend-developer": { "model": "opencode-go/deepseek-v4-flash" }
     }
   }
 }

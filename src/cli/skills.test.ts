@@ -7,6 +7,11 @@ describe('skills permissions', () => {
     expect(permissions['*']).toBe('allow');
   });
 
+  it('should allow all skills for sprinter by default', () => {
+    const permissions = getSkillPermissionsForAgent('sprinter');
+    expect(permissions['*']).toBe('allow');
+  });
+
   it('should deny all skills for other agents by default', () => {
     const permissions = getSkillPermissionsForAgent('designer');
     expect(permissions['*']).toBe('deny');

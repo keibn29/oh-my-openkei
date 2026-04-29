@@ -32,7 +32,7 @@ bunx oh-my-openkei@latest install
 
 ### Getting Started
 
-The installer generates a mixed-provider preset by default, using `openai/gpt-5.4-fast` (xhigh) and `openai/gpt-5.5-fast` (xhigh/high) for primary/oracle agents, `minimax-coding-plan/MiniMax-M2.7` for librarian/explorer, and `opencode-go/kimi-k2.6` / `opencode-go/deepseek-v4-flash` for specialist agents.
+The installer generates a mixed-provider preset by default, using `openai/gpt-5.4-fast` / `openai/gpt-5.5-fast` for Orchestrator and Planner, `openai/gpt-5.3-codex` (`low`) for Sprinter, `minimax-coding-plan/MiniMax-M2.7` for librarian/explorer, and `opencode-go/kimi-k2.6` / `opencode-go/deepseek-v4-flash` for specialist agents.
 
 1. **Log in to providers**:
    ```bash
@@ -58,6 +58,7 @@ The default generated configuration:
     "default": {
       "orchestrator": { "model": "openai/gpt-5.4-fast", "variant": "xhigh", "skills": ["*"], "mcps": ["*", "!context7"] },
       "planner": { "model": "openai/gpt-5.5-fast", "variant": "xhigh", "skills": ["*"], "mcps": ["*", "!context7"] },
+      "sprinter": { "model": "openai/gpt-5.3-codex", "variant": "low", "skills": ["*"], "mcps": ["*", "!context7"] },
       "oracle": { "model": "openai/gpt-5.5-fast", "variant": "high", "skills": ["simplify"], "mcps": [] },
       "council": { "model": "openai/gpt-5.4-fast", "variant": "xhigh", "skills": [], "mcps": [] },
       "librarian": { "model": "minimax-coding-plan/MiniMax-M2.7", "skills": [], "mcps": ["websearch", "context7", "grep_app"] },
@@ -104,15 +105,16 @@ If any agent fails to respond, check your provider authentication and config fil
 
 ### Primary Agents
 
-**Orchestrator** and **Planner** are the primary agents — each is a distinct reasoning and coordination layer. You choose which one to use based on your workflow. All other agents are subagents delegated to by the primary.
+**Orchestrator**, **Planner**, and **Sprinter** are the primary agents. You choose which one to use based on your workflow. All other agents are subagents delegated to by the primary when needed.
 
 - **Orchestrator** (default): Delegation-first coordinator. Handles intake, planning, routing, and result integration. Falls back to direct work only when no suitable subagent exists.
-- **Planner**: Interview-first planning specialist. Gathers requirements through structured questioning, produces plans wrapped in planner-plan tags, and delegates research/clarification to subagents. Does not implement code itself. Best for ambiguous or high-stakes work where careful upfront planning pays off.
+- **Planner**: Mandatory-interview planning specialist. Always asks at least one clarifying question before producing any plan, gathers requirements through structured questioning, produces plans wrapped in `<planner-plan>` tags (or saves to a file when requested), and delegates research/clarification to subagents. Does not implement code itself. If the user specifies a plan structure, Planner follows it; otherwise it uses the default (Summary, Key Changes, Public Interfaces, Test Plan, Assumptions). Best for ambiguous or high-stakes work where careful upfront planning pays off.
+- **Sprinter**: Fast self-executing primary agent. Optimized for quick Q&A, light coding tasks, and direct execution with minimal thinking overhead. Does not delegate to subagents — handles everything directly itself.
 
 #### Interaction Flow
 
 ```
-User / OpenCode → Primary Agent (Orchestrator or Planner)
+User / OpenCode → Primary Agent (Orchestrator, Planner, or Sprinter)
                         │
       ┌─────────────────┼─────────────────┐
       ▼                 ▼                 ▼
@@ -143,11 +145,19 @@ On-demand (not auto-delegated): Council · Observer
 
 #### Planner
 
-**Role:** Interview-first planning specialist — gathers requirements, produces planner-plan wrapped plans, delegates research, does not implement
+**Role:** Mandatory-interview planning specialist — always asks at least one clarifying question before producing any plan, gathers requirements through structured questioning, produces `<planner-plan>` wrapped plans (or saves to a file when requested), follows user-specified structure or defaults to Summary/Key Changes/Public Interfaces/Test Plan/Assumptions, delegates research, does not implement
 **Prompt:** [planner.ts](src/agents/planner.ts)
 **Default Model:** `openai/gpt-5.5`  
 **Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.6`  
 **Model Guidance:** Choose your strongest all-around coding model. Planner drives planning and delegation, so it needs excellent judgment, structured thinking, and reliable instruction-following. Implementation ability is not required.
+
+#### Sprinter
+
+**Role:** Fast self-executing primary agent for quick Q&A and direct task execution  
+**Prompt:** [sprinter.ts](src/agents/sprinter.ts)  
+**Default Model:** `openai/gpt-5.3-codex` (`low`)  
+**Recommended Models:** `openai/gpt-5.3-codex`, `github-copilot/grok-code-fast-1`, `kimi-for-coding/k2p5`  
+**Model Guidance:** Choose a fast, low-latency model. Sprinter handles everything directly and does not delegate — use it when you want direct answers and quick execution rather than heavy planning or delegation.
 
 ---
 

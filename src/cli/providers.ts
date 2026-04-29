@@ -11,6 +11,7 @@ export const MODEL_MAPPINGS = {
   openai: {
     orchestrator: { model: 'openai/gpt-5.4-fast', variant: 'xhigh' },
     planner: { model: 'openai/gpt-5.5-fast', variant: 'xhigh' },
+    sprinter: { model: 'openai/gpt-5.3-codex', variant: 'low' },
     oracle: { model: 'openai/gpt-5.5-fast', variant: 'high' },
     council: { model: 'openai/gpt-5.4-fast', variant: 'xhigh' },
     librarian: { model: 'minimax-coding-plan/MiniMax-M2.7' },
@@ -22,6 +23,7 @@ export const MODEL_MAPPINGS = {
   kimi: {
     orchestrator: { model: 'kimi-for-coding/k2p5' },
     planner: { model: 'kimi-for-coding/k2p5' },
+    sprinter: { model: 'kimi-for-coding/k2p5', variant: 'low' },
     oracle: { model: 'kimi-for-coding/k2p5', variant: 'high' },
     librarian: { model: 'kimi-for-coding/k2p5', variant: 'low' },
     explorer: { model: 'kimi-for-coding/k2p5', variant: 'low' },
@@ -38,6 +40,7 @@ export const MODEL_MAPPINGS = {
   copilot: {
     orchestrator: { model: 'github-copilot/claude-opus-4.6' },
     planner: { model: 'github-copilot/claude-opus-4.6' },
+    sprinter: { model: 'github-copilot/grok-code-fast-1', variant: 'low' },
     oracle: { model: 'github-copilot/claude-opus-4.6', variant: 'high' },
     librarian: { model: 'github-copilot/grok-code-fast-1', variant: 'low' },
     explorer: { model: 'github-copilot/grok-code-fast-1', variant: 'low' },
@@ -57,6 +60,7 @@ export const MODEL_MAPPINGS = {
   'zai-plan': {
     orchestrator: { model: 'zai-coding-plan/glm-5' },
     planner: { model: 'zai-coding-plan/glm-5' },
+    sprinter: { model: 'zai-coding-plan/glm-5', variant: 'low' },
     oracle: { model: 'zai-coding-plan/glm-5', variant: 'high' },
     librarian: { model: 'zai-coding-plan/glm-5', variant: 'low' },
     explorer: { model: 'zai-coding-plan/glm-5', variant: 'low' },
@@ -86,7 +90,9 @@ export function generateLiteConfig(
     modelInfo: { model: string; variant?: string },
   ) => {
     const isPrimaryAgent =
-      agentName === 'orchestrator' || agentName === 'planner';
+      agentName === 'orchestrator' ||
+      agentName === 'planner' ||
+      agentName === 'sprinter';
 
     const skills = isPrimaryAgent
       ? ['*']

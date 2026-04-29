@@ -2,6 +2,7 @@ import type { Plugin } from '@opencode-ai/plugin';
 import { createAgents, getAgentConfigs, getDisabledAgents } from './agents';
 import { buildOrchestratorPrompt } from './agents/orchestrator';
 import { buildPlannerPrompt } from './agents/planner';
+import { buildSprinterPrompt } from './agents/sprinter';
 import { loadPluginConfig } from './config';
 import { parseList } from './config/agent-mcps';
 import { CouncilManager } from './council';
@@ -245,7 +246,11 @@ const OhMyOpenKei: Plugin = async (ctx) => {
       readContextMaxFiles: config.sessionManager?.readContextMaxFiles ?? 8,
       shouldManageSession: (sessionID) => {
         const agent = sessionAgentMap.get(sessionID);
-        return agent === 'orchestrator' || agent === 'planner';
+        return (
+          agent === 'orchestrator' ||
+          agent === 'planner' ||
+          agent === 'sprinter'
+        );
       },
     });
 
@@ -666,8 +671,12 @@ const OhMyOpenKei: Plugin = async (ctx) => {
         ? sessionAgentMap.get(input.sessionID)
         : undefined;
 
-      // Inject system prompt for primary agents (orchestrator and planner)
-      if (agentName === 'orchestrator' || agentName === 'planner') {
+      // Inject system prompt for primary agents (orchestrator, planner, sprinter)
+      if (
+        agentName === 'orchestrator' ||
+        agentName === 'planner' ||
+        agentName === 'sprinter'
+      ) {
         // Use a deterministic marker to detect prior injection instead of
         // content heuristics. This works even if custom prompts fully
         // replace the built-in text.
@@ -687,8 +696,10 @@ const OhMyOpenKei: Plugin = async (ctx) => {
             agentPrompt = agentDef.config.prompt;
           } else if (agentName === 'orchestrator') {
             agentPrompt = buildOrchestratorPrompt(disabledAgents);
-          } else {
+          } else if (agentName === 'planner') {
             agentPrompt = buildPlannerPrompt(disabledAgents);
+          } else {
+            agentPrompt = buildSprinterPrompt(disabledAgents);
           }
           output.system[0] =
             `${agentPrompt}\n\n${injectionMarker}\n\n` +

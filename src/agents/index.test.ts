@@ -441,7 +441,7 @@ describe('planner agent', () => {
     expect(planner?.config.model).toBeUndefined();
   });
 
-  test('planner prompt wraps final plan in planner-plan tags', () => {
+  test('planner prompt describes conditional plan output behavior', () => {
     const agents = createAgents();
     const planner = agents.find((a) => a.name === 'planner');
     const prompt = planner?.config.prompt as string;
@@ -449,18 +449,126 @@ describe('planner agent', () => {
     // Check the instruction mentions wrapping plans with the XML-like tag pair
     // (use words to avoid HTML being parsed in toContain assertion)
     expect(prompt).toContain('planner-plan');
-    expect(prompt).toContain(
-      'Place ONLY the plan content inside the tags',
-    );
+    expect(prompt).toContain('Place ONLY the plan content inside the tags');
     expect(prompt).toContain(
       'Any preamble, greetings, or follow-up notes should stay OUTSIDE the tags',
+    );
+    // Default structure applies only when user does not specify one
+    expect(prompt).toContain(
+      'If the user does NOT specify a structure, use this default',
     );
     expect(prompt).toContain('1. Summary');
     expect(prompt).toContain('2. Key Changes');
     expect(prompt).toContain('3. Public Interfaces');
     expect(prompt).toContain('4. Test Plan');
     expect(prompt).toContain('5. Assumptions');
+    // File-save behavior: concise confirmation, no full plan in chat
+    expect(prompt).toContain(
+      'Do NOT repeat the full plan in the chat message when saving to a file',
+    );
+    expect(prompt).toContain('Do NOT wrap the confirmation message in');
+    expect(prompt).toContain('planner-plan');
     expect(prompt).not.toContain('[[PLANNER_PLAN_V1]]');
+  });
+
+  test('planner prompt enforces mandatory interview for every plan', () => {
+    const agents = createAgents();
+    const planner = agents.find((a) => a.name === 'planner');
+    const prompt = planner?.config.prompt as string;
+
+    // Interview is mandatory, not optional
+    expect(prompt).toContain('MUST ask at least one clarifying question');
+    expect(prompt).toContain(
+      'Every plan request — no matter how simple it seems — requires at least one interview exchange',
+    );
+    expect(prompt).toContain(
+      'A final plan must never be produced in the same response as the user\'s initial request',
+    );
+    // Workflow step 3 reflects the mandatory nature
+    expect(prompt).toContain('Conduct Interview (Required');
+    expect(prompt).toContain(
+      'Do not produce a final plan in the same response as the user\'s initial request',
+    );
+    // Exploration does not replace interviewing
+    expect(prompt).toContain(
+      'Exploration does NOT replace the mandatory interview step',
+    );
+  });
+});
+
+describe('sprinter agent', () => {
+  test('sprinter is created and in agents array', () => {
+    const agents = createAgents();
+    const sprinter = agents.find((a) => a.name === 'sprinter');
+    expect(sprinter).toBeDefined();
+  });
+
+  test('sprinter has question permission set to allow', () => {
+    const agents = createAgents();
+    const sprinter = agents.find((a) => a.name === 'sprinter');
+    expect(sprinter?.config.permission).toBeDefined();
+    expect((sprinter?.config.permission as any).question).toBe('allow');
+  });
+
+  test('sprinter is denied access to council_session', () => {
+    const agents = createAgents();
+    const sprinter = agents.find((a) => a.name === 'sprinter');
+    expect((sprinter?.config.permission as any).council_session).toBe('deny');
+  });
+
+  test('sprinter gets wildcard skill permission by default', () => {
+    const agents = createAgents();
+    const sprinter = agents.find((a) => a.name === 'sprinter');
+    const skillPerm = (sprinter?.config.permission as Record<string, unknown>)
+      ?.skill as Record<string, string>;
+    expect(skillPerm?.['*']).toBe('allow');
+  });
+
+  test('sprinter accepts overrides', () => {
+    const config: PluginConfig = {
+      agents: {
+        sprinter: { model: 'custom-sprinter-model', temperature: 0.3 },
+      },
+    };
+    const agents = createAgents(config);
+    const sprinter = agents.find((a) => a.name === 'sprinter');
+    expect(sprinter?.config.model).toBe('custom-sprinter-model');
+    expect(sprinter?.config.temperature).toBe(0.3);
+  });
+
+  test('sprinter stores model array with per-model variants in _modelArray', () => {
+    const config: PluginConfig = {
+      agents: {
+        sprinter: {
+          model: [
+            { id: 'google/gemini-3-flash', variant: 'low' },
+            'openai/gpt-4o-mini',
+          ],
+        },
+      },
+    };
+    const agents = createAgents(config);
+    const sprinter = agents.find((a) => a.name === 'sprinter');
+    expect(sprinter?._modelArray).toEqual([
+      { id: 'google/gemini-3-flash', variant: 'low' },
+      { id: 'openai/gpt-4o-mini' },
+    ]);
+    expect(sprinter?.config.model).toBeUndefined();
+  });
+
+  test('sprinter prompt emphasizes self-execution over delegation', () => {
+    const agents = createAgents();
+    const sprinter = agents.find((a) => a.name === 'sprinter');
+    const prompt = sprinter?.config.prompt as string;
+
+    expect(prompt).toContain('self-executing');
+    expect(prompt).toContain('Do not act as a coordinator');
+  });
+
+  test('sprinter defaults to low variant', () => {
+    const agents = createAgents();
+    const sprinter = agents.find((a) => a.name === 'sprinter');
+    expect(sprinter?.config.variant).toBe('low');
   });
 });
 
@@ -688,8 +796,9 @@ describe('isSubagent type guard', () => {
 });
 
 describe('agent classification', () => {
-  test('SUBAGENT_NAMES excludes orchestrator', () => {
+  test('SUBAGENT_NAMES excludes orchestrator and sprinter', () => {
     expect(SUBAGENT_NAMES).not.toContain('orchestrator');
+    expect(SUBAGENT_NAMES).not.toContain('sprinter');
     expect(SUBAGENT_NAMES).toContain('explorer');
     expect(SUBAGENT_NAMES).toContain('frontend-developer');
     expect(SUBAGENT_NAMES).toContain('backend-developer');
@@ -703,6 +812,7 @@ describe('agent classification', () => {
     // Primary agents
     expect(configs.orchestrator.mode).toBe('primary');
     expect(configs.planner.mode).toBe('primary');
+    expect(configs.sprinter.mode).toBe('primary');
 
     // Subagents
     for (const name of SUBAGENT_NAMES) {
@@ -730,9 +840,9 @@ describe('createAgents', () => {
     expect(names).toContain('backend-developer');
   });
 
-  test('creates exactly 10 agents by default (2 primary + 8 subagents, observer disabled)', () => {
+  test('creates exactly 11 agents by default (3 primary + 8 subagents, observer disabled)', () => {
     const agents = createAgents();
-    expect(agents.length).toBe(10);
+    expect(agents.length).toBe(11);
   });
 });
 
@@ -1164,13 +1274,13 @@ describe('disabled_agents', () => {
 
   test('agent count decreases when agents are disabled', () => {
     const agents = createAgents();
-    expect(agents.length).toBe(10); // 2 primary + 8 (observer disabled by default)
+    expect(agents.length).toBe(11); // 3 primary + 8 (observer disabled by default)
 
     const disabledConfig: PluginConfig = {
       disabled_agents: ['observer', 'designer'],
     };
     const disabledAgents = createAgents(disabledConfig);
-    expect(disabledAgents.length).toBe(9);
+    expect(disabledAgents.length).toBe(10);
   });
 
   test('getDisabledAgents respects protection rules', () => {
@@ -1213,7 +1323,7 @@ describe('disabled_agents', () => {
       disabled_agents: [],
     };
     const agents = createAgents(config);
-    expect(agents.length).toBe(11); // 2 primary + 9 subagents (observer enabled)
+    expect(agents.length).toBe(12); // 3 primary + 9 subagents (observer enabled)
     expect(agents.map((a) => a.name)).toContain('observer');
   });
 });

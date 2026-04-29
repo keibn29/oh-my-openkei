@@ -29,6 +29,7 @@ import {
   resolvePrompt,
 } from './orchestrator';
 import { createPlannerAgent } from './planner';
+import { createSprinterAgent } from './sprinter';
 
 export type { AgentDefinition } from './orchestrator';
 
@@ -392,13 +393,36 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
     }
   }
 
-  // Collect all display names from orchestrator, planner, and all subagents
+  // 3c. Create Sprinter (with its own overrides and custom prompts)
+  // Self-executing primary agent for fast Q&A and direct task execution.
+  // NOT protected — can be disabled via disabled_agents.
+  let sprinter: ReturnType<typeof createSprinterAgent> | null = null;
+  if (!disabled.has('sprinter')) {
+    const sprinterOverride = getAgentOverride(config, 'sprinter');
+    const sprinterModel = sprinterOverride?.model ?? DEFAULT_MODELS.sprinter;
+    const sprinterPrompts = loadAgentPrompt('sprinter', config?.preset);
+    sprinter = createSprinterAgent(
+      sprinterModel,
+      sprinterPrompts.prompt,
+      sprinterPrompts.appendPrompt,
+      disabled,
+    );
+    applyDefaultPermissions(sprinter, sprinterOverride?.skills);
+    if (sprinterOverride) {
+      applyOverrides(sprinter, sprinterOverride);
+    }
+  }
+
+  // Collect all display names from orchestrator, planner, sprinter, and all subagents
   const displayNameMap = new Map<string, string>();
   if (orchestrator.displayName) {
     displayNameMap.set('orchestrator', orchestrator.displayName);
   }
   if (planner?.displayName) {
     displayNameMap.set('planner', planner.displayName);
+  }
+  if (sprinter?.displayName) {
+    displayNameMap.set('sprinter', sprinter.displayName);
   }
   for (const agent of allSubAgents) {
     if (agent.displayName) {
@@ -436,10 +460,13 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
     }
   }
 
-  // Inject display names into orchestrator and planner prompts (complete map)
+  // Inject display names into orchestrator, planner, and sprinter prompts (complete map)
   injectDisplayNames(orchestrator, displayNameMap);
   if (planner) {
     injectDisplayNames(planner, displayNameMap);
+  }
+  if (sprinter) {
+    injectDisplayNames(sprinter, displayNameMap);
   }
 
   if (customOrchestratorPrompts.length > 0) {
@@ -459,7 +486,12 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
     )}`;
   }
 
-  return [orchestrator, ...(planner ? [planner] : []), ...allSubAgents];
+  return [
+    orchestrator,
+    ...(planner ? [planner] : []),
+    ...(sprinter ? [sprinter] : []),
+    ...allSubAgents,
+  ];
 }
 
 /**

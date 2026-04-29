@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { PRIMARY_AGENT_NAMES } from '../config/constants';
 import { CUSTOM_SKILLS } from './custom-skills';
 
 /**
@@ -117,9 +118,11 @@ export function getSkillPermissionsForAgent(
   agentName: string,
   skillList?: string[],
 ): Record<string, 'allow' | 'ask' | 'deny'> {
-  // Orchestrator gets all skills by default, others are restricted
+  const primaryAgents = new Set(PRIMARY_AGENT_NAMES as readonly string[]);
+
+  // Primary agents get all skills by default, others are restricted
   const permissions: Record<string, 'allow' | 'ask' | 'deny'> = {
-    '*': agentName === 'orchestrator' ? 'allow' : 'deny',
+    '*': primaryAgents.has(agentName) ? 'allow' : 'deny',
   };
 
   // If the user provided an explicit skill list (even empty), honor it

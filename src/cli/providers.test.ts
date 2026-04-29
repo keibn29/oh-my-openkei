@@ -29,6 +29,9 @@ describe('providers', () => {
     expect(agents.planner.model).toBe('openai/gpt-5.5-fast');
     expect(agents.planner.variant).toBe('xhigh');
     expect(agents.planner.skills).toEqual(['*']);
+    expect(agents.sprinter.model).toBe('openai/gpt-5.3-codex');
+    expect(agents.sprinter.variant).toBe('low');
+    expect(agents.sprinter.skills).toEqual(['*']);
     expect(agents.oracle.model).toBe('openai/gpt-5.5-fast');
     expect(agents.oracle.variant).toBe('high');
     expect(agents.council.model).toBe('openai/gpt-5.4-fast');
@@ -62,6 +65,8 @@ describe('providers', () => {
     expect(agents.orchestrator.variant).toBe('xhigh');
     expect(agents.planner.model).toBe('openai/gpt-5.5-fast');
     expect(agents.planner.variant).toBe('xhigh');
+    expect(agents.sprinter.model).toBe('openai/gpt-5.3-codex');
+    expect(agents.sprinter.variant).toBe('low');
     expect(agents.oracle.model).toBe('openai/gpt-5.5-fast');
     expect(agents.oracle.variant).toBe('high');
     expect(agents.council.model).toBe('openai/gpt-5.4-fast');

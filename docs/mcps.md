@@ -20,6 +20,7 @@ Built-in Model Context Protocol (MCP) servers ship with oh-my-openkei and give a
 |-------|-------------|
 | `orchestrator` | `*`, `!context7` |
 | `planner` | `*`, `!context7` |
+| `sprinter` | `*`, `!context7` |
 | `librarian` | `websearch`, `context7`, `grep_app` |
 | `designer` | none |
 | `oracle` | none |
@@ -54,6 +55,9 @@ Control which MCPs each agent can use via the `mcps` array in your preset config
   "presets": {
     "my-preset": {
       "orchestrator": {
+        "mcps": ["*", "!context7"]
+      },
+      "sprinter": {
         "mcps": ["*", "!context7"]
       },
       "librarian": {
