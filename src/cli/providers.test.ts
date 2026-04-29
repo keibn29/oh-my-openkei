@@ -9,7 +9,7 @@ describe('providers', () => {
     expect(keys.sort()).toEqual(['copilot', 'kimi', 'openai', 'zai-plan']);
   });
 
-  test('generateLiteConfig always generates openai preset', () => {
+  test('generateLiteConfig always generates default preset', () => {
     const config = generateLiteConfig({
       hasTmux: false,
       installSkills: false,
@@ -20,15 +20,33 @@ describe('providers', () => {
     expect(config.$schema).toBe(
       'https://unpkg.com/oh-my-openkei@latest/oh-my-openkei.schema.json',
     );
-    expect(config.preset).toBe('openai');
-    const agents = (config.presets as any).openai;
+    expect(config.preset).toBe('default');
+    const agents = (config.presets as any).default;
     expect(agents).toBeDefined();
-    expect(agents.orchestrator.model).toBe('openai/gpt-5.5');
-    expect(agents.orchestrator.variant).toBeUndefined();
-    expect(agents['frontend-developer'].model).toBe('openai/gpt-5.4-mini');
-    expect(agents['frontend-developer'].variant).toBe('low');
-    expect(agents['backend-developer'].model).toBe('openai/gpt-5.4-mini');
-    expect(agents['backend-developer'].variant).toBe('low');
+    expect(agents.orchestrator.model).toBe('openai/gpt-5.4-fast');
+    expect(agents.orchestrator.variant).toBe('xhigh');
+    expect(agents.orchestrator.skills).toEqual(['*']);
+    expect(agents.planner.model).toBe('openai/gpt-5.5-fast');
+    expect(agents.planner.variant).toBe('xhigh');
+    expect(agents.planner.skills).toEqual(['*']);
+    expect(agents.oracle.model).toBe('openai/gpt-5.5-fast');
+    expect(agents.oracle.variant).toBe('high');
+    expect(agents.council.model).toBe('openai/gpt-5.4-fast');
+    expect(agents.council.variant).toBe('xhigh');
+    expect(agents.librarian.model).toBe('minimax-coding-plan/MiniMax-M2.7');
+    expect(agents.librarian.variant).toBeUndefined();
+    expect(agents.explorer.model).toBe('minimax-coding-plan/MiniMax-M2.7');
+    expect(agents.explorer.variant).toBeUndefined();
+    expect(agents.designer.model).toBe('opencode-go/kimi-k2.6');
+    expect(agents.designer.variant).toBeUndefined();
+    expect(agents['frontend-developer'].model).toBe(
+      'opencode-go/deepseek-v4-flash',
+    );
+    expect(agents['frontend-developer'].variant).toBeUndefined();
+    expect(agents['backend-developer'].model).toBe(
+      'opencode-go/deepseek-v4-flash',
+    );
+    expect(agents['backend-developer'].variant).toBeUndefined();
   });
 
   test('generateLiteConfig uses correct OpenAI models', () => {
@@ -39,18 +57,18 @@ describe('providers', () => {
       reset: false,
     });
 
-    const agents = (config.presets as any).openai;
-    expect(agents.orchestrator.model).toBe(
-      MODEL_MAPPINGS.openai.orchestrator.model,
-    );
-    expect(agents.oracle.model).toBe('openai/gpt-5.5');
+    const agents = (config.presets as any).default;
+    expect(agents.orchestrator.model).toBe('openai/gpt-5.4-fast');
+    expect(agents.orchestrator.variant).toBe('xhigh');
+    expect(agents.planner.model).toBe('openai/gpt-5.5-fast');
+    expect(agents.planner.variant).toBe('xhigh');
+    expect(agents.oracle.model).toBe('openai/gpt-5.5-fast');
     expect(agents.oracle.variant).toBe('high');
-    expect(agents.librarian.model).toBe('openai/gpt-5.4-mini');
-    expect(agents.librarian.variant).toBe('low');
-    expect(agents.explorer.model).toBe('openai/gpt-5.4-mini');
-    expect(agents.explorer.variant).toBe('low');
-    expect(agents.designer.model).toBe('openai/gpt-5.4-mini');
-    expect(agents.designer.variant).toBe('medium');
+    expect(agents.council.model).toBe('openai/gpt-5.4-fast');
+    expect(agents.council.variant).toBe('xhigh');
+    expect(agents.librarian.model).toBe('minimax-coding-plan/MiniMax-M2.7');
+    expect(agents.explorer.model).toBe('minimax-coding-plan/MiniMax-M2.7');
+    expect(agents.designer.model).toBe('opencode-go/kimi-k2.6');
   });
 
   test('generateLiteConfig includes default skills', () => {
@@ -60,7 +78,7 @@ describe('providers', () => {
       reset: false,
     });
 
-    const agents = (config.presets as any).openai;
+    const agents = (config.presets as any).default;
     // Orchestrator should always have '*'
     expect(agents.orchestrator.skills).toEqual(['*']);
 
@@ -99,14 +117,14 @@ describe('providers', () => {
       reset: false,
     });
 
-    const agents = (config.presets as any).openai;
+    const agents = (config.presets as any).default;
     expect(agents.orchestrator.mcps).toBeDefined();
     expect(Array.isArray(agents.orchestrator.mcps)).toBe(true);
     expect(agents.librarian.mcps).toBeDefined();
     expect(Array.isArray(agents.librarian.mcps)).toBe(true);
   });
 
-  test('generateLiteConfig openai includes correct mcps', () => {
+  test('generateLiteConfig default includes correct mcps', () => {
     const config = generateLiteConfig({
       hasTmux: false,
       installSkills: false,
@@ -114,7 +132,7 @@ describe('providers', () => {
       reset: false,
     });
 
-    const agents = (config.presets as any).openai;
+    const agents = (config.presets as any).default;
     expect(agents.orchestrator.mcps).toEqual(['*', '!context7']);
     expect(agents.librarian.mcps).toContain('websearch');
     expect(agents.librarian.mcps).toContain('context7');

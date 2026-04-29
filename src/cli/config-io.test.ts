@@ -243,8 +243,8 @@ describe('config-io', () => {
     expect(saved.$schema).toBe(
       'https://unpkg.com/oh-my-openkei@latest/oh-my-openkei.schema.json',
     );
-    expect(saved.preset).toBe('openai');
-    expect(saved.presets.openai).toBeDefined();
+    expect(saved.preset).toBe('default');
+    expect(saved.presets.default).toBeDefined();
   });
 
   test('disableDefaultAgents disables explore and general agents', () => {

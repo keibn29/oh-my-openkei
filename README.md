@@ -32,7 +32,7 @@ bunx oh-my-openkei@latest install
 
 ### Getting Started
 
-The installer generates an OpenAI preset by default, using `openai/gpt-5.5` for higher-judgment agents and `openai/gpt-5.4-mini` for faster scoped agents.
+The installer generates a mixed-provider preset by default, using `openai/gpt-5.4-fast` (xhigh) and `openai/gpt-5.5-fast` (xhigh/high) for primary/oracle agents, `minimax-coding-plan/MiniMax-M2.7` for librarian/explorer, and `opencode-go/kimi-k2.6` / `opencode-go/deepseek-v4-flash` for specialist agents.
 
 1. **Log in to providers**:
    ```bash
@@ -53,17 +53,18 @@ The default generated configuration:
 ```jsonc
 {
   "$schema": "https://unpkg.com/oh-my-openkei@latest/oh-my-openkei.schema.json",
-  "preset": "openai",
+  "preset": "default",
   "presets": {
-    "openai": {
-      "orchestrator": { "model": "openai/gpt-5.5", "skills": ["*"], "mcps": ["*", "!context7"] },
-      "planner": { "model": "openai/gpt-5.5", "skills": ["*"], "mcps": ["*", "!context7"] },
-      "oracle": { "model": "openai/gpt-5.5", "variant": "high", "skills": ["simplify"], "mcps": [] },
-      "librarian": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": ["websearch", "context7", "grep_app"] },
-      "explorer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": [] },
-      "designer": { "model": "openai/gpt-5.4-mini", "variant": "medium", "skills": ["agent-browser"], "mcps": [] },
-      "frontend-developer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": ["vercel-react-best-practices", "karpathy-guidelines"], "mcps": [] },
-      "backend-developer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": ["backend-developer", "karpathy-guidelines"], "mcps": [] }
+    "default": {
+      "orchestrator": { "model": "openai/gpt-5.4-fast", "variant": "xhigh", "skills": ["*"], "mcps": ["*", "!context7"] },
+      "planner": { "model": "openai/gpt-5.5-fast", "variant": "xhigh", "skills": ["*"], "mcps": ["*", "!context7"] },
+      "oracle": { "model": "openai/gpt-5.5-fast", "variant": "high", "skills": ["simplify"], "mcps": [] },
+      "council": { "model": "openai/gpt-5.4-fast", "variant": "xhigh", "skills": [], "mcps": [] },
+      "librarian": { "model": "minimax-coding-plan/MiniMax-M2.7", "skills": [], "mcps": ["websearch", "context7", "grep_app"] },
+      "explorer": { "model": "minimax-coding-plan/MiniMax-M2.7", "skills": [], "mcps": [] },
+      "designer": { "model": "opencode-go/kimi-k2.6", "skills": ["agent-browser"], "mcps": [] },
+      "frontend-developer": { "model": "opencode-go/deepseek-v4-flash", "skills": ["vercel-react-best-practices", "karpathy-guidelines"], "mcps": [] },
+      "backend-developer": { "model": "opencode-go/deepseek-v4-flash", "skills": ["backend-developer", "karpathy-guidelines"], "mcps": [] }
     }
   }
 }
@@ -106,7 +107,7 @@ If any agent fails to respond, check your provider authentication and config fil
 **Orchestrator** and **Planner** are the primary agents — each is a distinct reasoning and coordination layer. You choose which one to use based on your workflow. All other agents are subagents delegated to by the primary.
 
 - **Orchestrator** (default): Delegation-first coordinator. Handles intake, planning, routing, and result integration. Falls back to direct work only when no suitable subagent exists.
-- **Planner**: Interview-first planning specialist. Gathers requirements through structured questioning, builds a plan, and delegates research/clarification to subagents. Does not implement code itself. Best for ambiguous or high-stakes work where careful upfront planning pays off.
+- **Planner**: Interview-first planning specialist. Gathers requirements through structured questioning, produces plans wrapped in planner-plan tags, and delegates research/clarification to subagents. Does not implement code itself. Best for ambiguous or high-stakes work where careful upfront planning pays off.
 
 #### Interaction Flow
 
@@ -142,8 +143,8 @@ On-demand (not auto-delegated): Council · Observer
 
 #### Planner
 
-**Role:** Interview-first planning specialist — gathers requirements, builds plans, delegates research, does not implement  
-**Prompt:** [planner.ts](src/agents/planner.ts)  
+**Role:** Interview-first planning specialist — gathers requirements, produces planner-plan wrapped plans, delegates research, does not implement
+**Prompt:** [planner.ts](src/agents/planner.ts)
 **Default Model:** `openai/gpt-5.5`  
 **Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.6`  
 **Model Guidance:** Choose your strongest all-around coding model. Planner drives planning and delegation, so it needs excellent judgment, structured thinking, and reliable instruction-following. Implementation ability is not required.

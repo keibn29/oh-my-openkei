@@ -82,7 +82,7 @@ All config files support **JSONC** (JSON with Comments):
 |-----------|--------|---|-----------------------------|
 | `presets.<name>.<agent>.model` | string | — | Model ID in `provider/model` format |
 | `presets.<name>.<agent>.temperature` | number | — | Temperature (0–2) |
-| `presets.<name>.<agent>.variant` | string | — | Reasoning effort: `"low"`, `"medium"`, `"high"` |
+| `presets.<name>.<agent>.variant` | string | — | Reasoning effort, e.g. `"low"`, `"medium"`, `"high"`, `"xhigh"` |
 | `presets.<name>.<agent>.displayName` | string | — | Custom user-facing alias for the agent (e.g. `"advisor"` for `oracle`) |
 | `presets.<name>.<agent>.skills` | string[] | — | Skills the agent can use (`"*"`, `"!item"`, explicit list) |
 | `presets.<name>.<agent>.mcps` | string[] | — | MCPs the agent can use (`"*"`, `"!item"`, explicit list) |

@@ -56,7 +56,7 @@ bunx oh-my-openkei@latest install --reset
 
 ### After Installation
 
-The installer generates an OpenAI configuration by default (using `gpt-5.5` and `gpt-5.4-mini` models). To switch providers or build a mixed setup, use **[Configuration Reference](configuration.md)** for the full option reference and the preset docs for copyable examples.
+The installer generates a mixed-provider preset by default. To switch providers or build a different mixed setup, use **[Configuration Reference](configuration.md)** for the full option reference and the preset docs for copyable examples.
 
 Then:
 
@@ -105,7 +105,7 @@ If not installed, direct the user to https://opencode.ai/docs first.
 
 ### Step 2: Run the Installer
 
-The installer generates an OpenAI configuration by default:
+The installer generates the mixed-provider default preset:
 
 ```bash
 bunx oh-my-openkei@latest install --no-tui --skills=yes

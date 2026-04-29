@@ -9,20 +9,15 @@ const SCHEMA_URL =
 // Model mappings by provider - only 4 supported providers
 export const MODEL_MAPPINGS = {
   openai: {
-    orchestrator: { model: 'openai/gpt-5.5' },
-    planner: { model: 'openai/gpt-5.5' },
-    oracle: { model: 'openai/gpt-5.5', variant: 'high' },
-    librarian: { model: 'openai/gpt-5.4-mini', variant: 'low' },
-    explorer: { model: 'openai/gpt-5.4-mini', variant: 'low' },
-    designer: { model: 'openai/gpt-5.4-mini', variant: 'medium' },
-    'frontend-developer': {
-      model: 'openai/gpt-5.4-mini',
-      variant: 'low',
-    },
-    'backend-developer': {
-      model: 'openai/gpt-5.4-mini',
-      variant: 'low',
-    },
+    orchestrator: { model: 'openai/gpt-5.4-fast', variant: 'xhigh' },
+    planner: { model: 'openai/gpt-5.5-fast', variant: 'xhigh' },
+    oracle: { model: 'openai/gpt-5.5-fast', variant: 'high' },
+    council: { model: 'openai/gpt-5.4-fast', variant: 'xhigh' },
+    librarian: { model: 'minimax-coding-plan/MiniMax-M2.7' },
+    explorer: { model: 'minimax-coding-plan/MiniMax-M2.7' },
+    designer: { model: 'opencode-go/kimi-k2.6' },
+    'frontend-developer': { model: 'opencode-go/deepseek-v4-flash' },
+    'backend-developer': { model: 'opencode-go/deepseek-v4-flash' },
   },
   kimi: {
     orchestrator: { model: 'kimi-for-coding/k2p5' },
@@ -82,7 +77,7 @@ export function generateLiteConfig(
 ): Record<string, unknown> {
   const config: Record<string, unknown> = {
     $schema: SCHEMA_URL,
-    preset: 'openai',
+    preset: 'default',
     presets: {},
   };
 
@@ -131,8 +126,8 @@ export function generateLiteConfig(
     );
   };
 
-  // Always use OpenAI as default
-  (config.presets as Record<string, unknown>).openai = buildPreset('openai');
+  // Always use OpenAI mapping as the default preset
+  (config.presets as Record<string, unknown>).default = buildPreset('openai');
 
   return config;
 }

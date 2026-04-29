@@ -440,6 +440,28 @@ describe('planner agent', () => {
     ]);
     expect(planner?.config.model).toBeUndefined();
   });
+
+  test('planner prompt wraps final plan in planner-plan tags', () => {
+    const agents = createAgents();
+    const planner = agents.find((a) => a.name === 'planner');
+    const prompt = planner?.config.prompt as string;
+
+    // Check the instruction mentions wrapping plans with the XML-like tag pair
+    // (use words to avoid HTML being parsed in toContain assertion)
+    expect(prompt).toContain('planner-plan');
+    expect(prompt).toContain(
+      'Place ONLY the plan content inside the tags',
+    );
+    expect(prompt).toContain(
+      'Any preamble, greetings, or follow-up notes should stay OUTSIDE the tags',
+    );
+    expect(prompt).toContain('1. Summary');
+    expect(prompt).toContain('2. Key Changes');
+    expect(prompt).toContain('3. Public Interfaces');
+    expect(prompt).toContain('4. Test Plan');
+    expect(prompt).toContain('5. Assumptions');
+    expect(prompt).not.toContain('[[PLANNER_PLAN_V1]]');
+  });
 });
 
 describe('planner delegation scope', () => {
