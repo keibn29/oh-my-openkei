@@ -1,6 +1,7 @@
 import type { Plugin } from '@opencode-ai/plugin';
 import { createAgents, getAgentConfigs, getDisabledAgents } from './agents';
 import { buildOrchestratorPrompt } from './agents/orchestrator';
+import { buildPlannerPrompt } from './agents/planner';
 import { loadPluginConfig } from './config';
 import { parseList } from './config/agent-mcps';
 import { CouncilManager } from './council';
@@ -12,6 +13,7 @@ import {
   createFilterAvailableSkillsHook,
   createJsonErrorRecoveryHook,
   createPhaseReminderHook,
+  createPlannerDelegateValidationHookWithSession,
   createPostFileToolNudgeHook,
   createTaskSessionManagerHook,
   ForegroundFallbackManager,
@@ -104,6 +106,9 @@ const OhMyOpenKei: Plugin = async (ctx) => {
   let jsonErrorRecoveryHook: ReturnType<typeof createJsonErrorRecoveryHook>;
   let foregroundFallback: ForegroundFallbackManager;
   let taskSessionManagerHook: ReturnType<typeof createTaskSessionManagerHook>;
+  let plannerDelegateValidationHook: ReturnType<
+    typeof createPlannerDelegateValidationHookWithSession
+  >;
   let councilTools: Record<string, unknown>;
   let webfetch: ReturnType<typeof createWebfetchTool>;
   let rewriteDisplayNameMentions: ReturnType<
@@ -211,8 +216,10 @@ const OhMyOpenKei: Plugin = async (ctx) => {
 
     // Initialize post-file-tool nudge hook
     postFileToolNudgeHook = createPostFileToolNudgeHook({
-      shouldInject: (sessionID) =>
-        sessionAgentMap.get(sessionID) === 'orchestrator',
+      shouldInject: (sessionID) => {
+        const agent = sessionAgentMap.get(sessionID);
+        return agent === 'orchestrator' || agent === 'planner';
+      },
     });
 
     chatHeadersHook = createChatHeadersHook(ctx);
@@ -236,9 +243,17 @@ const OhMyOpenKei: Plugin = async (ctx) => {
       maxSessionsPerAgent: config.sessionManager?.maxSessionsPerAgent ?? 2,
       readContextMinLines: config.sessionManager?.readContextMinLines ?? 10,
       readContextMaxFiles: config.sessionManager?.readContextMaxFiles ?? 8,
-      shouldManageSession: (sessionID) =>
-        sessionAgentMap.get(sessionID) === 'orchestrator',
+      shouldManageSession: (sessionID) => {
+        const agent = sessionAgentMap.get(sessionID);
+        return agent === 'orchestrator' || agent === 'planner';
+      },
     });
+
+    // Initialize planner delegation validation hook
+    plannerDelegateValidationHook =
+      createPlannerDelegateValidationHookWithSession(ctx, {
+        getSessionAgent: (sessionID) => sessionAgentMap.get(sessionID),
+      });
 
     toolCount =
       Object.keys(councilTools).length +
@@ -600,6 +615,15 @@ const OhMyOpenKei: Plugin = async (ctx) => {
         },
         output as { args?: unknown },
       );
+
+      await plannerDelegateValidationHook['tool.execute.before'](
+        input as {
+          tool: string;
+          sessionID?: string;
+          callID?: string;
+        },
+        output as { args?: unknown },
+      );
     },
 
     'chat.headers': chatHeadersHook['chat.headers'],
@@ -641,30 +665,34 @@ const OhMyOpenKei: Plugin = async (ctx) => {
       const agentName = input.sessionID
         ? sessionAgentMap.get(input.sessionID)
         : undefined;
-      if (agentName === 'orchestrator') {
+
+      // Inject system prompt for primary agents (orchestrator and planner)
+      if (agentName === 'orchestrator' || agentName === 'planner') {
+        // Use a deterministic marker to detect prior injection instead of
+        // content heuristics. This works even if custom prompts fully
+        // replace the built-in text.
+        const injectionMarker = `<!-- OHMYOPENKEI_${agentName.toUpperCase()}_PROMPT -->`;
         const alreadyInjected = output.system.some(
-          (s) =>
-            typeof s === 'string' &&
-            s.includes('<Role>') &&
-            s.includes('orchestrator'),
+          (s) => typeof s === 'string' && s.includes(injectionMarker),
         );
         if (!alreadyInjected) {
-          // Prepend the orchestrator prompt to the system array. Use the
-          // resolved prompt from the orchestrator agent definition (which
-          // includes any custom replacement or append from orchestrator.md
-          // / orchestrator_append.md) Fall back to
-          // buildOrchestratorPrompt only if the resolved prompt is
-          // missing.
-          const orchestratorDef = agentDefs.find(
-            (a) => a.name === 'orchestrator',
-          );
-          const orchestratorPrompt =
-            typeof orchestratorDef?.config?.prompt === 'string'
-              ? orchestratorDef.config.prompt
-              : buildOrchestratorPrompt(disabledAgents);
+          // Prepend the agent's prompt to the system array. Use the
+          // resolved prompt from the agent definition (which
+          // includes any custom replacement or append from <agent>.md
+          // / <agent>_append.md). Fall back to the default builder
+          // only if the resolved prompt is missing.
+          const agentDef = agentDefs.find((a) => a.name === agentName);
+          let agentPrompt: string;
+          if (agentDef?.config?.prompt) {
+            agentPrompt = agentDef.config.prompt;
+          } else if (agentName === 'orchestrator') {
+            agentPrompt = buildOrchestratorPrompt(disabledAgents);
+          } else {
+            agentPrompt = buildPlannerPrompt(disabledAgents);
+          }
           output.system[0] =
-            orchestratorPrompt +
-            (output.system[0] ? `\n\n${output.system[0]}` : '');
+            `${agentPrompt}\n\n${injectionMarker}\n\n` +
+            (output.system[0] ? `${output.system[0]}\n\n` : '');
         }
       }
 

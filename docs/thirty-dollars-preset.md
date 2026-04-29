@@ -13,6 +13,7 @@ It uses Codex Plus for the OpenAI models and GitHub Copilot for the premium coun
     "preset": "thirtydollars",
     "presets": {
       "thirtydollars": { "orchestrator": { "model": "openai/gpt-5.5", "skills": [ "*" ], "mcps": [ "*", "websearch"] },
+        "planner": { "model": "openai/gpt-5.5", "skills": [ "*" ], "mcps": [ "*", "websearch"] },
         "oracle": { "model": "openai/gpt-5.5", "variant": "high", "skills": [], "mcps": [] },
         "council": { "model": "openai/gpt-5.5" },
         "librarian": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": [ "websearch", "context7", "grep_app" ] },

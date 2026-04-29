@@ -69,12 +69,13 @@ The default generated configuration looks like this:
   "presets": {
     "openai": {
       "orchestrator": { "model": "openai/gpt-5.5", "skills": ["*"], "mcps": ["*", "!context7"] },
+      "planner": { "model": "openai/gpt-5.5", "skills": ["*"], "mcps": ["*", "!context7"] },
       "oracle": { "model": "openai/gpt-5.5", "variant": "high", "skills": ["simplify"], "mcps": [] },
       "librarian": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": ["websearch", "context7", "grep_app"] },
       "explorer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": [] },
       "designer": { "model": "openai/gpt-5.4-mini", "variant": "medium", "skills": ["agent-browser"], "mcps": [] },
-      "frontend-developer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": [] },
-      "backend-developer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": [] }
+      "frontend-developer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": ["vercel-react-best-practices", "karpathy-guidelines"], "mcps": [] },
+      "backend-developer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": ["backend-developer", "karpathy-guidelines"], "mcps": [] }
     }
   }
 }
@@ -121,20 +122,23 @@ If any agent fails to respond, check your provider authentication and config fil
 
 ## 🏛️ Meet the Pantheon
 
-### Primary Agent
+### Primary Agents
 
-The Orchestrator is the sole **primary agent** — the main reasoning and coordination layer. All other agents are subagents delegated to by the Orchestrator.
+**Orchestrator** and **Planner** are the primary agents — each is a distinct reasoning and coordination layer. You choose which one to use based on your workflow. All other agents are subagents delegated to by the primary.
+
+- **Orchestrator** (default): Handles everything — planning, implementation, and delegation. Best for straightforward build-and-ship tasks.
+- **Planner**: Interview-first planning specialist. Gathers requirements through structured questioning, builds a plan, and delegates research/clarification to subagents. Does not implement code itself. Best for ambiguous or high-stakes work where careful upfront planning pays off.
 
 #### Interaction Flow
 
 ```
 User / OpenCode
-      │
-      ▼
-┌─────────────────────────┐
-│      Orchestrator       │ ◄── Primary Agent (main reasoning & delegation)
-│  (opencode conversation)│
-└───────────┬─────────────┘
+       │
+       ▼
+┌─────────────────────────────────────┐
+│         Primary Agent               │ ◄── Orchestrator (default) or Planner
+│    (opencode conversation)          │
+└───────────┬─────────────────────────┘
             │
             ├──────────────────────────────┐
             │                              │
@@ -153,18 +157,19 @@ User / OpenCode
             │   documentation)  │
             └─────────┬─────────┘
                       │
-                      ▼
-          ┌───────────────────────┐
-          │      Designer         │
-          │   (UI/UX direction)   │
-          └───────────┬───────────┘
-                      │
-        ┌─────────────┴─────────────┐
-        ▼                           ▼
-┌───────────────────┐     ┌───────────────────┐
-│ Frontend Developer│     │  Backend Developer│
-│ (client-side impl)│     │ (server-side impl)│
-└───────────────────┘     └───────────────────┘
+          ┌─────────────┴─────────────┐
+          ▼                           ▼
+    ┌──────────────┐          ┌──────────────┐
+    │   Designer   │          │    Oracle    │
+    │ (UI/UX dir.) │          │  (strategy) │
+    └──────┬───────┘          └──────┬───────┘
+           │                         │
+    ┌──────┴───────┐          ┌─────┴─────────┐
+    ▼              ▼          ▼               ▼
+┌───────────┐ ┌───────────┐              │
+│Frontend   │ │Backend   │              │
+│Developer  │ │Developer │              │
+└───────────┘ └───────────┘              │
 
  ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─ ─
  Optional / On-demand (not auto-delegated):
@@ -213,9 +218,50 @@ User / OpenCode
 
 ---
 
+#### Planner: The Architect of Intent
+
+<table>
+  <tr>
+    <td width="30%" align="center" valign="top">
+      <img src="img/planner.png" width="240" style="border-radius: 10px;">
+      <br><sub><i>The mind that asks before it builds.</i></sub>
+    </td>
+    <td width="70%" valign="top">
+      The Planner emerged from the recognition that the most expensive mistake is building the wrong thing. Before writing a single line, the Planner interviews the user — probing requirements, constraints, priorities, and trade-offs — to construct a well-grounded plan. It does not implement code directly. Instead, it directs the work by delegating research, exploration, and clarification to the specialist subagents, then synthesizes their findings into a complete, actionable blueprint.
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <b>Role:</b> <code>Interview-first planning specialist — gathers requirements, builds plans, delegates research, does not implement</code>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <b>Prompt:</b> <code>planner.ts</code>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <b>Default Model:</b> <code>openai/gpt-5.5</code>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <b>Recommended Models:</b> <code>openai/gpt-5.5</code> <code>anthropic/claude-opus-4.6</code>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2">
+      <b>Model Guidance:</b> Choose your strongest all-around coding model. Planner drives planning and delegation, so it needs excellent judgment, structured thinking, and reliable instruction-following. Implementation ability is not required.
+    </td>
+  </tr>
+</table>
+
+---
+
 ### Subagents
 
-The following agents are delegated to by the Orchestrator based on task type.
+The following agents are delegated to by the primary agents based on task type.
 
 #### Explorer: The Eternal Wanderer
 

@@ -31,6 +31,9 @@ const packagedRequiredFiles = [
   'oh-my-openkei.schema.json',
   'src/skills/simplify/SKILL.md',
   'src/skills/codemap/SKILL.md',
+  'src/skills/vercel-react-best-practices/SKILL.md',
+  'src/skills/backend-developer/SKILL.md',
+  'src/skills/karpathy-guidelines/SKILL.md',
 ];
 
 function fail(message: string): never {

@@ -18,8 +18,27 @@ export const SUBAGENT_NAMES = [
 ] as const;
 
 export const ORCHESTRATOR_NAME = 'orchestrator' as const;
+export const PLANNER_NAME = 'planner' as const;
 
-export const ALL_AGENT_NAMES = [ORCHESTRATOR_NAME, ...SUBAGENT_NAMES] as const;
+export const PRIMARY_AGENT_NAMES = [ORCHESTRATOR_NAME, PLANNER_NAME] as const;
+
+/**
+ * Planner's allowed delegate subagents (planning-only agent).
+ * Used by: prompt rendering (planner.ts), runtime gate (planner-delegate-validation hook),
+ * delegation rules (SUBAGENT_DELEGATION_RULES.planner).
+ */
+export const PLANNER_DELEGATE_SET = [
+  'explorer',
+  'librarian',
+  'oracle',
+  'designer',
+] as const;
+
+export const ALL_AGENT_NAMES = [
+  ORCHESTRATOR_NAME,
+  PLANNER_NAME,
+  ...SUBAGENT_NAMES,
+] as const;
 
 // Agent name type (for use in DEFAULT_MODELS)
 export type AgentName = (typeof ALL_AGENT_NAMES)[number];
@@ -59,6 +78,7 @@ export function getOrchestratableAgents(
 
 export const SUBAGENT_DELEGATION_RULES: Record<AgentName, readonly string[]> = {
   orchestrator: ORCHESTRATABLE_AGENTS,
+  planner: PLANNER_DELEGATE_SET, // restricted set
   'frontend-developer': [],
   'backend-developer': [],
   designer: [],
@@ -71,9 +91,11 @@ export const SUBAGENT_DELEGATION_RULES: Record<AgentName, readonly string[]> = {
 };
 
 // Default models for each agent
-// orchestrator is undefined so its model is fully resolved at runtime via priority fallback
+// orchestrator: undefined — resolved at runtime via _modelArray or user config
+// planner: uses same strong model class as orchestrator (runtime-safe default)
 export const DEFAULT_MODELS: Record<AgentName, string | undefined> = {
   orchestrator: undefined,
+  planner: 'openai/gpt-5.5', // strong planning model, runtime-safe default
   oracle: 'openai/gpt-5.5',
   librarian: 'openai/gpt-5.4-mini',
   explorer: 'openai/gpt-5.4-mini',

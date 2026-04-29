@@ -40,6 +40,27 @@ export const CUSTOM_SKILLS: CustomSkill[] = [
     allowedAgents: ['orchestrator'],
     sourcePath: 'src/skills/codemap',
   },
+  {
+    name: 'vercel-react-best-practices',
+    description:
+      'React and Next.js performance optimization guidelines from Vercel Engineering',
+    allowedAgents: ['frontend-developer'],
+    sourcePath: 'src/skills/vercel-react-best-practices',
+  },
+  {
+    name: 'backend-developer',
+    description:
+      'Senior backend developer skill with clean architecture and Python/FastAPI patterns',
+    allowedAgents: ['backend-developer'],
+    sourcePath: 'src/skills/backend-developer',
+  },
+  {
+    name: 'karpathy-guidelines',
+    description:
+      "Inspired by Andrej Karpathy's observations on LLM coding pitfalls",
+    allowedAgents: ['frontend-developer', 'backend-developer'],
+    sourcePath: 'src/skills/karpathy-guidelines',
+  },
 ];
 
 /**
@@ -47,6 +68,13 @@ export const CUSTOM_SKILLS: CustomSkill[] = [
  */
 export function getCustomSkillsDir(): string {
   return join(getConfigDir(), 'skills');
+}
+
+/**
+ * Check whether a bundled custom skill is already installed locally.
+ */
+export function isCustomSkillInstalled(skill: CustomSkill): boolean {
+  return existsSync(join(getCustomSkillsDir(), skill.name, 'SKILL.md'));
 }
 
 /**
@@ -76,16 +104,21 @@ function copyDirRecursive(src: string, dest: string): void {
 }
 
 /**
- * Install a custom skill by copying from src/skills/ to the OpenCode skills directory
+ * Install a custom skill by copying from src/skills/ to the OpenCode skills directory.
+ * Skips gracefully if the skill is already installed.
  * @param skill - The custom skill to install
- * @param projectRoot - Root directory of oh-my-openkei project
- * @returns True if installation succeeded, false otherwise
+ * @returns True if installation succeeded or skill was already present, false otherwise
  */
 export function installCustomSkill(skill: CustomSkill): boolean {
   try {
     const packageRoot = fileURLToPath(new URL('../..', import.meta.url));
     const sourcePath = join(packageRoot, skill.sourcePath);
     const targetPath = join(getCustomSkillsDir(), skill.name);
+
+    // Skip if already installed
+    if (isCustomSkillInstalled(skill)) {
+      return true;
+    }
 
     // Validate source exists
     if (!existsSync(sourcePath)) {

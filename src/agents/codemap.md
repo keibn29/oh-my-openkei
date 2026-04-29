@@ -20,6 +20,7 @@ Responsibilities:
 1. Compute the disabled set via `getDisabledAgents()`:
    - from `config.disabled_agents`
    - with protected-agent guard (`orchestrator`, `councillor` never disabled)
+   - Note: `planner` is NOT protected — it can be disabled by the user.
 2. Build built-in subagents from `SUBAGENT_FACTORIES` (`SUBAGENT_NAMES`).
 3. Discover custom agent names from `config.agents` keys that are not built-ins
    or aliases.
@@ -38,10 +39,11 @@ Responsibilities:
    - `council` may inherit deprecated `council.master.model` when no explicit
      `council` override and default remains unresolved.
 9. Build orchestrator using prompt files + disabled-agent filtering.
-10. Normalize/collect display names and inject `@displayName` references into:
-    orchestrator prompt and all custom `orchestratorPrompt` snippets.
-11. Validate display-name collisions/agent-name conflicts.
-12. Return `[orchestrator, ...subagents]`.
+10. Build planner (if not disabled) using the same pattern as orchestrator.
+11. Normalize/collect display names and inject `@displayName` references into:
+    orchestrator and planner prompts, and all custom `orchestratorPrompt` snippets.
+12. Validate display-name collisions/agent-name conflicts.
+13. Return `[orchestrator, ...(planner ? [planner] : []), ...subagents]`.
 
 ### Runtime model behavior
 
@@ -55,6 +57,7 @@ Responsibilities:
 
 - `getAgentConfigs(config)` converts definitions to SDK configs and sets:
   - `orchestrator` → `mode: primary`
+  - `planner` → `mode: primary`
   - built-in specialists → `mode: subagent`
   - `council` → `mode: all`
   - `councillor` → `mode: subagent`, `hidden: true`
@@ -103,6 +106,8 @@ src/index.ts
 
 - `index.ts` (agent registry, overrides, classification, custom agents)
 - `orchestrator.ts` (base prompts, prompt resolution, model-array type)
+- `planner.ts` (planning-only agent prompt and factory — primary agent with restricted delegate set)
+- `shared-agent-content.ts` (shared specialist catalog, communication rules, rendering helpers)
 - `council.ts`, `councillor.ts` (council tool orchestration + formatting)
 - `explorer.ts`, `librarian.ts`, `oracle.ts`, `designer.ts`, `frontend-developer.ts`, `backend-developer.ts`,
   `observer.ts` (specialist factory prompts/config)

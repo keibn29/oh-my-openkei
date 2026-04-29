@@ -4,6 +4,7 @@ import { CouncilConfigSchema } from './council-schema';
 
 const FALLBACK_AGENT_NAMES = [
   'orchestrator',
+  'planner',
   'oracle',
   'designer',
   'explorer',
@@ -14,6 +15,7 @@ const FALLBACK_AGENT_NAMES = [
 
 const MANUAL_AGENT_NAMES = [
   'orchestrator',
+  'planner',
   'oracle',
   'designer',
   'explorer',
@@ -54,6 +56,7 @@ export const ManualAgentPlanSchema = z
 export const ManualPlanSchema = z
   .object({
     orchestrator: ManualAgentPlanSchema,
+    planner: ManualAgentPlanSchema.optional(),
     oracle: ManualAgentPlanSchema,
     designer: ManualAgentPlanSchema,
     explorer: ManualAgentPlanSchema,
@@ -75,30 +78,42 @@ export const ManualPlanSchema = z
     const hasFrontend = 'frontend-developer' in value;
     const hasBackend = 'backend-developer' in value;
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { fixer, ...rest } = value as any;
+    const { fixer, ...rest } = value as Record<string, unknown>;
+
+    // Start with rest, then apply fixer backfill, then planner backfill.
+    // This ensures planner backfill runs even when fixer branches return early.
+    let result: Record<string, unknown> = { ...rest };
+
     if ('fixer' in value && value.fixer) {
       if (!hasFrontend && !hasBackend) {
         // Both missing — fan out to both
-        return {
-          ...rest,
+        result = {
+          ...result,
           'frontend-developer': value.fixer,
           'backend-developer': value.fixer,
         };
-      }
-      if (!hasFrontend) {
+      } else if (!hasFrontend) {
         // Only backend present — backfill frontend
-        return { ...rest, 'frontend-developer': value.fixer };
-      }
-      if (!hasBackend) {
+        result = { ...result, 'frontend-developer': value.fixer };
+      } else if (!hasBackend) {
         // Only frontend present — backfill backend
-        return { ...rest, 'backend-developer': value.fixer };
+        result = { ...result, 'backend-developer': value.fixer };
       }
+      // If both are present, fixer is simply stripped — no backfill needed
     }
-    return rest;
+
+    // Backfill planner from orchestrator for backward compat with legacy
+    // configs that don't mention planner. Explicit planner entry wins.
+    if (!('planner' in result) || result.planner === undefined) {
+      result.planner = value.orchestrator;
+    }
+
+    return result;
   })
   .superRefine((data, ctx) => {
     const required = [
       'orchestrator',
+      'planner',
       'oracle',
       'designer',
       'explorer',
@@ -107,7 +122,8 @@ export const ManualPlanSchema = z
       'backend-developer',
     ];
     for (const key of required) {
-      if (!(key in data) || (data as any)[key] === undefined) {
+      const value = (data as Record<string, unknown>)[key];
+      if (!(key in data) || value === undefined) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
           message: `Required agent plan missing: ${key}`,
@@ -137,6 +153,7 @@ const AgentModelChainSchema = z.array(z.string()).min(1);
 const FallbackChainsSchema = z
   .object({
     orchestrator: AgentModelChainSchema.optional(),
+    planner: AgentModelChainSchema.optional(),
     oracle: AgentModelChainSchema.optional(),
     designer: AgentModelChainSchema.optional(),
     explorer: AgentModelChainSchema.optional(),

@@ -19,6 +19,7 @@ Built-in Model Context Protocol (MCP) servers ship with oh-my-openkei and give a
 | Agent | Default MCPs |
 |-------|-------------|
 | `orchestrator` | `*`, `!context7` |
+| `planner` | `*`, `!context7` |
 | `librarian` | `websearch`, `context7`, `grep_app` |
 | `designer` | none |
 | `oracle` | none |

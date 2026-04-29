@@ -10,6 +10,7 @@ const SCHEMA_URL =
 export const MODEL_MAPPINGS = {
   openai: {
     orchestrator: { model: 'openai/gpt-5.5' },
+    planner: { model: 'openai/gpt-5.5' },
     oracle: { model: 'openai/gpt-5.5', variant: 'high' },
     librarian: { model: 'openai/gpt-5.4-mini', variant: 'low' },
     explorer: { model: 'openai/gpt-5.4-mini', variant: 'low' },
@@ -25,6 +26,7 @@ export const MODEL_MAPPINGS = {
   },
   kimi: {
     orchestrator: { model: 'kimi-for-coding/k2p5' },
+    planner: { model: 'kimi-for-coding/k2p5' },
     oracle: { model: 'kimi-for-coding/k2p5', variant: 'high' },
     librarian: { model: 'kimi-for-coding/k2p5', variant: 'low' },
     explorer: { model: 'kimi-for-coding/k2p5', variant: 'low' },
@@ -40,6 +42,7 @@ export const MODEL_MAPPINGS = {
   },
   copilot: {
     orchestrator: { model: 'github-copilot/claude-opus-4.6' },
+    planner: { model: 'github-copilot/claude-opus-4.6' },
     oracle: { model: 'github-copilot/claude-opus-4.6', variant: 'high' },
     librarian: { model: 'github-copilot/grok-code-fast-1', variant: 'low' },
     explorer: { model: 'github-copilot/grok-code-fast-1', variant: 'low' },
@@ -58,6 +61,7 @@ export const MODEL_MAPPINGS = {
   },
   'zai-plan': {
     orchestrator: { model: 'zai-coding-plan/glm-5' },
+    planner: { model: 'zai-coding-plan/glm-5' },
     oracle: { model: 'zai-coding-plan/glm-5', variant: 'high' },
     librarian: { model: 'zai-coding-plan/glm-5', variant: 'low' },
     explorer: { model: 'zai-coding-plan/glm-5', variant: 'low' },
@@ -86,9 +90,10 @@ export function generateLiteConfig(
     agentName: string,
     modelInfo: { model: string; variant?: string },
   ) => {
-    const isOrchestrator = agentName === 'orchestrator';
+    const isPrimaryAgent =
+      agentName === 'orchestrator' || agentName === 'planner';
 
-    const skills = isOrchestrator
+    const skills = isPrimaryAgent
       ? ['*']
       : [
           ...RECOMMENDED_SKILLS.filter(

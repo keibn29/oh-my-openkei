@@ -9,7 +9,11 @@ import {
   isOpenCodeInstalled,
   writeLiteConfig,
 } from './config-manager';
-import { CUSTOM_SKILLS, installCustomSkill } from './custom-skills';
+import {
+  CUSTOM_SKILLS,
+  installCustomSkill,
+  isCustomSkillInstalled,
+} from './custom-skills';
 import { getExistingLiteConfigPath } from './paths';
 import { installSkill, RECOMMENDED_SKILLS } from './skills';
 import type { ConfigMergeResult, InstallArgs, InstallConfig } from './types';
@@ -198,11 +202,15 @@ async function runInstall(config: InstallConfig): Promise<number> {
       let customSkillsInstalled = 0;
       for (const skill of CUSTOM_SKILLS) {
         printInfo(`Installing ${skill.name}...`);
+        if (isCustomSkillInstalled(skill)) {
+          printInfo(`Skipped: ${skill.name} (already installed)`);
+          continue;
+        }
         if (installCustomSkill(skill)) {
           printSuccess(`Installed: ${skill.name}`);
           customSkillsInstalled++;
         } else {
-          printInfo(`Skipped: ${skill.name} (already installed)`);
+          printError(`Failed: ${skill.name}`);
         }
       }
       const totalCustom = CUSTOM_SKILLS.length;

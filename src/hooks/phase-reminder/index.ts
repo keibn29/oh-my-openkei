@@ -62,9 +62,9 @@ export function createPhaseReminderHook() {
 
       const lastUserMessage = messages[lastUserMessageIndex];
 
-      // Only inject for orchestrator (or if no agent specified = main session)
+      // Only inject for primary agents (orchestrator or planner)
       const agent = lastUserMessage.info.agent;
-      if (agent && agent !== 'orchestrator') {
+      if (agent && agent !== 'orchestrator' && agent !== 'planner') {
         return;
       }
 

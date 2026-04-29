@@ -26,6 +26,7 @@ describe('ManualPlanSchema fixer partial migration', () => {
   test('fan out fixer to both agents when neither frontend nor backend present', () => {
     const input = {
       orchestrator: VALID_PLAN,
+      planner: VALID_PLAN,
       oracle: VALID_PLAN,
       designer: VALID_PLAN,
       explorer: VALID_PLAN,
@@ -43,6 +44,7 @@ describe('ManualPlanSchema fixer partial migration', () => {
   test('backfill frontend-developer when only backend-developer is present', () => {
     const input = {
       orchestrator: VALID_PLAN,
+      planner: VALID_PLAN,
       oracle: VALID_PLAN,
       designer: VALID_PLAN,
       explorer: VALID_PLAN,
@@ -63,6 +65,7 @@ describe('ManualPlanSchema fixer partial migration', () => {
   test('backfill backend-developer when only frontend-developer is present', () => {
     const input = {
       orchestrator: VALID_PLAN,
+      planner: VALID_PLAN,
       oracle: VALID_PLAN,
       designer: VALID_PLAN,
       explorer: VALID_PLAN,
@@ -83,6 +86,7 @@ describe('ManualPlanSchema fixer partial migration', () => {
   test('explicit frontend and backend override fixer without backfill', () => {
     const input = {
       orchestrator: VALID_PLAN,
+      planner: VALID_PLAN,
       oracle: VALID_PLAN,
       designer: VALID_PLAN,
       explorer: VALID_PLAN,
@@ -102,6 +106,7 @@ describe('ManualPlanSchema fixer partial migration', () => {
   test('strip fixer from output when both frontend and backend are explicitly set', () => {
     const input = {
       orchestrator: VALID_PLAN,
+      planner: VALID_PLAN,
       oracle: VALID_PLAN,
       designer: VALID_PLAN,
       explorer: VALID_PLAN,
@@ -125,6 +130,7 @@ describe('ManualPlanSchema fixer partial migration', () => {
     // is backfilled from fixer — should not produce a schema validation error.
     const input = {
       orchestrator: VALID_PLAN,
+      planner: VALID_PLAN,
       oracle: VALID_PLAN,
       designer: VALID_PLAN,
       explorer: VALID_PLAN,
@@ -142,10 +148,11 @@ describe('ManualPlanSchema fixer partial migration', () => {
     expect(result).not.toHaveProperty('fixer');
   });
 
-  test('fails validation when required agents are missing', () => {
+  test('fails validation when required orchestrator is missing', () => {
     const input = {
-      orchestrator: VALID_PLAN,
-      // oracle missing
+      // orchestrator missing — cannot be backfilled
+      planner: VALID_PLAN,
+      oracle: VALID_PLAN,
       designer: VALID_PLAN,
       explorer: VALID_PLAN,
       librarian: VALID_PLAN,
@@ -157,9 +164,46 @@ describe('ManualPlanSchema fixer partial migration', () => {
     expect(() => ManualPlanSchema.parse(input)).toThrow();
   });
 
+  test('planner backfilled from orchestrator when absent in input', () => {
+    const input = {
+      orchestrator: VALID_PLAN,
+      // planner intentionally absent — should be backfilled
+      oracle: VALID_PLAN,
+      designer: VALID_PLAN,
+      explorer: VALID_PLAN,
+      librarian: VALID_PLAN,
+      fixer: VALID_PLAN,
+      'frontend-developer': VALID_PLAN,
+      'backend-developer': VALID_PLAN,
+    };
+
+    const result = ManualPlanSchema.parse(input);
+    // Planner should be backfilled from orchestrator
+    expect(result.planner).toEqual(VALID_PLAN);
+  });
+
+  test('explicit planner takes precedence over backfill', () => {
+    const explicitPlanner = { ...VALID_PLAN, primary: 'custom/planner-model' };
+    const input = {
+      orchestrator: VALID_PLAN,
+      planner: explicitPlanner,
+      oracle: VALID_PLAN,
+      designer: VALID_PLAN,
+      explorer: VALID_PLAN,
+      librarian: VALID_PLAN,
+      fixer: VALID_PLAN,
+      'frontend-developer': VALID_PLAN,
+      'backend-developer': VALID_PLAN,
+    };
+
+    const result = ManualPlanSchema.parse(input);
+    expect(result.planner.primary).toBe('custom/planner-model');
+  });
+
   test('fails validation when fixer plan has duplicate models', () => {
     const input = {
       orchestrator: VALID_PLAN,
+      planner: VALID_PLAN,
       oracle: VALID_PLAN,
       designer: VALID_PLAN,
       explorer: VALID_PLAN,
@@ -180,6 +224,7 @@ describe('ManualPlanSchema fixer partial migration', () => {
   test('unrecognized keys are rejected', () => {
     const input = {
       orchestrator: VALID_PLAN,
+      planner: VALID_PLAN,
       oracle: VALID_PLAN,
       designer: VALID_PLAN,
       explorer: VALID_PLAN,
@@ -191,5 +236,83 @@ describe('ManualPlanSchema fixer partial migration', () => {
     };
 
     expect(() => ManualPlanSchema.parse(input)).toThrow();
+  });
+
+  test('legacy fixer config backfills planner after fixer fan-out', () => {
+    // This is the exact bug scenario: fixer present, planner omitted,
+    // both frontend and backend missing — fixer fans out to both, planner
+    // must still be backfilled from orchestrator.
+    const input = {
+      orchestrator: VALID_PLAN,
+      // planner intentionally omitted — legacy config
+      oracle: VALID_PLAN,
+      designer: VALID_PLAN,
+      explorer: VALID_PLAN,
+      librarian: VALID_PLAN,
+      fixer: VALID_PLAN,
+      // frontend-developer and backend-developer intentionally omitted
+    };
+
+    const result = ManualPlanSchema.parse(input);
+
+    // Fixer should have fanned out to both
+    expect(result['frontend-developer']).toEqual(VALID_PLAN);
+    expect(result['backend-developer']).toEqual(VALID_PLAN);
+    expect(result).not.toHaveProperty('fixer');
+
+    // Planner should be backfilled from orchestrator despite fixer path
+    expect(result.planner).toEqual(VALID_PLAN);
+  });
+
+  test('legacy fixer config backfills planner after fixer partial backfill', () => {
+    // Fixer + only backend present — fixer should backfill frontend,
+    // planner should still be backfilled from orchestrator.
+    const input = {
+      orchestrator: VALID_PLAN,
+      // planner intentionally omitted — legacy config
+      oracle: VALID_PLAN,
+      designer: VALID_PLAN,
+      explorer: VALID_PLAN,
+      librarian: VALID_PLAN,
+      fixer: VALID_PLAN,
+      'backend-developer': { ...VALID_PLAN, primary: 'custom/backend-model' },
+    };
+
+    const result = ManualPlanSchema.parse(input);
+
+    // Fixer should have backfilled frontend
+    expect(result['frontend-developer']).toEqual(VALID_PLAN);
+    // backend-developer should be preserved as explicit
+    expect(result['backend-developer'].primary).toBe('custom/backend-model');
+    expect(result).not.toHaveProperty('fixer');
+
+    // Planner should be backfilled from orchestrator despite fixer path
+    expect(result.planner).toEqual(VALID_PLAN);
+  });
+
+  test('legacy fixer config backfills planner when both frontend and backend present', () => {
+    // Fixer + both frontend and backend present — fixer is stripped,
+    // planner should still be backfilled from orchestrator.
+    const input = {
+      orchestrator: VALID_PLAN,
+      // planner intentionally omitted — legacy config
+      oracle: VALID_PLAN,
+      designer: VALID_PLAN,
+      explorer: VALID_PLAN,
+      librarian: VALID_PLAN,
+      fixer: VALID_PLAN,
+      'frontend-developer': VALID_PLAN,
+      'backend-developer': VALID_PLAN,
+    };
+
+    const result = ManualPlanSchema.parse(input);
+
+    // Fixer should be stripped (no backfill needed, both present)
+    expect(result).not.toHaveProperty('fixer');
+    expect(result['frontend-developer']).toEqual(VALID_PLAN);
+    expect(result['backend-developer']).toEqual(VALID_PLAN);
+
+    // Planner should be backfilled from orchestrator
+    expect(result.planner).toEqual(VALID_PLAN);
   });
 });

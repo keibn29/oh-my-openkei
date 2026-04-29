@@ -367,6 +367,106 @@ describe('orchestrator agent', () => {
   });
 });
 
+describe('planner agent', () => {
+  test('planner is created and in agents array', () => {
+    const agents = createAgents();
+    const planner = agents.find((a) => a.name === 'planner');
+    expect(planner).toBeDefined();
+  });
+
+  test('planner has question permission set to allow', () => {
+    const agents = createAgents();
+    const planner = agents.find((a) => a.name === 'planner');
+    expect(planner?.config.permission).toBeDefined();
+    expect((planner?.config.permission as any).question).toBe('allow');
+  });
+
+  test('planner is denied access to council_session', () => {
+    const agents = createAgents();
+    const planner = agents.find((a) => a.name === 'planner');
+    expect((planner?.config.permission as any).council_session).toBe('deny');
+  });
+
+  test('planner accepts overrides', () => {
+    const config: PluginConfig = {
+      agents: {
+        planner: { model: 'custom-planner-model', temperature: 0.3 },
+      },
+    };
+    const agents = createAgents(config);
+    const planner = agents.find((a) => a.name === 'planner');
+    expect(planner?.config.model).toBe('custom-planner-model');
+    expect(planner?.config.temperature).toBe(0.3);
+  });
+
+  test('planner stores model array with per-model variants in _modelArray', () => {
+    const config: PluginConfig = {
+      agents: {
+        planner: {
+          model: [
+            { id: 'google/gemini-3-pro', variant: 'high' },
+            { id: 'github-copilot/claude-3.5-haiku' },
+            'openai/gpt-4',
+          ],
+        },
+      },
+    };
+    const agents = createAgents(config);
+    const planner = agents.find((a) => a.name === 'planner');
+    expect(planner?._modelArray).toEqual([
+      { id: 'google/gemini-3-pro', variant: 'high' },
+      { id: 'github-copilot/claude-3.5-haiku' },
+      { id: 'openai/gpt-4' },
+    ]);
+    expect(planner?.config.model).toBeUndefined();
+  });
+});
+
+describe('planner delegation scope', () => {
+  test('planner prompt includes only allowed delegates', () => {
+    const agents = createAgents();
+    const planner = agents.find((a) => a.name === 'planner');
+    expect(planner).toBeDefined();
+
+    const prompt = planner!.config.prompt as string;
+
+    // Extract the Available_Specialists section to avoid false positives
+    // from mentions in prose (e.g. "hand off to @frontend-developer")
+    const specialistsMatch = prompt.match(
+      /<Available_Specialists>([\s\S]*?)<\/Available_Specialists>/,
+    );
+    expect(specialistsMatch).toBeTruthy();
+    const specialistsSection = specialistsMatch![1];
+
+    // Allowed 4 should appear as specialist blocks
+    expect(specialistsSection).toContain('@explorer\n- Role:');
+    expect(specialistsSection).toContain('@librarian\n- Role:');
+    expect(specialistsSection).toContain('@oracle\n- Role:');
+    expect(specialistsSection).toContain('@designer\n- Role:');
+
+    // Execution/council agents must NOT appear as specialist blocks
+    expect(specialistsSection).not.toContain('@frontend-developer\n- Role:');
+    expect(specialistsSection).not.toContain('@backend-developer\n- Role:');
+    expect(specialistsSection).not.toContain('@council\n- Role:');
+    expect(specialistsSection).not.toContain('@observer\n- Role:');
+    expect(specialistsSection).not.toContain('@councillor\n- Role:');
+  });
+
+  test('SUBAGENT_DELEGATION_RULES.planner restricts delegation', () => {
+    // SUBAGENT_DELEGATION_RULES is imported from config
+    const { SUBAGENT_DELEGATION_RULES } = require('../config');
+    const allowed = SUBAGENT_DELEGATION_RULES.planner;
+    expect(allowed).toContain('explorer');
+    expect(allowed).toContain('librarian');
+    expect(allowed).toContain('oracle');
+    expect(allowed).toContain('designer');
+    expect(allowed).not.toContain('frontend-developer');
+    expect(allowed).not.toContain('backend-developer');
+    expect(allowed).not.toContain('council');
+    expect(allowed).not.toContain('observer');
+  });
+});
+
 describe('per-model variant in array config', () => {
   test('subagent stores model array with per-model variants', () => {
     const config: PluginConfig = {
@@ -459,6 +559,42 @@ describe('skill permissions', () => {
       ?.skill as Record<string, string>;
     expect(skillPerm?.simplify).toBe('allow');
   });
+
+  test('frontend-developer gets vercel-react-best-practices skill allowed by default', () => {
+    const agents = createAgents();
+    const frontend = agents.find((a) => a.name === 'frontend-developer');
+    expect(frontend).toBeDefined();
+    const skillPerm = (frontend?.config.permission as Record<string, unknown>)
+      ?.skill as Record<string, string>;
+    expect(skillPerm?.['vercel-react-best-practices']).toBe('allow');
+  });
+
+  test('frontend-developer gets karpathy-guidelines skill allowed by default', () => {
+    const agents = createAgents();
+    const frontend = agents.find((a) => a.name === 'frontend-developer');
+    expect(frontend).toBeDefined();
+    const skillPerm = (frontend?.config.permission as Record<string, unknown>)
+      ?.skill as Record<string, string>;
+    expect(skillPerm?.['karpathy-guidelines']).toBe('allow');
+  });
+
+  test('backend-developer gets backend-developer skill allowed by default', () => {
+    const agents = createAgents();
+    const backend = agents.find((a) => a.name === 'backend-developer');
+    expect(backend).toBeDefined();
+    const skillPerm = (backend?.config.permission as Record<string, unknown>)
+      ?.skill as Record<string, string>;
+    expect(skillPerm?.['backend-developer']).toBe('allow');
+  });
+
+  test('backend-developer gets karpathy-guidelines skill allowed by default', () => {
+    const agents = createAgents();
+    const backend = agents.find((a) => a.name === 'backend-developer');
+    expect(backend).toBeDefined();
+    const skillPerm = (backend?.config.permission as Record<string, unknown>)
+      ?.skill as Record<string, string>;
+    expect(skillPerm?.['karpathy-guidelines']).toBe('allow');
+  });
 });
 
 describe('tool permissions', () => {
@@ -522,8 +658,9 @@ describe('agent classification', () => {
     // Enable all agents (including observer) for classification testing
     const configs = getAgentConfigs({ disabled_agents: [] });
 
-    // Primary agent
+    // Primary agents
     expect(configs.orchestrator.mode).toBe('primary');
+    expect(configs.planner.mode).toBe('primary');
 
     // Subagents
     for (const name of SUBAGENT_NAMES) {
@@ -542,6 +679,7 @@ describe('createAgents', () => {
     const agents = createAgents();
     const names = agents.map((a) => a.name);
     expect(names).toContain('orchestrator');
+    expect(names).toContain('planner');
     expect(names).toContain('explorer');
     expect(names).toContain('designer');
     expect(names).toContain('oracle');
@@ -550,9 +688,9 @@ describe('createAgents', () => {
     expect(names).toContain('backend-developer');
   });
 
-  test('creates exactly 9 agents by default (1 orchestrator + 8 subagents, observer disabled)', () => {
+  test('creates exactly 10 agents by default (2 primary + 8 subagents, observer disabled)', () => {
     const agents = createAgents();
-    expect(agents.length).toBe(9);
+    expect(agents.length).toBe(10);
   });
 });
 
@@ -961,6 +1099,16 @@ describe('disabled_agents', () => {
     expect(names).toContain('councillor');
   });
 
+  test('planner can be disabled', () => {
+    const config: PluginConfig = {
+      disabled_agents: ['planner'],
+    };
+    const agents = createAgents(config);
+    const names = agents.map((a) => a.name);
+    expect(names).not.toContain('planner');
+    expect(names).toContain('orchestrator'); // orchestrator stays
+  });
+
   test('disabling council disables council agent', () => {
     const config: PluginConfig = {
       disabled_agents: ['council'],
@@ -974,13 +1122,13 @@ describe('disabled_agents', () => {
 
   test('agent count decreases when agents are disabled', () => {
     const agents = createAgents();
-    expect(agents.length).toBe(9); // 1 + 8 (observer disabled by default)
+    expect(agents.length).toBe(10); // 2 primary + 8 (observer disabled by default)
 
     const disabledConfig: PluginConfig = {
       disabled_agents: ['observer', 'designer'],
     };
     const disabledAgents = createAgents(disabledConfig);
-    expect(disabledAgents.length).toBe(8);
+    expect(disabledAgents.length).toBe(9);
   });
 
   test('getDisabledAgents respects protection rules', () => {
@@ -1023,7 +1171,7 @@ describe('disabled_agents', () => {
       disabled_agents: [],
     };
     const agents = createAgents(config);
-    expect(agents.length).toBe(10);
+    expect(agents.length).toBe(11); // 2 primary + 9 subagents (observer enabled)
     expect(agents.map((a) => a.name)).toContain('observer');
   });
 });

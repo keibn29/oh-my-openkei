@@ -9,6 +9,7 @@ import {
   getCustomAgentNames,
   loadAgentPrompt,
   type PluginConfig,
+  PRIMARY_AGENT_NAMES,
   PROTECTED_AGENTS,
   SUBAGENT_NAMES,
 } from '../config';
@@ -27,6 +28,7 @@ import {
   createOrchestratorAgent,
   resolvePrompt,
 } from './orchestrator';
+import { createPlannerAgent } from './planner';
 
 export type { AgentDefinition } from './orchestrator';
 
@@ -369,10 +371,34 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
     applyOverrides(orchestrator, orchestratorOverride);
   }
 
-  // Collect all display names from orchestrator and all subagents
+  // 3b. Create Planner (with its own overrides and custom prompts)
+  // Only create if not disabled - planner is NOT protected like orchestrator
+  let planner: ReturnType<typeof createPlannerAgent> | null = null;
+  if (!disabled.has('planner')) {
+    // DEFAULT_MODELS.planner is undefined; model is resolved via override or
+    // left unset so the runtime chat.message hook can pick it from _modelArray.
+    const plannerOverride = getAgentOverride(config, 'planner');
+    const plannerModel = plannerOverride?.model ?? DEFAULT_MODELS.planner;
+    const plannerPrompts = loadAgentPrompt('planner', config?.preset);
+    planner = createPlannerAgent(
+      plannerModel,
+      plannerPrompts.prompt,
+      plannerPrompts.appendPrompt,
+      disabled,
+    );
+    applyDefaultPermissions(planner, plannerOverride?.skills);
+    if (plannerOverride) {
+      applyOverrides(planner, plannerOverride);
+    }
+  }
+
+  // Collect all display names from orchestrator, planner, and all subagents
   const displayNameMap = new Map<string, string>();
   if (orchestrator.displayName) {
     displayNameMap.set('orchestrator', orchestrator.displayName);
+  }
+  if (planner?.displayName) {
+    displayNameMap.set('planner', planner.displayName);
   }
   for (const agent of allSubAgents) {
     if (agent.displayName) {
@@ -410,8 +436,11 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
     }
   }
 
-  // Inject display names into orchestrator prompt (complete map)
+  // Inject display names into orchestrator and planner prompts (complete map)
   injectDisplayNames(orchestrator, displayNameMap);
+  if (planner) {
+    injectDisplayNames(planner, displayNameMap);
+  }
 
   if (customOrchestratorPrompts.length > 0) {
     const rewrittenPrompts = customOrchestratorPrompts.map((promptText) => {
@@ -430,7 +459,7 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
     )}`;
   }
 
-  return [orchestrator, ...allSubAgents];
+  return [orchestrator, ...(planner ? [planner] : []), ...allSubAgents];
 }
 
 /**
@@ -463,7 +492,7 @@ export function getAgentConfigs(
       sdkConfig.hidden = true;
     } else if (isSubagent(name)) {
       sdkConfig.mode = 'subagent';
-    } else if (name === 'orchestrator') {
+    } else if ((PRIMARY_AGENT_NAMES as readonly string[]).includes(name)) {
       sdkConfig.mode = 'primary';
     } else {
       sdkConfig.mode = 'subagent';

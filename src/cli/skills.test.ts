@@ -20,6 +20,16 @@ describe('skills permissions', () => {
     // Oracle should have simplify allowed by default
     const oraclePerms = getSkillPermissionsForAgent('oracle');
     expect(oraclePerms.simplify).toBe('allow');
+
+    // Frontend-developer should have bundled frontend skills allowed
+    const frontendPerms = getSkillPermissionsForAgent('frontend-developer');
+    expect(frontendPerms['vercel-react-best-practices']).toBe('allow');
+    expect(frontendPerms['karpathy-guidelines']).toBe('allow');
+
+    // Backend-developer should have bundled backend skills allowed
+    const backendPerms = getSkillPermissionsForAgent('backend-developer');
+    expect(backendPerms['backend-developer']).toBe('allow');
+    expect(backendPerms['karpathy-guidelines']).toBe('allow');
   });
 
   it('should honor explicit skill list overrides', () => {

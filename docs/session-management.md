@@ -1,8 +1,8 @@
 # Session Management
 
-Session management lets the orchestrator keep track of recent delegated child
-sessions so follow-up work can continue in the right specialist context instead
-of starting from scratch every time.
+Session management lets the primary agents (Orchestrator and Planner) keep track
+of recent delegated child sessions so follow-up work can continue in the right
+specialist context instead of starting from scratch every time.
 
 It is enabled by default. You do not need to add anything to your config unless
 you want to change how many sessions are remembered.
@@ -35,7 +35,7 @@ ora-1
 fix-2
 ```
 
-The orchestrator sees a compact reminder in its system context, for example:
+The primary agent sees a compact reminder in its system context, for example:
 
 ```text
 ### Resumable Sessions
@@ -62,7 +62,7 @@ plugin drops the stale entry and falls back to a new session automatically.
 
 Session management is intentionally narrow:
 
-- It only applies to orchestrator-managed `task` delegations.
+- It only applies to primary-agent-managed `task` delegations (Orchestrator or Planner).
 - It is scoped to the current parent orchestrator session.
 - It is in-memory only and disappears when OpenCode/plugin state restarts.
 - It does not change manual `@agent` calls.
@@ -88,6 +88,7 @@ That means the generated starter config can stay clean:
   "presets": {
     "openai": {
       "orchestrator": { "model": "openai/gpt-5.5" },
+      "planner": { "model": "openai/gpt-5.5" },
       "explorer": { "model": "openai/gpt-5.4-mini" },
       "frontend-developer": { "model": "openai/gpt-5.4-mini" },
       "backend-developer": { "model": "openai/gpt-5.4-mini" }

@@ -9,6 +9,7 @@ import {
 
 export const DEFAULT_AGENT_MCPS: Record<AgentName, string[]> = {
   orchestrator: ['*', '!context7'],
+  planner: ['*', '!context7'], // same as orchestrator
   designer: [],
   oracle: [],
   librarian: ['websearch', 'context7', 'grep_app'],

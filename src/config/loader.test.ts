@@ -124,6 +124,12 @@ describe('loadPluginConfig', () => {
             fallback2: 'chutes/kimi-k2.5',
             fallback3: 'opencode/gpt-5-nano',
           },
+          planner: {
+            primary: 'openai/gpt-5.5',
+            fallback1: 'anthropic/claude-opus-4-6',
+            fallback2: 'chutes/kimi-k2.5',
+            fallback3: 'opencode/gpt-5-nano',
+          },
           oracle: {
             primary: 'openai/gpt-5.5',
             fallback1: 'anthropic/claude-opus-4-6',

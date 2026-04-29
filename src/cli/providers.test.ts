@@ -64,6 +64,9 @@ describe('providers', () => {
     // Orchestrator should always have '*'
     expect(agents.orchestrator.skills).toEqual(['*']);
 
+    // Planner should also have '*' like orchestrator
+    expect(agents.planner.skills).toEqual(['*']);
+
     // Oracle should have bundled simplify
     expect(agents.oracle.skills).toContain('simplify');
 
@@ -76,10 +79,16 @@ describe('providers', () => {
     // Explorer should have no bundled skills by default
     expect(agents.explorer.skills).toEqual([]);
 
-    // Frontend-developer should have no bundled skills by default
-    expect(agents['frontend-developer'].skills).toEqual([]);
-    // Backend-developer should have no bundled skills by default
-    expect(agents['backend-developer'].skills).toEqual([]);
+    // Frontend-developer should have bundled skills assigned
+    expect(agents['frontend-developer'].skills).toContain(
+      'vercel-react-best-practices',
+    );
+    expect(agents['frontend-developer'].skills).toContain(
+      'karpathy-guidelines',
+    );
+    // Backend-developer should have bundled skills assigned
+    expect(agents['backend-developer'].skills).toContain('backend-developer');
+    expect(agents['backend-developer'].skills).toContain('karpathy-guidelines');
   });
 
   test('generateLiteConfig includes mcps field', () => {

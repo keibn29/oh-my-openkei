@@ -1,0 +1,13 @@
+# Suggested Commands
+- `bun run build` — build plugin + CLI + declarations + schema.
+- `bun run typecheck` — run TypeScript type checking.
+- `bun test` — run all tests.
+- `bun test -t "pattern"` — run a filtered Bun test.
+- `bun run lint` — Biome lint.
+- `bun run format` — Biome format.
+- `bun run check` — Biome check with autofix.
+- `bun run check:ci` — Biome check without autofix.
+- `bun run dev` — build and launch OpenCode.
+- `bun run verify:release` — verify release artifact completeness.
+- `bun run verify:host-smoke` — smoke-test host loading.
+- Standard Darwin shell utilities are available (git, ls, pwd, rg, npm, bun, etc.).

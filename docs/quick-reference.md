@@ -15,11 +15,18 @@
 | [Council Agent](council.md) | Multi-LLM consensus, presets, role prompts, timeouts |
 | [Codemap Skill](codemap.md) | Hierarchical codemap generation |
 
+### Primary Agents
+
+| Agent | Role |
+|-------|------|
+| **Orchestrator** | Default primary — handles planning, implementation, and delegation |
+| **Planner** | Interview-first planning specialist — gathers requirements, builds plans, delegates research/clarification, does not implement |
+
 ## ⚙️ Config & Reference
 
 | Doc | Contents |
 |-----|----------|
-| [Skills](skills.md) | `simplify`, `agent-browser`, `codemap` — skills assignment syntax |
+| [Skills](skills.md) | `simplify`, `agent-browser`, `codemap`, `vercel-react-best-practices`, `backend-developer`, `karpathy-guidelines` — skills assignment syntax |
 | [MCPs](mcps.md) | `websearch`, `context7`, `grep_app` — permissions per agent, global disable |
 | [Tools](tools.md) | Background tasks, LSP, code search (`ast_grep`), formatters |
 | [Configuration](configuration.md) | Config files, prompt overriding, JSONC, full option reference table |

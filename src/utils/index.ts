@@ -1,3 +1,5 @@
+// Re-export PRIMARY_AGENT_NAMES from config for convenience
+export { PRIMARY_AGENT_NAMES } from '../config/constants';
 export * from './agent-variant';
 export * from './env';
 export * from './internal-initiator';
