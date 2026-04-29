@@ -7,16 +7,22 @@ const SCHEMA_URL =
   'https://unpkg.com/oh-my-openkei@latest/oh-my-openkei.schema.json';
 
 export const MODEL_MAPPINGS = {
-    orchestrator: { model: 'openai/gpt-5.4-fast', variant: 'xhigh' },
-    planner: { model: 'openai/gpt-5.5-fast', variant: 'xhigh' },
-    sprinter: { model: 'openai/gpt-5.3-codex', variant: 'low' },
-    oracle: { model: 'openai/gpt-5.5-fast', variant: 'high' },
-    council: { model: 'openai/gpt-5.4-fast', variant: 'xhigh' },
-    librarian: { model: 'minimax-coding-plan/MiniMax-M2.7' },
-    explorer: { model: 'minimax-coding-plan/MiniMax-M2.7' },
-    designer: { model: 'opencode-go/kimi-k2.6' },
-    'frontend-developer': { model: 'opencode-go/deepseek-v4-flash', variant: 'high' },
-    'backend-developer': { model: 'opencode-go/deepseek-v4-flash', variant: 'high' },
+  orchestrator: { model: 'openai/gpt-5.4-fast', variant: 'xhigh' },
+  planner: { model: 'openai/gpt-5.5-fast', variant: 'xhigh' },
+  sprinter: { model: 'openai/gpt-5.3-codex', variant: 'low' },
+  oracle: { model: 'openai/gpt-5.5-fast', variant: 'high' },
+  council: { model: 'openai/gpt-5.4-fast', variant: 'xhigh' },
+  librarian: { model: 'minimax-coding-plan/MiniMax-M2.7' },
+  explorer: { model: 'minimax-coding-plan/MiniMax-M2.7' },
+  designer: { model: 'opencode-go/kimi-k2.6' },
+  'frontend-developer': {
+    model: 'opencode-go/deepseek-v4-flash',
+    variant: 'high',
+  },
+  'backend-developer': {
+    model: 'opencode-go/deepseek-v4-flash',
+    variant: 'high',
+  },
 } as const;
 
 export function generateLiteConfig(

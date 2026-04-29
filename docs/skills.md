@@ -104,6 +104,8 @@ Source: inspired by Andrej Karpathy's guidelines, bundled locally.
 
 Control which skills each agent can use in `~/.config/opencode/oh-my-openkei.json` (or `.jsonc`):
 
+For `frontend-developer` and `backend-developer`, any skills available after this filtering are treated as **mandatory workflow instructions**. Those agents are prompted to load every available skill via the `skill` tool before doing substantive work.
+
 | Syntax | Meaning |
 |--------|---------|
 | `["*"]` | All installed skills |

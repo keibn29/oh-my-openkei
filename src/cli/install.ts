@@ -247,7 +247,7 @@ async function runInstall(config: InstallConfig): Promise<number> {
   console.log();
 
   const modelsInfo =
-    'Default configuration uses OpenAI models (gpt-5.5 / gpt-5.4-mini).';
+    'Default preset uses OpenAI, MiniMax, Kimi, and DeepSeek models across agents.';
   console.log(`${modelsInfo}`);
   const altProviders = 'For the full configuration reference, see:';
   console.log(altProviders);

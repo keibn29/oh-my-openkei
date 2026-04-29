@@ -32,8 +32,8 @@
 | [Tools](tools.md) | Background tasks, LSP, code search (`ast_grep`), formatters |
 | [Configuration](configuration.md) | Config files, prompt overriding, JSONC, full option reference table |
 
-## 💡 Author's Setup
+## 💡 Example Presets
 
 | Doc | Contents |
 |-----|----------|
-| [Author's Preset](authors-preset.md) | The exact config the author runs daily — OpenAI + Fireworks AI + GitHub Copilot |
+| [$30 Preset](thirty-dollars-preset.md) | Budget mixed-provider example with the current agent roster |

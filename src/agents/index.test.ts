@@ -8,6 +8,8 @@ import {
   PluginConfigSchema,
   SUBAGENT_NAMES,
 } from '../config';
+import { createBackendDeveloperAgent } from './backend-developer';
+import { createFrontendDeveloperAgent } from './frontend-developer';
 import {
   createAgents,
   getAgentConfigs,
@@ -482,12 +484,12 @@ describe('planner agent', () => {
       'Every plan request — no matter how simple it seems — requires at least one interview exchange',
     );
     expect(prompt).toContain(
-      'A final plan must never be produced in the same response as the user\'s initial request',
+      "A final plan must never be produced in the same response as the user's initial request",
     );
     // Workflow step 3 reflects the mandatory nature
     expect(prompt).toContain('Conduct Interview (Required');
     expect(prompt).toContain(
-      'Do not produce a final plan in the same response as the user\'s initial request',
+      "Do not produce a final plan in the same response as the user's initial request",
     );
     // Exploration does not replace interviewing
     expect(prompt).toContain(
@@ -578,7 +580,7 @@ describe('planner delegation scope', () => {
     const planner = agents.find((a) => a.name === 'planner');
     expect(planner).toBeDefined();
 
-    const prompt = planner!.config.prompt as string;
+    const prompt = planner?.config.prompt as string;
 
     // Extract the Available_Specialists section to avoid false positives
     // from mentions in prose (e.g. "hand off to @frontend-developer")
@@ -586,7 +588,7 @@ describe('planner delegation scope', () => {
       /<Available_Specialists>([\s\S]*?)<\/Available_Specialists>/,
     );
     expect(specialistsMatch).toBeTruthy();
-    const specialistsSection = specialistsMatch![1];
+    const specialistsSection = specialistsMatch?.[1] ?? '';
 
     // Allowed 4 should appear as specialist blocks
     expect(specialistsSection).toContain('@explorer\n- Role:');
@@ -744,6 +746,52 @@ describe('skill permissions', () => {
     const skillPerm = (backend?.config.permission as Record<string, unknown>)
       ?.skill as Record<string, string>;
     expect(skillPerm?.['karpathy-guidelines']).toBe('allow');
+  });
+});
+
+describe('developer agent skills in prompt', () => {
+  test('frontend-developer prompt requires loading available skills', () => {
+    const agents = createAgents();
+    const frontend = agents.find((a) => a.name === 'frontend-developer');
+    const prompt = frontend?.config.prompt as string;
+    expect(prompt).toContain(
+      'If any skills are available to you, they are mandatory',
+    );
+    expect(prompt).toContain(
+      'use the `skill` tool to load each available skill',
+    );
+  });
+
+  test('backend-developer prompt requires loading available skills', () => {
+    const agents = createAgents();
+    const backend = agents.find((a) => a.name === 'backend-developer');
+    const prompt = backend?.config.prompt as string;
+    expect(prompt).toContain(
+      'If any skills are available to you, they are mandatory',
+    );
+    expect(prompt).toContain(
+      'use the `skill` tool to load each available skill',
+    );
+  });
+
+  test('frontend-developer custom prompt still includes the appended skill requirement', () => {
+    const frontend = createFrontendDeveloperAgent(
+      'test/model',
+      'Custom frontend prompt',
+    );
+    expect(frontend.config.prompt).toContain(
+      'If any skills are available to you, they are mandatory',
+    );
+  });
+
+  test('backend-developer custom prompt still includes the appended skill requirement', () => {
+    const backend = createBackendDeveloperAgent(
+      'test/model',
+      'Custom backend prompt',
+    );
+    expect(backend.config.prompt).toContain(
+      'If any skills are available to you, they are mandatory',
+    );
   });
 });
 

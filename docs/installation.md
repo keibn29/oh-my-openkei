@@ -2,6 +2,8 @@
 
 Complete installation instructions for oh-my-openkei.
 
+Published package page: https://www.npmjs.com/package/oh-my-openkei
+
 ## Table of Contents
 
 - [For Humans](#for-humans)
@@ -12,6 +14,11 @@ Complete installation instructions for oh-my-openkei.
 ---
 
 ## For Humans
+
+### Prerequisites
+
+- OpenCode installed and working
+- `bunx` available on your machine
 
 ### Quick Install
 
@@ -26,6 +33,10 @@ Or use non-interactive mode:
 ```bash
 bunx oh-my-openkei@latest install --no-tui --skills=yes
 ```
+
+See the package page for the published install command and latest README:
+
+- https://www.npmjs.com/package/oh-my-openkei
 
 ### Configuration Options
 
@@ -56,7 +67,7 @@ bunx oh-my-openkei@latest install --reset
 
 ### After Installation
 
-The installer generates a mixed-provider preset by default. To switch providers or build a different mixed setup, use **[Configuration Reference](configuration.md)** for the full option reference and the preset docs for copyable examples.
+The installer generates a mixed-provider preset by default. To switch providers or build a different mixed setup, use **[Configuration Reference](configuration.md)** for the full option reference and **[$30 Preset](thirty-dollars-preset.md)** for a smaller mixed-provider example.
 
 Then:
 
@@ -85,8 +96,8 @@ ping all agents
 Paste this into Claude Code, AmpCode, Cursor, or any coding agent:
 
 ```
-Install and configure by following the instructions here:
-https://raw.githubusercontent.com/keibn29/oh-my-openkei/refs/heads/master/README.md
+Install and configure oh-my-openkei by following:
+https://www.npmjs.com/package/oh-my-openkei
 ```
 
 ---
@@ -127,6 +138,7 @@ The installer automatically:
 - Adds the plugin to `~/.config/opencode/opencode.json`
 - Disables default OpenCode agents
 - Generates agent model mappings in `~/.config/opencode/oh-my-openkei.json` (or `.jsonc`)
+- Installs recommended and bundled skills when `--skills=yes`
 
 ### Step 3: Authenticate with Providers
 
@@ -150,7 +162,7 @@ Verify all agents respond successfully.
 
 **Crucial Advice for the User:**
 - They can easily assign **different models to different agents** by editing `~/.config/opencode/oh-my-openkei.json` (or `.jsonc`).
-- If they want to add a different provider later (Kimi, GitHub Copilot, ZAI), they can update this file manually. See **[Configuration Reference](configuration.md)** and the preset docs for examples.
+- If they want to add a different provider later (Kimi, GitHub Copilot, ZAI), they can update this file manually. See **[Configuration Reference](configuration.md)** and **[$30 Preset](thirty-dollars-preset.md)** for examples.
 - Read the generated `~/.config/opencode/oh-my-openkei.json` (or `.jsonc`) file to understand the current configuration.
 
 ---

@@ -18,16 +18,27 @@ To explore the agents, see **[Meet the Pantheon](#meet-the-pantheon)**. For the 
 
 ### Quick Start
 
+Published package page:
+
+- https://www.npmjs.com/package/oh-my-openkei
+
 Copy and paste this prompt to your LLM agent:
 
 ```
-Install and configure oh-my-openkei: https://raw.githubusercontent.com/keibn29/oh-my-openkei/refs/heads/master/README.md
+Install and configure oh-my-openkei by following:
+https://www.npmjs.com/package/oh-my-openkei
 ```
 
-### Manual Installation
+### Install
 
 ```bash
 bunx oh-my-openkei@latest install
+```
+
+### Non-Interactive Install
+
+```bash
+bunx oh-my-openkei@latest install --no-tui --skills=yes
 ```
 
 ### Getting Started
@@ -42,11 +53,19 @@ The installer generates a mixed-provider preset by default, using `openai/gpt-5.
    ```bash
    opencode models --refresh
    ```
-3. **Open your plugin config** at `~/.config/opencode/oh-my-openkei.json`
-4. **Update the models you want for each agent**
+3. **Review your generated plugin config** at `~/.config/opencode/oh-my-openkei.json`
+4. **Adjust models, skills, or MCP access per agent if needed**
+5. **Start OpenCode**:
+   ```bash
+   opencode
+   ```
+6. **Verify the agents are responding**:
+   ```text
+   ping all agents
+   ```
 
 > [!TIP]
-> Want to understand how automatic delegation works in practice? Review the **[Orchestrator prompt](https://github.com/keibn29/oh-my-openkei/blob/master/src/agents/orchestrator.ts#L28)** — it contains the delegation rules, specialist routing logic, and the delegation-first operating model for the main agent.
+> Want to understand how automatic delegation works in practice? Review the **[Orchestrator prompt](src/agents/orchestrator.ts)** — it contains the routing rules, specialist selection logic, and delegation-first operating model for the main agent.
 
 The default generated configuration:
 
@@ -71,11 +90,13 @@ The default generated configuration:
 }
 ```
 
+`frontend-developer` and `backend-developer` treat their available skills as mandatory instructions: when skills are configured for them, they are prompted to load those skills via the `skill` tool before doing substantive work.
+
 Session management is enabled by default even though it is not shown in the starter config. See **[Session Management](docs/session-management.md)** if you want to customize how many resumable child-agent sessions are remembered.
 
 ### For Alternative Providers
 
-To use Kimi, GitHub Copilot, ZAI Coding Plan, or a mixed-provider setup, use **[Configuration](docs/configuration.md)** for the full reference. For ready-made starting points, check the **[Author's Preset](docs/authors-preset.md)** and **[$30 Preset](docs/thirty-dollars-preset.md)** — the `$30` preset is the best cheap setup.
+To use Kimi, GitHub Copilot, ZAI Coding Plan, or a different mixed-provider setup, use **[Configuration](docs/configuration.md)** for the full reference. For a cheaper mixed-provider example, see **[$30 Preset](docs/thirty-dollars-preset.md)**.
 
 The configuration guide also covers custom subagents via `agents.<name>`, where you can define both a normal `prompt` and an `orchestratorPrompt` block for delegation.
 
@@ -97,6 +118,9 @@ ping all agents
 
 If any agent fails to respond, check your provider authentication and config file.
 
+> [!NOTE]
+> The JSON block above shows the installer-generated preset. The per-agent "Default Model" values below describe runtime-safe defaults used when no explicit model config is provided.
+
 ---
 
 <a id="meet-the-pantheon"></a>
@@ -111,29 +135,14 @@ If any agent fails to respond, check your provider authentication and config fil
 - **Planner**: Interview-first planner that asks clarifying questions and returns structured `<planner-plan>` output.
 - **Sprinter**: Fast self-executing agent for quick Q&A and direct tasks.
 
-#### Interaction Flow
+#### Routing Flow
 
-```
-User / OpenCode → Primary Agent (Orchestrator, Planner, or Sprinter)
-                        │
-      ┌─────────────────┼─────────────────┐
-      ▼                 ▼                 ▼
-  Explorer          Oracle           Librarian
-  (scout)        (architecture)    (research)
-      │                 │                 │
-      └─────────────────┼─────────────────┘
-                        ▼
-                   ┌─────────┐
-                   │ Designer│
-                   │ (UI/UX) │
-                   └────┬────┘
-                  ┌─────┴─────┐
-                  ▼           ▼
-            Frontend      Backend
-            Developer     Developer
-
-On-demand (not auto-delegated): Council · Observer
-```
+- **Orchestrator** can delegate to `explorer`, `librarian`, `oracle`, `designer`, `frontend-developer`, `backend-developer`, `observer`, and `council`.
+- **Planner** is planning-only and can delegate only to `explorer`, `librarian`, `oracle`, and `designer`.
+- **Sprinter** is self-executing and does not delegate.
+- **Specialists** are leaf executors: once delegated to, they do the bounded work and hand results back.
+- **Observer** is disabled by default until you explicitly enable it in config.
+- **Council** is available, but intentionally expensive and kept on a stricter path than normal delegation.
 
 #### Orchestrator
 
@@ -173,6 +182,14 @@ The following agents are delegated to by the primary agents based on task type.
 **Recommended Models:** `cerebras/zai-glm-4.7`, `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
 **Model Guidance:** Choose a fast, low-cost model. Explorer handles broad scouting work, so speed and efficiency usually matter more than using your strongest reasoning model.
 
+#### Librarian
+
+**Role:** External knowledge retrieval  
+**Prompt:** [librarian.ts](src/agents/librarian.ts)  
+**Default Model:** `openai/gpt-5.4-mini`  
+**Recommended Models:** `cerebras/zai-glm-4.7`, `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
+**Model Guidance:** Choose a fast, low-cost model. Librarian handles research and documentation lookups, so speed and efficiency usually matter more than using your strongest reasoning model.
+
 #### Oracle
 
 **Role:** Strategic advisor and debugger of last resort  
@@ -196,14 +213,6 @@ The following agents are delegated to by the primary agents based on task type.
 **Default Setup:** Config-driven — councillors come from `council.presets` and the Council agent model comes from your normal `council` agent config  
 **Recommended Setup:** Strong Council model + diverse councillors across providers  
 **Model Guidance:** Use a strong synthesis model for the Council agent and diverse models as councillors. The value of Council comes from comparing different model perspectives, not just picking the single strongest model everywhere.
-
-#### Librarian
-
-**Role:** External knowledge retrieval  
-**Prompt:** [librarian.ts](src/agents/librarian.ts)  
-**Default Model:** `openai/gpt-5.4-mini`  
-**Recommended Models:** `cerebras/zai-glm-4.7`, `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
-**Model Guidance:** Choose a fast, low-cost model. Librarian handles research and documentation lookups, so speed and efficiency usually matter more than using your strongest reasoning model.
 
 #### Designer
 
@@ -257,6 +266,7 @@ Use this section as a map: start with installation, then jump to features, confi
 | Doc | What it covers |
 |-----|----------------|
 | **[Installation Guide](docs/installation.md)** | Install the plugin, use CLI flags, reset config, and troubleshoot setup |
+| **[Quick Reference](docs/quick-reference.md)** | Jump table for install, configuration, skills, MCPs, tools, and presets |
 
 ### ✨ Features & Workflows
 
@@ -271,7 +281,6 @@ Use this section as a map: start with installation, then jump to features, confi
 | Doc | What it covers |
 |-----|----------------|
 | **[Configuration](docs/configuration.md)** | Config file locations, JSONC support, prompt overrides, and full option reference |
-| **[Maintainer Guide](docs/maintainers.md)** | Issue triage rules, label meanings, support routing, and repo maintenance workflow |
 | **[Skills](docs/skills.md)** | Built-in and recommended skills such as `simplify`, `agent-browser`, and `codemap` |
 | **[MCPs](docs/mcps.md)** | `websearch`, `context7`, `grep_app`, `figma`, `serena`, and how MCP permissions work per agent |
 | **[Tools](docs/tools.md)** | Built-in tool capabilities like `webfetch`, LSP tools, code search, and formatters |
@@ -280,16 +289,7 @@ Use this section as a map: start with installation, then jump to features, confi
 
 | Doc | What it covers |
 |-----|----------------|
-| **[Author's Preset](docs/authors-preset.md)** | The author's daily mixed-provider setup |
 | **[$30 Preset](docs/thirty-dollars-preset.md)** | A budget mixed-provider setup for around $30/month |
-
----
-
-## 🏛️ Contributors
-
-Thanks to all the builders, debuggers, writers, and wanderers who have earned their place in the pantheon. Every merged contribution leaves a mark on the realm.
-
-[View all 44 contributors on GitHub](https://github.com/keibn29/oh-my-openkei/graphs/contributors)
 
 ---
 

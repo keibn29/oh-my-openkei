@@ -29,7 +29,7 @@ export function getAgentOverride(
   // no explicit config is provided. Explicit per-agent overrides must still
   // win over legacy fixer.
   if (name === 'frontend-developer' || name === 'backend-developer') {
-    return overrides['fixer'];
+    return overrides.fixer;
   }
 
   // Standard alias lookup for other legacy agent names

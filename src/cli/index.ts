@@ -39,7 +39,8 @@ Options:
   --reset                Force overwrite of existing configuration
   -h, --help             Show this help message
 
-The installer generates an OpenAI configuration by default.
+The installer generates a mixed-provider preset as the default configuration,
+using OpenAI, MiniMax, Kimi, and DeepSeek models across agents.
 For the full config reference, see docs/configuration.md.
 
 Examples:
