@@ -11,8 +11,8 @@ export interface RecommendedSkill {
   repo: string;
   /** Skill name within the repo (--skill flag) */
   skillName: string;
-  /** List of agents that should auto-allow this skill */
-  allowedAgents: string[];
+  /** Agents this skill is recommended for (install metadata only) */
+  recommendedFor: string[];
   /** Description shown to user during install */
   description: string;
   /** Optional commands to run after the skill is added */
@@ -28,7 +28,7 @@ export const RECOMMENDED_SKILLS: RecommendedSkill[] = [
     name: 'agent-browser',
     repo: 'https://github.com/vercel-labs/agent-browser',
     skillName: 'agent-browser',
-    allowedAgents: ['designer'],
+    recommendedFor: ['designer'],
     description: 'High-performance browser automation',
     postInstallCommands: [
       'npm install -g agent-browser',

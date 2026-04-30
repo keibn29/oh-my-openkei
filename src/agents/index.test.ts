@@ -784,6 +784,16 @@ describe('developer agent skills in prompt', () => {
     expect(frontend.config.prompt).toContain('they are MANDATORY');
   });
 
+  test('business-analyst prompt requires loading available skills', () => {
+    const agents = createAgents();
+    const ba = agents.find((a) => a.name === 'business-analyst');
+    const prompt = ba?.config.prompt as string;
+    expect(prompt).toContain('they are MANDATORY');
+    expect(prompt).toContain(
+      'use the `skill` tool to load all available skills',
+    );
+  });
+
   test('backend-developer custom prompt still includes the appended skill requirement', () => {
     const backend = createBackendDeveloperAgent(
       'test/model',

@@ -18,8 +18,8 @@ export interface CustomSkill {
   name: string;
   /** Human-readable description */
   description: string;
-  /** List of agents that should auto-allow this skill */
-  allowedAgents: string[];
+  /** Agents this skill is recommended for (install metadata only) */
+  recommendedFor: string[];
   /** Source path in this repo (relative to project root) */
   sourcePath: string;
 }
@@ -31,41 +31,41 @@ export const CUSTOM_SKILLS: CustomSkill[] = [
   {
     name: 'simplify',
     description: 'Code simplification and readability-focused refactoring',
-    allowedAgents: ['oracle'],
+    recommendedFor: ['oracle'],
     sourcePath: 'src/skills/simplify',
   },
   {
     name: 'codemap',
     description: 'Repository understanding and hierarchical codemap generation',
-    allowedAgents: ['orchestrator'],
+    recommendedFor: ['orchestrator'],
     sourcePath: 'src/skills/codemap',
   },
   {
     name: 'vercel-react-best-practices',
     description:
       'React and Next.js performance optimization guidelines from Vercel Engineering',
-    allowedAgents: ['frontend-developer'],
+    recommendedFor: ['frontend-developer'],
     sourcePath: 'src/skills/vercel-react-best-practices',
   },
   {
     name: 'backend-developer',
     description:
       'Senior backend developer skill with clean architecture and Python/FastAPI patterns',
-    allowedAgents: ['backend-developer'],
+    recommendedFor: ['backend-developer'],
     sourcePath: 'src/skills/backend-developer',
   },
   {
     name: 'karpathy-guidelines',
     description:
       "Inspired by Andrej Karpathy's observations on LLM coding pitfalls",
-    allowedAgents: ['frontend-developer', 'backend-developer'],
+    recommendedFor: ['frontend-developer', 'backend-developer'],
     sourcePath: 'src/skills/karpathy-guidelines',
   },
   {
     name: 'business-analyst',
     description:
       'Business analysis frameworks, templates, and documentation standards',
-    allowedAgents: ['business-analyst'],
+    recommendedFor: ['business-analyst'],
     sourcePath: 'src/skills/business-analyst',
   },
 ];
