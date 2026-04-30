@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
 import {
   addPluginToOpenCodeConfig,
+  applyDefaultAgentColors,
   detectCurrentConfig,
   disableDefaultAgents,
   generateLiteConfig,
@@ -108,7 +109,7 @@ async function runInstall(config: InstallConfig): Promise<number> {
 
   printHeader(isUpdate);
 
-  let totalSteps = 4;
+  let totalSteps = 5;
   if (config.installSkills) totalSteps += 1;
   if (config.installCustomSkills) totalSteps += 1;
 
@@ -134,6 +135,14 @@ async function runInstall(config: InstallConfig): Promise<number> {
   } else {
     const agentResult = disableDefaultAgents();
     if (!handleStepResult(agentResult, 'Default agents disabled')) return 1;
+  }
+
+  printStep(step++, totalSteps, 'Applying default agent colors...');
+  if (config.dryRun) {
+    printInfo('Dry run mode - skipping agent colors');
+  } else {
+    const colorResult = applyDefaultAgentColors();
+    if (!handleStepResult(colorResult, 'Agent colors applied')) return 1;
   }
 
   printStep(step++, totalSteps, 'Writing oh-my-openkei configuration...');

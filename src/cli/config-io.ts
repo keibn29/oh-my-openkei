@@ -276,6 +276,48 @@ export function writeLiteConfig(
   }
 }
 
+const DEFAULT_AGENT_COLORS: Record<string, string> = {
+  orchestrator: 'success',
+  planner: 'primary',
+  council: 'info',
+  'business-analyst': 'warning',
+  sprinter: 'error',
+};
+
+export function applyDefaultAgentColors(): ConfigMergeResult {
+  const configPath = getExistingConfigPath();
+
+  try {
+    ensureOpenCodeConfigDir();
+    const { config: parsedConfig, error } = parseConfig(configPath);
+    if (error) {
+      return {
+        success: false,
+        configPath,
+        error: `Failed to parse config: ${error}`,
+      };
+    }
+    const config = parsedConfig ?? {};
+
+    const agent = (config.agent ?? {}) as Record<string, unknown>;
+    for (const [agentName, color] of Object.entries(DEFAULT_AGENT_COLORS)) {
+      const existing =
+        (agent[agentName] as Record<string, unknown> | undefined) ?? {};
+      agent[agentName] = { ...existing, color };
+    }
+    config.agent = agent;
+
+    writeConfig(configPath, config);
+    return { success: true, configPath };
+  } catch (err) {
+    return {
+      success: false,
+      configPath,
+      error: `Failed to apply agent colors: ${err}`,
+    };
+  }
+}
+
 export function disableDefaultAgents(): ConfigMergeResult {
   const configPath = getExistingConfigPath();
 

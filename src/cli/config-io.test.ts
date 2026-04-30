@@ -13,6 +13,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import {
   addPluginToOpenCodeConfig,
+  applyDefaultAgentColors,
   detectCurrentConfig,
   disableDefaultAgents,
   parseConfig,
@@ -260,6 +261,48 @@ describe('config-io', () => {
     expect(saved.agent.general.disable).toBe(true);
     expect(saved.agent.build.disable).toBe(true);
     expect(saved.agent.plan.disable).toBe(true);
+  });
+
+  test('applyDefaultAgentColors writes colors to opencode.json', () => {
+    const configPath = join(tmpDir, 'opencode', 'opencode.json');
+    paths.ensureConfigDir();
+    writeFileSync(configPath, JSON.stringify({}));
+
+    const result = applyDefaultAgentColors();
+    expect(result.success).toBe(true);
+
+    const saved = JSON.parse(readFileSync(configPath, 'utf-8'));
+    expect(saved.agent.orchestrator.color).toBe('success');
+    expect(saved.agent.planner.color).toBe('primary');
+    expect(saved.agent.council.color).toBe('info');
+    expect(saved.agent['business-analyst'].color).toBe('warning');
+    expect(saved.agent.sprinter.color).toBe('error');
+    // Other agents should not have colors set
+    expect(saved.agent.oracle).toBeUndefined();
+    expect(saved.agent.designer).toBeUndefined();
+  });
+
+  test('applyDefaultAgentColors preserves existing agent config', () => {
+    const configPath = join(tmpDir, 'opencode', 'opencode.json');
+    paths.ensureConfigDir();
+    writeFileSync(
+      configPath,
+      JSON.stringify({
+        agent: {
+          orchestrator: { model: 'test/model', disable: false },
+        },
+      }),
+    );
+
+    const result = applyDefaultAgentColors();
+    expect(result.success).toBe(true);
+
+    const saved = JSON.parse(readFileSync(configPath, 'utf-8'));
+    // Existing fields preserved
+    expect(saved.agent.orchestrator.model).toBe('test/model');
+    expect(saved.agent.orchestrator.disable).toBe(false);
+    // Color added
+    expect(saved.agent.orchestrator.color).toBe('success');
   });
 
   test('detectCurrentConfig detects installed status', () => {
