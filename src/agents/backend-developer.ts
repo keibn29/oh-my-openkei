@@ -1,7 +1,5 @@
 import type { AgentDefinition } from './orchestrator';
-
-const BACKEND_DEVELOPER_SKILL_REQUIREMENT =
-  '**Skills**: If any skills are available to you, they are mandatory. Before doing substantive work, use the `skill` tool to load each available skill and follow those instructions throughout the task.';
+import { SKILL_REQUIREMENT } from './shared-agent-content';
 
 const BACKEND_DEVELOPER_PROMPT = `You are Backend Developer - a fast, focused implementation specialist for server-side code.
 
@@ -60,12 +58,12 @@ export function createBackendDeveloperAgent(
   customPrompt?: string,
   customAppendPrompt?: string,
 ): AgentDefinition {
-  let prompt = `${BACKEND_DEVELOPER_PROMPT}\n\n${BACKEND_DEVELOPER_SKILL_REQUIREMENT}`;
+  let prompt = `${BACKEND_DEVELOPER_PROMPT}\n\n${SKILL_REQUIREMENT}`;
 
   if (customPrompt) {
-    prompt = `${customPrompt}\n\n${BACKEND_DEVELOPER_SKILL_REQUIREMENT}`;
+    prompt = `${customPrompt}\n\n${SKILL_REQUIREMENT}`;
   } else if (customAppendPrompt) {
-    prompt = `${BACKEND_DEVELOPER_PROMPT}\n\n${customAppendPrompt}\n\n${BACKEND_DEVELOPER_SKILL_REQUIREMENT}`;
+    prompt = `${BACKEND_DEVELOPER_PROMPT}\n\n${customAppendPrompt}\n\n${SKILL_REQUIREMENT}`;
   }
 
   return {

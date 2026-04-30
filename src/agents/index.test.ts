@@ -374,16 +374,16 @@ describe('orchestrator agent', () => {
     const prompt = orchestrator?.config.prompt as string;
 
     expect(prompt).toContain('ALWAYS delegate to a specialist');
-    expect(prompt).toContain(
-      'FORBIDDEN from doing substantive work',
-    );
+    expect(prompt).toContain('FORBIDDEN from doing substantive work');
     expect(prompt).toContain(
       'The ONLY exceptions: integration, verification, or when a subagent\'s "Don\'t delegate when" rule explicitly applies',
     );
     expect(prompt).not.toContain(
       'Skip delegation if overhead ≥ doing it yourself',
     );
-    expect(prompt).toContain('handle directly only when a "Don\'t delegate when" exception applies');
+    expect(prompt).toContain(
+      'handle directly only when a "Don\'t delegate when" exception applies',
+    );
   });
 });
 
@@ -886,9 +886,9 @@ describe('createAgents', () => {
     expect(names).toContain('backend-developer');
   });
 
-  test('creates exactly 11 agents by default (3 primary + 8 subagents, observer disabled)', () => {
+  test('creates exactly 12 agents by default (4 primary + 8 subagents, observer disabled)', () => {
     const agents = createAgents();
-    expect(agents.length).toBe(11);
+    expect(agents.length).toBe(12);
   });
 });
 
@@ -1320,13 +1320,13 @@ describe('disabled_agents', () => {
 
   test('agent count decreases when agents are disabled', () => {
     const agents = createAgents();
-    expect(agents.length).toBe(11); // 3 primary + 8 (observer disabled by default)
+    expect(agents.length).toBe(12); // 4 primary + 8 (observer disabled by default)
 
     const disabledConfig: PluginConfig = {
       disabled_agents: ['observer', 'designer'],
     };
     const disabledAgents = createAgents(disabledConfig);
-    expect(disabledAgents.length).toBe(10);
+    expect(disabledAgents.length).toBe(11);
   });
 
   test('getDisabledAgents respects protection rules', () => {
@@ -1369,7 +1369,7 @@ describe('disabled_agents', () => {
       disabled_agents: [],
     };
     const agents = createAgents(config);
-    expect(agents.length).toBe(12); // 3 primary + 9 subagents (observer enabled)
+    expect(agents.length).toBe(13); // 4 primary + 9 subagents (observer enabled)
     expect(agents.map((a) => a.name)).toContain('observer');
   });
 });

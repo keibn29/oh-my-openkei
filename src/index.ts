@@ -1,5 +1,6 @@
 import type { Plugin } from '@opencode-ai/plugin';
 import { createAgents, getAgentConfigs, getDisabledAgents } from './agents';
+import { buildBusinessAnalystPrompt } from './agents/business-analyst';
 import { buildOrchestratorPrompt } from './agents/orchestrator';
 import { buildPlannerPrompt } from './agents/planner';
 import { buildSprinterPrompt } from './agents/sprinter';
@@ -671,11 +672,12 @@ const OhMyOpenKei: Plugin = async (ctx) => {
         ? sessionAgentMap.get(input.sessionID)
         : undefined;
 
-      // Inject system prompt for primary agents (orchestrator, planner, sprinter)
+      // Inject system prompt for primary agents (orchestrator, planner, sprinter, business-analyst)
       if (
         agentName === 'orchestrator' ||
         agentName === 'planner' ||
-        agentName === 'sprinter'
+        agentName === 'sprinter' ||
+        agentName === 'business-analyst'
       ) {
         // Use a deterministic marker to detect prior injection instead of
         // content heuristics. This works even if custom prompts fully
@@ -698,6 +700,8 @@ const OhMyOpenKei: Plugin = async (ctx) => {
             agentPrompt = buildOrchestratorPrompt(disabledAgents);
           } else if (agentName === 'planner') {
             agentPrompt = buildPlannerPrompt(disabledAgents);
+          } else if (agentName === 'business-analyst') {
+            agentPrompt = buildBusinessAnalystPrompt(disabledAgents);
           } else {
             agentPrompt = buildSprinterPrompt(disabledAgents);
           }

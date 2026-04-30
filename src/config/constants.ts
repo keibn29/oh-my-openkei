@@ -20,11 +20,13 @@ export const SUBAGENT_NAMES = [
 export const ORCHESTRATOR_NAME = 'orchestrator' as const;
 export const PLANNER_NAME = 'planner' as const;
 export const SPRINTER_NAME = 'sprinter' as const;
+export const BUSINESS_ANALYST_NAME = 'business-analyst' as const;
 
 export const PRIMARY_AGENT_NAMES = [
   ORCHESTRATOR_NAME,
   PLANNER_NAME,
   SPRINTER_NAME,
+  BUSINESS_ANALYST_NAME,
 ] as const;
 
 /**
@@ -39,10 +41,22 @@ export const PLANNER_DELEGATE_SET = [
   'designer',
 ] as const;
 
+/**
+ * Business Analyst's allowed delegate subagents.
+ * Used by: prompt rendering (business-analyst.ts), delegation rules
+ * (SUBAGENT_DELEGATION_RULES.business-analyst).
+ */
+export const BUSINESS_ANALYST_DELEGATE_SET = [
+  'explorer',
+  'librarian',
+  'oracle',
+] as const;
+
 export const ALL_AGENT_NAMES = [
   ORCHESTRATOR_NAME,
   PLANNER_NAME,
   SPRINTER_NAME,
+  BUSINESS_ANALYST_NAME,
   ...SUBAGENT_NAMES,
 ] as const;
 
@@ -86,6 +100,7 @@ export const SUBAGENT_DELEGATION_RULES: Record<AgentName, readonly string[]> = {
   orchestrator: ORCHESTRATABLE_AGENTS,
   planner: PLANNER_DELEGATE_SET, // restricted set
   sprinter: [], // self-executing, no delegation by default
+  'business-analyst': BUSINESS_ANALYST_DELEGATE_SET,
   'frontend-developer': [],
   'backend-developer': [],
   designer: [],
@@ -105,6 +120,7 @@ export const DEFAULT_MODELS: Record<AgentName, string | undefined> = {
   orchestrator: undefined,
   planner: 'openai/gpt-5.5', // strong planning model, runtime-safe default
   sprinter: 'openai/gpt-5.3-codex',
+  'business-analyst': 'openai/gpt-5.5', // strong reasoning model for analysis
   oracle: 'openai/gpt-5.5',
   librarian: 'openai/gpt-5.4-mini',
   explorer: 'openai/gpt-5.4-mini',

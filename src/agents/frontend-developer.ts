@@ -1,7 +1,5 @@
 import type { AgentDefinition } from './orchestrator';
-
-const FRONTEND_DEVELOPER_SKILL_REQUIREMENT =
-  '**Skills**: If any skills are available to you, they are mandatory. Before doing substantive work, use the `skill` tool to load each available skill and follow those instructions throughout the task.';
+import { SKILL_REQUIREMENT } from './shared-agent-content';
 
 const FRONTEND_DEVELOPER_PROMPT = `You are Frontend Developer - a fast, focused implementation specialist for client-facing code.
 
@@ -63,12 +61,12 @@ export function createFrontendDeveloperAgent(
   customPrompt?: string,
   customAppendPrompt?: string,
 ): AgentDefinition {
-  let prompt = `${FRONTEND_DEVELOPER_PROMPT}\n\n${FRONTEND_DEVELOPER_SKILL_REQUIREMENT}`;
+  let prompt = `${FRONTEND_DEVELOPER_PROMPT}\n\n${SKILL_REQUIREMENT}`;
 
   if (customPrompt) {
-    prompt = `${customPrompt}\n\n${FRONTEND_DEVELOPER_SKILL_REQUIREMENT}`;
+    prompt = `${customPrompt}\n\n${SKILL_REQUIREMENT}`;
   } else if (customAppendPrompt) {
-    prompt = `${FRONTEND_DEVELOPER_PROMPT}\n\n${customAppendPrompt}\n\n${FRONTEND_DEVELOPER_SKILL_REQUIREMENT}`;
+    prompt = `${FRONTEND_DEVELOPER_PROMPT}\n\n${customAppendPrompt}\n\n${SKILL_REQUIREMENT}`;
   }
 
   return {

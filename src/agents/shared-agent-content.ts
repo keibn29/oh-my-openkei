@@ -4,8 +4,16 @@
  * Contains:
  * - Specialist description catalog with {owner} placeholder for primary-agent-specific stats
  * - Shared communication rules text
+ * - Shared skill requirement text for agents that use skills
  * - Helper for rendering filtered specialist list for a given allowed set
  */
+
+/**
+ * Mandatory skill loading instruction shared across agents.
+ * Appended to every agent's system prompt to ensure skills are loaded before work.
+ */
+export const SKILL_REQUIREMENT =
+  '**Skills**: If any skills are available to you, they are MANDATORY. Your FIRST action on every user prompt must be to use the `skill` tool to load all available skills. Do NOT begin any substantive work — analysis, planning, coding, or research — until you have loaded and read every available skill. Follow the loaded skill instructions throughout the entire task.';
 
 /**
  * Specialist description catalog.

@@ -15,6 +15,7 @@ import {
 } from '../config';
 import { getAgentMcpList } from '../config/agent-mcps';
 import { createBackendDeveloperAgent } from './backend-developer';
+import { createBusinessAnalystAgent } from './business-analyst';
 import { createCouncilAgent } from './council';
 import { createCouncillorAgent } from './councillor';
 import { createDesignerAgent } from './designer';
@@ -413,7 +414,36 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
     }
   }
 
-  // Collect all display names from orchestrator, planner, sprinter, and all subagents
+  // 3d. Create Business Analyst (with its own overrides and custom prompts)
+  // Analysis-focused primary agent for market research, requirements
+  // elicitation, and strategic planning. NOT protected — can be disabled
+  // via disabled_agents.
+  let businessAnalyst: ReturnType<typeof createBusinessAnalystAgent> | null =
+    null;
+  if (!disabled.has('business-analyst')) {
+    const businessAnalystOverride = getAgentOverride(
+      config,
+      'business-analyst',
+    );
+    const businessAnalystModel =
+      businessAnalystOverride?.model ?? DEFAULT_MODELS['business-analyst'];
+    const businessAnalystPrompts = loadAgentPrompt(
+      'business-analyst',
+      config?.preset,
+    );
+    businessAnalyst = createBusinessAnalystAgent(
+      businessAnalystModel,
+      businessAnalystPrompts.prompt,
+      businessAnalystPrompts.appendPrompt,
+      disabled,
+    );
+    applyDefaultPermissions(businessAnalyst, businessAnalystOverride?.skills);
+    if (businessAnalystOverride) {
+      applyOverrides(businessAnalyst, businessAnalystOverride);
+    }
+  }
+
+  // Collect all display names from orchestrator, planner, sprinter, business-analyst, and all subagents
   const displayNameMap = new Map<string, string>();
   if (orchestrator.displayName) {
     displayNameMap.set('orchestrator', orchestrator.displayName);
@@ -423,6 +453,9 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
   }
   if (sprinter?.displayName) {
     displayNameMap.set('sprinter', sprinter.displayName);
+  }
+  if (businessAnalyst?.displayName) {
+    displayNameMap.set('business-analyst', businessAnalyst.displayName);
   }
   for (const agent of allSubAgents) {
     if (agent.displayName) {
@@ -460,13 +493,16 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
     }
   }
 
-  // Inject display names into orchestrator, planner, and sprinter prompts (complete map)
+  // Inject display names into orchestrator, planner, sprinter, and business-analyst prompts (complete map)
   injectDisplayNames(orchestrator, displayNameMap);
   if (planner) {
     injectDisplayNames(planner, displayNameMap);
   }
   if (sprinter) {
     injectDisplayNames(sprinter, displayNameMap);
+  }
+  if (businessAnalyst) {
+    injectDisplayNames(businessAnalyst, displayNameMap);
   }
 
   if (customOrchestratorPrompts.length > 0) {
@@ -490,6 +526,7 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
     orchestrator,
     ...(planner ? [planner] : []),
     ...(sprinter ? [sprinter] : []),
+    ...(businessAnalyst ? [businessAnalyst] : []),
     ...allSubAgents,
   ];
 }

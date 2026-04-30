@@ -5,6 +5,7 @@ import { CouncilConfigSchema } from './council-schema';
 const FALLBACK_AGENT_NAMES = [
   'orchestrator',
   'planner',
+  'business-analyst',
   'oracle',
   'designer',
   'explorer',
@@ -16,6 +17,7 @@ const FALLBACK_AGENT_NAMES = [
 const MANUAL_AGENT_NAMES = [
   'orchestrator',
   'planner',
+  'business-analyst',
   'oracle',
   'designer',
   'explorer',
@@ -57,6 +59,7 @@ export const ManualPlanSchema = z
   .object({
     orchestrator: ManualAgentPlanSchema,
     planner: ManualAgentPlanSchema.optional(),
+    'business-analyst': ManualAgentPlanSchema.optional(),
     oracle: ManualAgentPlanSchema,
     designer: ManualAgentPlanSchema,
     explorer: ManualAgentPlanSchema,
@@ -108,12 +111,21 @@ export const ManualPlanSchema = z
       result.planner = value.orchestrator;
     }
 
+    // Backfill business-analyst from planner for backward compat
+    if (
+      !('business-analyst' in result) ||
+      result['business-analyst'] === undefined
+    ) {
+      result['business-analyst'] = result.planner;
+    }
+
     return result;
   })
   .superRefine((data, ctx) => {
     const required = [
       'orchestrator',
       'planner',
+      'business-analyst',
       'oracle',
       'designer',
       'explorer',
@@ -154,6 +166,7 @@ const FallbackChainsSchema = z
   .object({
     orchestrator: AgentModelChainSchema.optional(),
     planner: AgentModelChainSchema.optional(),
+    'business-analyst': AgentModelChainSchema.optional(),
     oracle: AgentModelChainSchema.optional(),
     designer: AgentModelChainSchema.optional(),
     explorer: AgentModelChainSchema.optional(),

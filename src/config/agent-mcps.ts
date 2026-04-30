@@ -11,6 +11,7 @@ export const DEFAULT_AGENT_MCPS: Record<AgentName, string[]> = {
   orchestrator: ['*', '!context7'],
   planner: ['*', '!context7'], // same as orchestrator
   sprinter: ['*', '!context7'], // same as orchestrator - primary self-executing agent
+  'business-analyst': ['*', '!context7'], // same as orchestrator - analysis primary agent
   designer: ['figma'],
   oracle: [],
   librarian: ['websearch', 'context7', 'grep_app'],
