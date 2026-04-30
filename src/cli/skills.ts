@@ -1,6 +1,5 @@
 import { spawnSync } from 'node:child_process';
-import { PRIMARY_AGENT_NAMES } from '../config/constants';
-import { CUSTOM_SKILLS } from './custom-skills';
+import { getDefaultAgentSkills } from '../config/agent-skills';
 
 /**
  * A recommended skill to install via `npx skills add`.
@@ -21,19 +20,6 @@ export interface RecommendedSkill {
 }
 
 /**
- * A skill that is managed externally (e.g. user-installed) and needs
- * permission grants but is NOT installed by this plugin's CLI.
- */
-export interface PermissionOnlySkill {
-  /** Skill name — must match the name OpenCode uses for permission checks */
-  name: string;
-  /** List of agents that should auto-allow this skill */
-  allowedAgents: string[];
-  /** Human-readable description (for documentation only) */
-  description: string;
-}
-
-/**
  * List of recommended skills.
  * Add new skills here to include them in the installation flow.
  */
@@ -48,19 +34,6 @@ export const RECOMMENDED_SKILLS: RecommendedSkill[] = [
       'npm install -g agent-browser',
       'agent-browser install',
     ],
-  },
-];
-
-/**
- * Skills managed externally (not installed by this plugin's CLI).
- * Entries here only affect agent permission grants — nothing is installed.
- */
-export const PERMISSION_ONLY_SKILLS: PermissionOnlySkill[] = [
-  {
-    name: 'requesting-code-review',
-    allowedAgents: ['oracle'],
-    description:
-      'Code review template for reviewer subagents in multi-step workflows',
   },
 ];
 
@@ -109,66 +82,50 @@ export function installSkill(skill: RecommendedSkill): boolean {
 }
 
 /**
- * Get permission presets for a specific agent based on recommended skills.
+ * Resolve a list of skill names (with wildcard/exclusion syntax) into a
+ * permission record.
+ */
+function resolveSkillListToPermissions(
+  skillNames: string[],
+): Record<string, 'allow' | 'deny'> {
+  const permissions: Record<string, 'allow' | 'deny'> = {};
+  const allows = skillNames.filter((s) => !s.startsWith('!'));
+  const denies = skillNames
+    .filter((s) => s.startsWith('!'))
+    .map((s) => s.slice(1));
+
+  if (allows.includes('*')) {
+    permissions['*'] = 'allow';
+  } else {
+    permissions['*'] = 'deny';
+    for (const a of allows) {
+      permissions[a] = 'allow';
+    }
+  }
+
+  for (const d of denies) {
+    permissions[d] = 'deny';
+  }
+
+  return permissions;
+}
+
+/**
+ * Get permission presets for a specific agent based on default skill config.
  * @param agentName - The name of the agent
- * @param skillList - Optional explicit list of skills to allow (overrides recommendations)
+ * @param skillList - Optional explicit list of skills to allow (overrides defaults)
  * @returns Permission rules for the skill permission type
  */
 export function getSkillPermissionsForAgent(
   agentName: string,
   skillList?: string[],
 ): Record<string, 'allow' | 'ask' | 'deny'> {
-  const primaryAgents = new Set(PRIMARY_AGENT_NAMES as readonly string[]);
-
-  // Primary agents get all skills by default, others are restricted
-  const permissions: Record<string, 'allow' | 'ask' | 'deny'> = {
-    '*': primaryAgents.has(agentName) ? 'allow' : 'deny',
-  };
-
   // If the user provided an explicit skill list (even empty), honor it
   if (skillList) {
-    permissions['*'] = 'deny';
-    for (const name of skillList) {
-      if (name === '*') {
-        permissions['*'] = 'allow';
-      } else if (name.startsWith('!')) {
-        permissions[name.slice(1)] = 'deny';
-      } else {
-        permissions[name] = 'allow';
-      }
-    }
-    return permissions;
+    return resolveSkillListToPermissions(skillList);
   }
 
-  // Otherwise, use recommended defaults
-  for (const skill of RECOMMENDED_SKILLS) {
-    const isAllowed =
-      skill.allowedAgents.includes('*') ||
-      skill.allowedAgents.includes(agentName);
-    if (isAllowed) {
-      permissions[skill.skillName] = 'allow';
-    }
-  }
-
-  // Apply permissions from bundled custom skills
-  for (const skill of CUSTOM_SKILLS) {
-    const isAllowed =
-      skill.allowedAgents.includes('*') ||
-      skill.allowedAgents.includes(agentName);
-    if (isAllowed) {
-      permissions[skill.name] = 'allow';
-    }
-  }
-
-  // Apply permissions for externally-managed skills (not installed by this plugin)
-  for (const skill of PERMISSION_ONLY_SKILLS) {
-    const isAllowed =
-      skill.allowedAgents.includes('*') ||
-      skill.allowedAgents.includes(agentName);
-    if (isAllowed) {
-      permissions[skill.name] = 'allow';
-    }
-  }
-
-  return permissions;
+  // Use config-driven default skill list for this agent
+  const defaultSkills = getDefaultAgentSkills(agentName);
+  return resolveSkillListToPermissions(defaultSkills);
 }

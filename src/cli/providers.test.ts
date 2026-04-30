@@ -16,6 +16,7 @@ describe('providers', () => {
     expect(keys).toContain('designer');
     expect(keys).toContain('frontend-developer');
     expect(keys).toContain('backend-developer');
+    expect(keys).toContain('business-analyst');
     // Each entry has model and optional variant
     for (const entry of Object.values(MODEL_MAPPINGS)) {
       expect(typeof entry.model).toBe('string');
@@ -61,6 +62,8 @@ describe('providers', () => {
       'opencode-go/deepseek-v4-flash',
     );
     expect(agents['backend-developer'].variant).toBe('high');
+    expect(agents['business-analyst'].model).toBe('openai/gpt-5.5-fast');
+    expect(agents['business-analyst'].variant).toBe('high');
   });
 
   test('generateLiteConfig uses correct OpenAI models', () => {
@@ -83,6 +86,8 @@ describe('providers', () => {
     expect(agents.librarian.model).toBe('minimax-coding-plan/MiniMax-M2.7');
     expect(agents.explorer.model).toBe('minimax-coding-plan/MiniMax-M2.7');
     expect(agents.designer.model).toBe('opencode-go/kimi-k2.6');
+    expect(agents['business-analyst'].model).toBe('openai/gpt-5.5-fast');
+    expect(agents['business-analyst'].variant).toBe('high');
   });
 
   test('generateLiteConfig includes default skills', () => {
@@ -121,6 +126,9 @@ describe('providers', () => {
     // Backend-developer should have bundled skills assigned
     expect(agents['backend-developer'].skills).toContain('backend-developer');
     expect(agents['backend-developer'].skills).toContain('karpathy-guidelines');
+
+    // Business-analyst should have exactly its own skill
+    expect(agents['business-analyst'].skills).toEqual(['business-analyst']);
   });
 
   test('generateLiteConfig includes mcps field', () => {

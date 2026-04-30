@@ -61,6 +61,13 @@ export const CUSTOM_SKILLS: CustomSkill[] = [
     allowedAgents: ['frontend-developer', 'backend-developer'],
     sourcePath: 'src/skills/karpathy-guidelines',
   },
+  {
+    name: 'business-analyst',
+    description:
+      'Business analysis frameworks, templates, and documentation standards',
+    allowedAgents: ['business-analyst'],
+    sourcePath: 'src/skills/business-analyst',
+  },
 ];
 
 /**

@@ -24,6 +24,14 @@ export const DEFAULT_AGENT_MCPS: Record<AgentName, string[]> = {
 };
 
 /**
+ * Get the default MCP list for an agent.
+ * Falls back to an empty array for unknown agents.
+ */
+export function getDefaultAgentMcps(agentName: string): string[] {
+  return DEFAULT_AGENT_MCPS[agentName as AgentName] ?? [];
+}
+
+/**
  * Parse a list with wildcard and exclusion syntax.
  */
 export function parseList(items: string[], allAvailable: string[]): string[] {

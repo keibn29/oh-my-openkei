@@ -661,17 +661,15 @@ describe('per-model variant in array config', () => {
 });
 
 describe('skill permissions', () => {
-  test('orchestrator gets codemap skill allowed by default', () => {
+  test('orchestrator gets wildcard skill allow by default', () => {
     const agents = createAgents();
     const orchestrator = agents.find((a) => a.name === 'orchestrator');
     expect(orchestrator).toBeDefined();
     const skillPerm = (
       orchestrator?.config.permission as Record<string, unknown>
     )?.skill as Record<string, string>;
-    // orchestrator gets wildcard allow (from RECOMMENDED_SKILLS wildcard entry)
+    // orchestrator gets wildcard allow from DEFAULT_AGENT_SKILLS
     expect(skillPerm?.['*']).toBe('allow');
-    // CUSTOM_SKILLS loop must also add a named codemap entry for orchestrator
-    expect(skillPerm?.codemap).toBe('allow');
   });
 
   test('frontend-developer does not get codemap skill allowed by default', () => {
@@ -745,6 +743,16 @@ describe('skill permissions', () => {
       ?.skill as Record<string, string>;
     expect(skillPerm?.['karpathy-guidelines']).toBe('allow');
   });
+
+  test('business-analyst gets wildcard deny with specific skill allow', () => {
+    const agents = createAgents();
+    const ba = agents.find((a) => a.name === 'business-analyst');
+    expect(ba).toBeDefined();
+    const skillPerm = (ba?.config.permission as Record<string, unknown>)
+      ?.skill as Record<string, string>;
+    expect(skillPerm?.['*']).toBe('deny');
+    expect(skillPerm?.['business-analyst']).toBe('allow');
+  });
 });
 
 describe('developer agent skills in prompt', () => {
@@ -752,11 +760,9 @@ describe('developer agent skills in prompt', () => {
     const agents = createAgents();
     const frontend = agents.find((a) => a.name === 'frontend-developer');
     const prompt = frontend?.config.prompt as string;
+    expect(prompt).toContain('they are MANDATORY');
     expect(prompt).toContain(
-      'If any skills are available to you, they are mandatory',
-    );
-    expect(prompt).toContain(
-      'use the `skill` tool to load each available skill',
+      'use the `skill` tool to load all available skills',
     );
   });
 
@@ -764,11 +770,9 @@ describe('developer agent skills in prompt', () => {
     const agents = createAgents();
     const backend = agents.find((a) => a.name === 'backend-developer');
     const prompt = backend?.config.prompt as string;
+    expect(prompt).toContain('they are MANDATORY');
     expect(prompt).toContain(
-      'If any skills are available to you, they are mandatory',
-    );
-    expect(prompt).toContain(
-      'use the `skill` tool to load each available skill',
+      'use the `skill` tool to load all available skills',
     );
   });
 
@@ -777,9 +781,7 @@ describe('developer agent skills in prompt', () => {
       'test/model',
       'Custom frontend prompt',
     );
-    expect(frontend.config.prompt).toContain(
-      'If any skills are available to you, they are mandatory',
-    );
+    expect(frontend.config.prompt).toContain('they are MANDATORY');
   });
 
   test('backend-developer custom prompt still includes the appended skill requirement', () => {
@@ -787,9 +789,7 @@ describe('developer agent skills in prompt', () => {
       'test/model',
       'Custom backend prompt',
     );
-    expect(backend.config.prompt).toContain(
-      'If any skills are available to you, they are mandatory',
-    );
+    expect(backend.config.prompt).toContain('they are MANDATORY');
   });
 });
 

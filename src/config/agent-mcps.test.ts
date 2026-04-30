@@ -1,5 +1,9 @@
 import { describe, expect, test } from 'bun:test';
-import { DEFAULT_AGENT_MCPS, parseList } from './agent-mcps';
+import {
+  DEFAULT_AGENT_MCPS,
+  getDefaultAgentMcps,
+  parseList,
+} from './agent-mcps';
 
 describe('parseList', () => {
   test('empty list returns empty array', () => {
@@ -50,5 +54,23 @@ describe('parseList', () => {
 
   test('exclusions without matching allows', () => {
     expect(parseList(['!mcp2'], ['mcp1', 'mcp2', 'mcp3'])).toEqual([]);
+  });
+});
+
+describe('getDefaultAgentMcps', () => {
+  test('returns default MCPs for orchestrator', () => {
+    expect(getDefaultAgentMcps('orchestrator')).toEqual(['*', '!context7']);
+  });
+
+  test('returns default MCPs for librarian', () => {
+    expect(getDefaultAgentMcps('librarian')).toEqual([
+      'websearch',
+      'context7',
+      'grep_app',
+    ]);
+  });
+
+  test('returns empty array for unknown agent', () => {
+    expect(getDefaultAgentMcps('unknown-agent')).toEqual([]);
   });
 });

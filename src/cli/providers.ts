@@ -1,6 +1,5 @@
-import { DEFAULT_AGENT_MCPS } from '../config/agent-mcps';
-import { CUSTOM_SKILLS } from './custom-skills';
-import { RECOMMENDED_SKILLS } from './skills';
+import { getDefaultAgentMcps } from '../config/agent-mcps';
+import { getDefaultAgentSkills } from '../config/agent-skills';
 import type { InstallConfig } from './types';
 
 const SCHEMA_URL =
@@ -23,6 +22,10 @@ export const MODEL_MAPPINGS = {
     model: 'opencode-go/deepseek-v4-flash',
     variant: 'high',
   },
+  'business-analyst': {
+    model: 'openai/gpt-5.5-fast',
+    variant: 'high',
+  },
 } as const;
 
 export function generateLiteConfig(
@@ -38,36 +41,11 @@ export function generateLiteConfig(
     agentName: string,
     modelInfo: { model: string; variant?: string },
   ) => {
-    const isPrimaryAgent =
-      agentName === 'orchestrator' ||
-      agentName === 'planner' ||
-      agentName === 'sprinter';
-
-    const skills = isPrimaryAgent
-      ? ['*']
-      : [
-          ...RECOMMENDED_SKILLS.filter(
-            (s) =>
-              s.allowedAgents.includes('*') ||
-              s.allowedAgents.includes(agentName),
-          ).map((s) => s.skillName),
-          ...CUSTOM_SKILLS.filter(
-            (s) =>
-              s.allowedAgents.includes('*') ||
-              s.allowedAgents.includes(agentName),
-          ).map((s) => s.name),
-        ];
-
-    if (agentName === 'designer' && !skills.includes('agent-browser')) {
-      skills.push('agent-browser');
-    }
-
     return {
       model: modelInfo.model,
       variant: modelInfo.variant,
-      skills,
-      mcps:
-        DEFAULT_AGENT_MCPS[agentName as keyof typeof DEFAULT_AGENT_MCPS] ?? [],
+      skills: [...getDefaultAgentSkills(agentName)],
+      mcps: [...getDefaultAgentMcps(agentName)],
     };
   };
 
