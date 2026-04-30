@@ -15,6 +15,8 @@ export interface RememberedTaskSession {
   contextFiles: ContextFile[];
   createdAt: number;
   lastUsedAt: number;
+  /** Turn counter used to isolate session reuse to a single user message. */
+  turn: number;
 }
 
 type SessionGroupMap = Map<AgentName, RememberedTaskSession[]>;
@@ -91,6 +93,7 @@ export class SessionManager {
     string,
     Map<AgentName, number>
   >();
+  private readonly currentTurnByParent = new Map<string, number>();
   private orderCounter = 0;
 
   constructor(
@@ -102,6 +105,16 @@ export class SessionManager {
       options.readContextMinLines ?? MIN_CONTEXT_FILE_LINES;
     this.readContextMaxFiles =
       options.readContextMaxFiles ?? MAX_CONTEXT_FILES_PER_SESSION;
+  }
+
+  /**
+   * Increment the turn counter for a parent session.
+   * Sessions created in prior turns will no longer be resolvable,
+   * forcing fresh child sessions on the next delegation.
+   */
+  incrementTurn(parentSessionId: string): void {
+    const current = this.currentTurnByParent.get(parentSessionId) ?? 0;
+    this.currentTurnByParent.set(parentSessionId, current + 1);
   }
 
   remember(input: {
@@ -135,6 +148,7 @@ export class SessionManager {
       contextFiles: [],
       createdAt: now,
       lastUsedAt: now,
+      turn: this.currentTurnByParent.get(input.parentSessionId) ?? 0,
     };
 
     group.push(remembered);
@@ -155,7 +169,12 @@ export class SessionManager {
 
   resolve(parentSessionId: string, agentType: AgentName, key: string) {
     const group = this.getAgentGroup(parentSessionId, agentType, false);
-    return group?.find((entry) => entry.alias === key || entry.taskId === key);
+    const currentTurn = this.currentTurnByParent.get(parentSessionId) ?? 0;
+    return group?.find(
+      (entry) =>
+        entry.turn === currentTurn &&
+        (entry.alias === key || entry.taskId === key),
+    );
   }
 
   drop(parentSessionId: string, agentType: AgentName, key: string): void {
@@ -220,18 +239,22 @@ export class SessionManager {
   clearParent(parentSessionId: string): void {
     this.sessionsByParent.delete(parentSessionId);
     this.nextAliasIndexByParent.delete(parentSessionId);
+    this.currentTurnByParent.delete(parentSessionId);
   }
 
   formatForPrompt(parentSessionId: string): string | undefined {
     const groups = this.sessionsByParent.get(parentSessionId);
     if (!groups || groups.size === 0) return undefined;
+    const currentTurn = this.currentTurnByParent.get(parentSessionId) ?? 0;
 
     const lines = [...groups.entries()]
       .map(
         ([agentType, entries]) =>
           [
             agentType,
-            [...entries].sort((a, b) => b.lastUsedAt - a.lastUsedAt),
+            [...entries]
+              .filter((entry) => entry.turn === currentTurn)
+              .sort((a, b) => b.lastUsedAt - a.lastUsedAt),
           ] as const,
       )
       .filter(([, entries]) => entries.length > 0)

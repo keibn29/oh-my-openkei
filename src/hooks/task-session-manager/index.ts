@@ -200,6 +200,10 @@ export function createTaskSessionManagerHook(
   }
 
   return {
+    incrementTurn: (parentSessionId: string) => {
+      sessionManager.incrementTurn(parentSessionId);
+    },
+
     'tool.execute.before': async (
       input: { tool: string; sessionID?: string; callID?: string },
       output: { args?: unknown },

@@ -120,6 +120,98 @@ describe('SessionManager', () => {
     expect(prompt).toContain('(+1 more)');
   });
 
+  test('resolve matches sessions from current turn only', () => {
+    const manager = new SessionManager(5);
+
+    // Turn 0 — session created before any user message
+    manager.remember({
+      parentSessionId: 'parent-1',
+      taskId: 'task-old',
+      agentType: 'explorer',
+      label: 'old session',
+    });
+    // Resolves at turn 0
+    expect(manager.resolve('parent-1', 'explorer', 'exp-1')?.taskId).toBe(
+      'task-old',
+    );
+    expect(manager.resolve('parent-1', 'explorer', 'task-old')?.taskId).toBe(
+      'task-old',
+    );
+
+    // After increment, old session should not resolve
+    manager.incrementTurn('parent-1');
+    expect(manager.resolve('parent-1', 'explorer', 'exp-1')).toBeUndefined();
+    expect(manager.resolve('parent-1', 'explorer', 'task-old')).toBeUndefined();
+
+    // New session at turn 1 should resolve
+    manager.remember({
+      parentSessionId: 'parent-1',
+      taskId: 'task-new',
+      agentType: 'explorer',
+      label: 'new session',
+    });
+    expect(manager.resolve('parent-1', 'explorer', 'exp-2')?.taskId).toBe(
+      'task-new',
+    );
+    expect(manager.resolve('parent-1', 'explorer', 'task-new')?.taskId).toBe(
+      'task-new',
+    );
+
+    // Old session context should not appear in prompt
+    const prompt = manager.formatForPrompt('parent-1');
+    expect(prompt).toContain('exp-2 new session');
+    expect(prompt).not.toContain('exp-1 old session');
+  });
+
+  test('reuse within same turn works', () => {
+    const manager = new SessionManager(5);
+    manager.incrementTurn('parent-1');
+
+    manager.remember({
+      parentSessionId: 'parent-1',
+      taskId: 'task-1',
+      agentType: 'frontend-developer',
+      label: 'first call',
+    });
+
+    // Same turn — resolve returns it
+    expect(
+      manager.resolve('parent-1', 'frontend-developer', 'fed-1')?.taskId,
+    ).toBe('task-1');
+
+    // Subsequent increment creates new turn; old alias no longer resolves
+    manager.incrementTurn('parent-1');
+    expect(
+      manager.resolve('parent-1', 'frontend-developer', 'fed-1'),
+    ).toBeUndefined();
+  });
+
+  test('incrementTurn does not affect unrelated parent sessions', () => {
+    const manager = new SessionManager(5);
+
+    manager.remember({
+      parentSessionId: 'parent-1',
+      taskId: 'task-1',
+      agentType: 'explorer',
+      label: 'session-1',
+    });
+    manager.remember({
+      parentSessionId: 'parent-2',
+      taskId: 'task-2',
+      agentType: 'explorer',
+      label: 'session-2',
+    });
+
+    manager.incrementTurn('parent-1');
+
+    // parent-1 sessions no longer resolve
+    expect(manager.resolve('parent-1', 'explorer', 'task-1')).toBeUndefined();
+    // parent-2 sessions still resolve
+    expect(manager.resolve('parent-2', 'explorer', 'task-2')?.taskId).toBe(
+      'task-2',
+    );
+  });
+
   test('bounds stored read context files to the render cap plus overflow marker', () => {
     const manager = new SessionManager(2, {
       readContextMinLines: 1,
