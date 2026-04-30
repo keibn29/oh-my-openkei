@@ -55,6 +55,8 @@ function aliasPrefix(agentType: AgentName): string {
       return 'pln';
     case 'sprinter':
       return 'spr';
+    default:
+      return '';
   }
 }
 
