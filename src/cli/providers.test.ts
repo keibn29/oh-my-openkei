@@ -64,6 +64,18 @@ describe('providers', () => {
     expect(agents['backend-developer'].variant).toBe('high');
     expect(agents['business-analyst'].model).toBe('openai/gpt-5.5-fast');
     expect(agents['business-analyst'].variant).toBe('high');
+
+    // Default colors for select agents
+    expect(agents.orchestrator.color).toBe('success');
+    expect(agents.planner.color).toBe('primary');
+    expect(agents.council.color).toBe('info');
+    expect(agents['business-analyst'].color).toBe('warning');
+    expect(agents.sprinter.color).toBe('error');
+    // Agents without explicit color should not have one
+    expect(agents.oracle.color).toBeUndefined();
+    expect(agents.designer.color).toBeUndefined();
+    expect(agents['frontend-developer'].color).toBeUndefined();
+    expect(agents['backend-developer'].color).toBeUndefined();
   });
 
   test('generateLiteConfig uses correct OpenAI models', () => {

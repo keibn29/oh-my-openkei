@@ -2,6 +2,14 @@ import { getDefaultAgentMcps } from '../config/agent-mcps';
 import { getDefaultAgentSkills } from '../config/agent-skills';
 import type { InstallConfig } from './types';
 
+const DEFAULT_AGENT_COLORS: Record<string, string> = {
+  orchestrator: 'success',
+  planner: 'primary',
+  council: 'info',
+  'business-analyst': 'warning',
+  sprinter: 'error',
+};
+
 const SCHEMA_URL =
   'https://unpkg.com/oh-my-openkei@latest/oh-my-openkei.schema.json';
 
@@ -46,6 +54,9 @@ export function generateLiteConfig(
       variant: modelInfo.variant,
       skills: [...getDefaultAgentSkills(agentName)],
       mcps: [...getDefaultAgentMcps(agentName)],
+      ...(DEFAULT_AGENT_COLORS[agentName] && {
+        color: DEFAULT_AGENT_COLORS[agentName],
+      }),
     };
   };
 
