@@ -373,19 +373,17 @@ describe('orchestrator agent', () => {
     const orchestrator = agents.find((a) => a.name === 'orchestrator');
     const prompt = orchestrator?.config.prompt as string;
 
+    expect(prompt).toContain('ALWAYS delegate to a specialist');
     expect(prompt).toContain(
-      'If a specialist is a reasonable fit, delegate before considering direct work.',
+      'FORBIDDEN from doing substantive work',
     );
     expect(prompt).toContain(
-      'Default to delegation even for small, simple, single-file, or fast-turnaround tasks',
-    );
-    expect(prompt).toContain(
-      'You may personally explore the codebase, research docs, write code, edit files, or do deep file reading only when no suitable specialist exists',
+      'The ONLY exceptions: integration, verification, or when a subagent\'s "Don\'t delegate when" rule explicitly applies',
     );
     expect(prompt).not.toContain(
       'Skip delegation if overhead ≥ doing it yourself',
     );
-    expect(prompt).toContain('otherwise do it yourself');
+    expect(prompt).toContain('handle directly only when a "Don\'t delegate when" exception applies');
   });
 });
 

@@ -105,8 +105,8 @@ src/index.ts
 ## File structure
 
 - `index.ts` (agent registry, overrides, classification, custom agents)
-- `orchestrator.ts` (base prompts, prompt resolution, model-array type)
-- `planner.ts` (planning-only agent prompt and factory — primary agent with restricted delegate set)
+- `orchestrator.ts` (delegation-first prompt: ALWAYS delegate substantive work; direct action only for integration/verification or when subagent "Don't delegate when" rule applies)
+- `planner.ts` (interview-first prompt: delegates exploration/research to specialists; produces structured `<planner-plan>` output)
 - `shared-agent-content.ts` (shared specialist catalog, communication rules, rendering helpers)
 - `council.ts`, `councillor.ts` (council tool orchestration + formatting)
 - `explorer.ts`, `librarian.ts`, `oracle.ts`, `designer.ts`, `frontend-developer.ts`, `backend-developer.ts`,

@@ -194,7 +194,7 @@ If any agent fails to respond, check your provider authentication and config fil
 **Prompt:** [orchestrator.ts](src/agents/orchestrator.ts)  
 **Default Model:** `opencode-go/qwen3.6-plus`  
 **Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.7`  
-**Model Guidance:** Choose your strongest coordination model. Orchestrator should excel at routing, delegation discipline, judgment, and reliable instruction-following; direct implementation ability is still useful, but mainly as a fallback when no suitable subagent exists.
+**Model Guidance:** Choose your strongest coordination model. Orchestrator should excel at routing, delegation discipline, judgment, and reliable instruction-following. Orchestrator delegates ALL substantive work to specialists and only acts directly when a subagent's "Don't delegate when" rule explicitly applies, or for integration/verification tasks.
 
 #### Planner
 
@@ -202,7 +202,7 @@ If any agent fails to respond, check your provider authentication and config fil
 **Prompt:** [planner.ts](src/agents/planner.ts)  
 **Default Model:** `openai/gpt-5.5-fast` (`xhigh`)  
 **Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.7`  
-**Model Guidance:** Choose your strongest all-around coding model. Planner drives planning and delegation, so it needs excellent judgment, structured thinking, and reliable instruction-following. Implementation ability is not required.
+**Model Guidance:** Choose your strongest all-around coding model. Planner drives planning and delegation, so it needs excellent judgment, structured thinking, and reliable instruction-following. Planner delegates all exploration and research to specialists and only acts directly for synthesis, interviewing, and plan production.
 
 #### Sprinter
 

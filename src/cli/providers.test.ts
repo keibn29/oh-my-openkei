@@ -35,8 +35,7 @@ describe('providers', () => {
     expect(config.preset).toBe('default');
     const agents = (config.presets as any).default;
     expect(agents).toBeDefined();
-    expect(agents.orchestrator.model).toBe('openai/gpt-5.4-fast');
-    expect(agents.orchestrator.variant).toBe('xhigh');
+    expect(agents.orchestrator.model).toBe('opencode-go/qwen3.6-plus');
     expect(agents.orchestrator.skills).toEqual(['*']);
     expect(agents.planner.model).toBe('openai/gpt-5.5-fast');
     expect(agents.planner.variant).toBe('xhigh');
@@ -72,8 +71,7 @@ describe('providers', () => {
     });
 
     const agents = (config.presets as any).default;
-    expect(agents.orchestrator.model).toBe('openai/gpt-5.4-fast');
-    expect(agents.orchestrator.variant).toBe('xhigh');
+    expect(agents.orchestrator.model).toBe('opencode-go/qwen3.6-plus');
     expect(agents.planner.model).toBe('openai/gpt-5.5-fast');
     expect(agents.planner.variant).toBe('xhigh');
     expect(agents.sprinter.model).toBe('openai/gpt-5.3-codex');

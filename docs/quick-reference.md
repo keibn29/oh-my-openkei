@@ -19,8 +19,8 @@
 
 | Agent | Role |
 |-------|------|
-| **Orchestrator** | Default primary — delegation-first coordinator for planning, routing, integration, and fallback execution |
-| **Planner** | Interview-first planner — asks clarifying questions and returns structured `<planner-plan>` output |
+| **Orchestrator** | Default primary — delegates ALL substantive work to specialists; acts directly only for integration, verification, or when a subagent's "Don't delegate when" rule applies |
+| **Planner** | Interview-first planner — delegates exploration/research to specialists; produces structured `<planner-plan>` output after mandatory user interview |
 | **Sprinter** | Fast self-executing agent — optimized for quick Q&A and direct tasks |
 
 ## ⚙️ Config & Reference
