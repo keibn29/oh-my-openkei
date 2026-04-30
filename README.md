@@ -43,7 +43,7 @@ bunx oh-my-openkei@latest install --no-tui --skills=yes
 
 ### Getting Started
 
-The installer generates a mixed-provider preset by default, using `opencode-go/qwen3.6-plus` / `openai/gpt-5.5-fast` for Orchestrator and Planner, `openai/gpt-5.3-codex` (`low`) for Sprinter, `minimax-coding-plan/MiniMax-M2.7` for librarian/explorer, and `opencode-go/kimi-k2.6` / `opencode-go/deepseek-v4-flash` for specialist agents.
+The installer generates a mixed-provider preset by default, using `openai/gpt-5.4-fast` (`high`) / `openai/gpt-5.5-fast` for Orchestrator and Planner, `openai/gpt-5.3-codex` (`low`) for Sprinter, `openai/gpt-5.5-fast` (`high`) for Business Analyst, `minimax-coding-plan/MiniMax-M2.7` for librarian/explorer, and `opencode-go/kimi-k2.6` / `opencode-go/deepseek-v4-flash` for specialist agents.
 
 1. **Log in to providers**:
    ```bash
@@ -76,7 +76,8 @@ The default generated configuration:
   "presets": {
     "default": {
       "orchestrator": {
-        "model": "opencode-go/qwen3.6-plus",
+        "model": "openai/gpt-5.4-fast",
+        "variant": "high",
         "skills": ["*"],
         "mcps": ["*", "!context7"]
       },
@@ -92,10 +93,16 @@ The default generated configuration:
         "skills": ["*"],
         "mcps": ["*", "!context7"]
       },
+      "business-analyst": {
+        "model": "openai/gpt-5.5-fast",
+        "variant": "high",
+        "skills": ["business-analyst"],
+        "mcps": ["*", "!context7"]
+      },
       "oracle": {
         "model": "openai/gpt-5.5-fast",
         "variant": "high",
-        "skills": ["simplify"],
+        "skills": ["simplify", "requesting-code-review"],
         "mcps": []
       },
       "council": {
@@ -134,7 +141,7 @@ The default generated configuration:
 }
 ```
 
-`frontend-developer` and `backend-developer` treat their available skills as mandatory instructions: when skills are configured for them, they are prompted to load those skills via the `skill` tool before doing substantive work.
+`frontend-developer`, `backend-developer`, and `business-analyst` treat their available skills as mandatory instructions: when skills are configured for them, they are prompted to load those skills via the `skill` tool before doing substantive work.
 
 Session management is enabled by default even though it is not shown in the starter config. See **[Session Management](docs/session-management.md)** if you want to customize how many resumable child-agent sessions are remembered.
 
@@ -173,17 +180,19 @@ If any agent fails to respond, check your provider authentication and config fil
 
 ### Primary Agents
 
-**Orchestrator**, **Planner**, and **Sprinter** are the primary agents. Choose one based on how you want to work.
+**Orchestrator**, **Planner**, **Sprinter**, and **Business Analyst** are the primary agents. Choose one based on how you want to work.
 
 - **Orchestrator** (default): Delegation-first coordinator for planning, routing, and result integration.
 - **Planner**: Interview-first planner that asks clarifying questions and returns structured `<planner-plan>` output.
 - **Sprinter**: Fast self-executing agent for quick Q&A and direct tasks.
+- **Business Analyst**: Analysis specialist for market research, competitive analysis, requirements elicitation, and strategic planning.
 
 #### Routing Flow
 
 - **Orchestrator** can delegate to `explorer`, `librarian`, `oracle`, `designer`, `frontend-developer`, `backend-developer`, `observer`, and `council`.
 - **Planner** is planning-only and can delegate only to `explorer`, `librarian`, `oracle`, and `designer`.
 - **Sprinter** is self-executing and does not delegate.
+- **Business Analyst** can delegate research to `explorer`, `librarian`, and `oracle`.
 - **Specialists** are leaf executors: once delegated to, they do the bounded work and hand results back.
 - **Observer** is disabled by default until you explicitly enable it in config.
 - **Council** is available, but intentionally expensive and kept on a stricter path than normal delegation.
@@ -192,8 +201,9 @@ If any agent fails to respond, check your provider authentication and config fil
 
 **Role:** Delegation-first coordinator  
 **Prompt:** [orchestrator.ts](src/agents/orchestrator.ts)  
-**Default Model:** `opencode-go/qwen3.6-plus`  
+**Default Model:** `openai/gpt-5.4-fast` (`high`)  
 **Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.7`  
+**Best Choice:** `openai/gpt-5.5-fast` with variant `high` — this is the strongest single configuration for the orchestrator role, offering the best balance of reasoning speed and routing accuracy.  
 **Model Guidance:** Choose your strongest coordination model. Orchestrator should excel at routing, delegation discipline, judgment, and reliable instruction-following. Orchestrator delegates ALL substantive work to specialists and only acts directly when a subagent's "Don't delegate when" rule explicitly applies, or for integration/verification tasks.
 
 #### Planner
@@ -211,6 +221,14 @@ If any agent fails to respond, check your provider authentication and config fil
 **Default Model:** `openai/gpt-5.3-codex` (`low`)  
 **Recommended Models:** `openai/gpt-5.3-codex`, `github-copilot/grok-code-fast-1`, `kimi-for-coding/k2p5`  
 **Model Guidance:** Choose a fast, low-latency model. Sprinter handles everything directly and does not delegate — use it when you want direct answers and quick execution rather than heavy planning or delegation.
+
+#### Business Analyst
+
+**Role:** Market research, competitive analysis, requirements elicitation, and strategic planning specialist  
+**Prompt:** [business-analyst.ts](src/agents/business-analyst.ts)  
+**Default Model:** `openai/gpt-5.5-fast` (`high`)  
+**Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.7`  
+**Model Guidance:** Choose a strong reasoning model for structured analysis, research synthesis, and documentation generation. Business Analyst delegates research to `@explorer`, `@librarian`, and `@oracle`, then synthesises findings into actionable plans and requirements documents.
 
 ---
 

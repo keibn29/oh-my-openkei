@@ -14,7 +14,7 @@ const SCHEMA_URL =
   'https://unpkg.com/oh-my-openkei@latest/oh-my-openkei.schema.json';
 
 export const MODEL_MAPPINGS = {
-  orchestrator: { model: 'opencode-go/qwen3.6-plus' },
+  orchestrator: { model: 'openai/gpt-5.4-fast', variant: 'high' },
   planner: { model: 'openai/gpt-5.5-fast', variant: 'xhigh' },
   sprinter: { model: 'openai/gpt-5.3-codex', variant: 'low' },
   oracle: { model: 'openai/gpt-5.5-fast', variant: 'high' },
