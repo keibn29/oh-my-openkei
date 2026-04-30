@@ -1,6 +1,6 @@
 {
   "name": "oh-my-openkei",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "Lightweight agent orchestration plugin for OpenCode - a slimmed-down fork of oh-my-opencode",
   "keywords": [
     "opencode",
