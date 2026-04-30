@@ -247,7 +247,7 @@ describe('config-io', () => {
     expect(saved.presets.default).toBeDefined();
   });
 
-  test('disableDefaultAgents disables explore and general agents', () => {
+  test('disableDefaultAgents disables default OpenCode agents', () => {
     const configPath = join(tmpDir, 'opencode', 'opencode.json');
     paths.ensureConfigDir();
     writeFileSync(configPath, JSON.stringify({}));
@@ -258,6 +258,8 @@ describe('config-io', () => {
     const saved = JSON.parse(readFileSync(configPath, 'utf-8'));
     expect(saved.agent.explore.disable).toBe(true);
     expect(saved.agent.general.disable).toBe(true);
+    expect(saved.agent.build.disable).toBe(true);
+    expect(saved.agent.plan.disable).toBe(true);
   });
 
   test('detectCurrentConfig detects installed status', () => {

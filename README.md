@@ -2,7 +2,7 @@
 
 **Open Multi Agent Suite** · Mix any models · Auto delegate tasks
 
-by **Kei** · [boringdystopia.ai](https://boringdystopia.ai/) · [X @alvinunreal](https://x.com/alvinunreal) · [Telegram](https://t.me/boringdystopiadevelopment)
+by **Kei** · base from [oh-my-opencode-slim](https://github.com/alvinunreal/oh-my-opencode-slim)
 
 ---
 
@@ -43,7 +43,7 @@ bunx oh-my-openkei@latest install --no-tui --skills=yes
 
 ### Getting Started
 
-The installer generates a mixed-provider preset by default, using `openai/gpt-5.4-fast` / `openai/gpt-5.5-fast` for Orchestrator and Planner, `openai/gpt-5.3-codex` (`low`) for Sprinter, `minimax-coding-plan/MiniMax-M2.7` for librarian/explorer, and `opencode-go/kimi-k2.6` / `opencode-go/deepseek-v4-flash` for specialist agents.
+The installer generates a mixed-provider preset by default, using `opencode-go/qwen3.6-plus` / `openai/gpt-5.5-fast` for Orchestrator and Planner, `openai/gpt-5.3-codex` (`low`) for Sprinter, `minimax-coding-plan/MiniMax-M2.7` for librarian/explorer, and `opencode-go/kimi-k2.6` / `opencode-go/deepseek-v4-flash` for specialist agents.
 
 1. **Log in to providers**:
    ```bash
@@ -76,8 +76,7 @@ The default generated configuration:
   "presets": {
     "default": {
       "orchestrator": {
-        "model": "openai/gpt-5.4-fast",
-        "variant": "xhigh",
+        "model": "opencode-go/qwen3.6-plus",
         "skills": ["*"],
         "mcps": ["*", "!context7"]
       },
@@ -193,7 +192,7 @@ If any agent fails to respond, check your provider authentication and config fil
 
 **Role:** Delegation-first coordinator  
 **Prompt:** [orchestrator.ts](src/agents/orchestrator.ts)  
-**Default Model:** `openai/gpt-5.4-fast` (`xhigh`)  
+**Default Model:** `opencode-go/qwen3.6-plus`  
 **Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.7`  
 **Model Guidance:** Choose your strongest coordination model. Orchestrator should excel at routing, delegation discipline, judgment, and reliable instruction-following; direct implementation ability is still useful, but mainly as a fallback when no suitable subagent exists.
 

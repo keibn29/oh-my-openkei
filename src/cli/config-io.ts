@@ -294,6 +294,8 @@ export function disableDefaultAgents(): ConfigMergeResult {
     const agent = (config.agent ?? {}) as Record<string, unknown>;
     agent.explore = { disable: true };
     agent.general = { disable: true };
+    agent.build = { disable: true };
+    agent.plan = { disable: true };
     config.agent = agent;
 
     writeConfig(configPath, config);

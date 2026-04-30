@@ -38,9 +38,14 @@ See the package page for the published install command and latest README:
 
 - https://www.npmjs.com/package/oh-my-openkei
 
-### Configuration Options
+### CLI Commands
 
-The installer supports the following options:
+| Command | Description |
+|---------|-------------|
+| `install` | Install or update oh-my-openkei configuration (default) |
+| `check-update` | Check if a newer version is available (read-only) |
+
+### CLI Options
 
 | Option | Description |
 |--------|-------------|
@@ -48,6 +53,8 @@ The installer supports the following options:
 | `--no-tui` | Non-interactive mode |
 | `--dry-run` | Simulate install without writing files |
 | `--reset` | Force overwrite of existing configuration |
+| `--version` | Show version information |
+| `-h, --help` | Show this help message |
 
 ### Non-Destructive Behavior
 
@@ -124,6 +131,9 @@ bunx oh-my-openkei@latest install --no-tui --skills=yes
 
 **Examples:**
 ```bash
+# Show version information
+bunx oh-my-openkei@latest --version
+
 # Non-interactive with default skills
 bunx oh-my-openkei@latest install --no-tui --skills=yes
 
@@ -132,6 +142,9 @@ bunx oh-my-openkei@latest install --no-tui --skills=no
 
 # Force overwrite existing configuration
 bunx oh-my-openkei@latest install --reset
+
+# Check for updates without installing
+bunx oh-my-openkei@latest check-update
 ```
 
 The installer automatically:

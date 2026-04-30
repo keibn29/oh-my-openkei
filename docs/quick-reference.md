@@ -6,7 +6,7 @@
 
 | Doc | Contents |
 |-----|----------|
-| [Installation Guide](installation.md) | CLI flags, `--reset`, auth, troubleshooting |
+| [Installation Guide](installation.md) | CLI commands and flags, `--reset`, auth, troubleshooting, update checking |
 
 ## ✨ Features
 

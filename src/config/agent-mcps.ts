@@ -15,7 +15,7 @@ export const DEFAULT_AGENT_MCPS: Record<AgentName, string[]> = {
   oracle: [],
   librarian: ['websearch', 'context7', 'grep_app'],
   explorer: ['serena'],
-  'frontend-developer': [],
+  'frontend-developer': ['figma'],
   'backend-developer': [],
   observer: [],
   council: [],
