@@ -43,6 +43,23 @@ type AgentFactory = (
 
 const COUNCIL_TOOL_ALLOWED_AGENTS = new Set(["council"]);
 
+/**
+ * Subagents that are read-only at the config/permission layer.
+ * These agents use `'*': 'deny'` with an allowlist of safe read-only tools,
+ * so that mutating tools (edit, bash, task, etc.) are blocked by OpenCode's
+ * permission system — not merely by prompt instructions.
+ *
+ * Councillor is excluded because its factory already sets `'*': 'deny'` with
+ * a per-tool allowlist.
+ */
+const READ_ONLY_SUBAGENTS = new Set([
+  "explorer",
+  "oracle",
+  "observer",
+  "librarian",
+  "council",
+]);
+
 function normalizeDisplayName(displayName: string): string {
   const trimmed = displayName.trim();
   return trimmed.startsWith("@") ? trimmed.slice(1) : trimmed;
@@ -211,6 +228,29 @@ function applyDefaultPermissions(
     ? existing.council_session ?? "allow"
     : "deny";
 
+  if (READ_ONLY_SUBAGENTS.has(agent.name)) {
+    agent.config.permission = {
+      "*": "deny",
+      question: questionPerm,
+      council_session: councilSessionPerm,
+      read: "allow",
+      glob: "allow",
+      grep: "allow",
+      ast_grep_search: "allow",
+      list: "allow",
+      lsp: "allow",
+      codesearch: "allow",
+      external_directory: "allow",
+      // Apply skill permissions as nested object under 'skill' key
+      skill: {
+        ...(typeof existing.skill === "object" ? existing.skill : {}),
+        ...skillPermissions,
+      },
+    } as SDKAgentConfig["permission"];
+    return;
+  }
+
+  // Default permission profile for edit-capable agents
   agent.config.permission = {
     ...existing,
     question: questionPerm,

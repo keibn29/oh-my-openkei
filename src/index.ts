@@ -506,6 +506,16 @@ const OhMyOpenKei: Plugin = async (ctx) => {
         | undefined;
       const allMcpNames = Object.keys(mergedMcpConfig ?? mcps);
 
+      // MCPs that are safe for read-only agents (read-only research tools).
+      // Read-only agents have '*': 'deny' set by applyDefaultPermissions;
+      // auto-allowing other MCPs would regrant write access through MCP
+      // tools with edit capabilities (e.g. serena).
+      const READ_ONLY_SAFE_MCPS = new Set([
+        'websearch',
+        'context7',
+        'grep_app',
+      ]);
+
       // For each agent, create permission rules based on their mcps list
       for (const [agentName, agentConfig] of Object.entries(agents)) {
         const agentMcps = (agentConfig as { mcps?: string[] })?.mcps;
@@ -524,6 +534,13 @@ const OhMyOpenKei: Plugin = async (ctx) => {
           unknown
         >;
 
+        // Detect read-only agents by the '*': 'deny' marker set in
+        // applyDefaultPermissions. This is defense-in-depth: even if
+        // a read-only agent defaults to a write-capable MCP (or gains
+        // one via future config), the permission layer prevents the
+        // auto-allow from overriding the wildcard deny.
+        const isReadOnly = agentPermission['*'] === 'deny';
+
         // Parse mcps list with wildcard and exclusion support
         const allowedMcps = parseList(agentMcps, allMcpNames);
 
@@ -534,9 +551,17 @@ const OhMyOpenKei: Plugin = async (ctx) => {
           const permissionKey = `${sanitizedMcpName}_*`;
           const action = allowedMcps.includes(mcpName) ? 'allow' : 'deny';
 
+          // Defense-in-depth: read-only agents only auto-allow research
+          // MCPs. Write-capable MCPs are denied to prevent accidental
+          // re-grant of file mutation through the MCP layer.
+          const effectiveAction =
+            isReadOnly && action === 'allow' && !READ_ONLY_SAFE_MCPS.has(mcpName)
+              ? 'deny'
+              : action;
+
           // Only set if not already defined by user
           if (!(permissionKey in agentPermission)) {
-            agentPermission[permissionKey] = action;
+            agentPermission[permissionKey] = effectiveAction;
           }
         }
 

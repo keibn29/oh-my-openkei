@@ -864,6 +864,148 @@ describe("tool permissions", () => {
   });
 });
 
+describe("permission profiles", () => {
+  const READ_ONLY_NAMES = [
+    "explorer",
+    "oracle",
+    "observer",
+    "librarian",
+    "council",
+  ];
+  const CAN_EDIT_NAMES = [
+    "orchestrator",
+    "planner",
+    "sprinter",
+    "business-analyst",
+    "frontend-developer",
+    "backend-developer",
+    "designer",
+  ];
+
+  // Tools that are explicitly allowed for read-only agents via the profile.
+  // webfetch is excluded because it supports `save_binary` (file write).
+  // ast_grep_search is included because it is purely read-only structural search.
+  const READ_ONLY_ALLOWED_TOOLS = [
+    "read",
+    "glob",
+    "grep",
+    "ast_grep_search",
+    "list",
+    "lsp",
+    "codesearch",
+    "external_directory",
+  ] as const;
+
+  test.each(READ_ONLY_NAMES)(
+    "read-only agent '%s' has wildcard deny ('*': 'deny') at config level",
+    (name) => {
+      // Enable all agents (including observer which is disabled by default)
+      const agents = createAgents({ disabled_agents: [] });
+      const agent = agents.find((a) => a.name === name);
+      expect(agent).toBeDefined();
+      expect(agent?.config.permission).toBeDefined();
+      const permission = agent?.config.permission as Record<string, unknown>;
+      expect(permission["*"]).toBe("deny");
+    },
+  );
+
+  test.each(READ_ONLY_NAMES)(
+    "read-only agent '%s' has read-only tools allowed",
+    (name) => {
+      const agents = createAgents({ disabled_agents: [] });
+      const agent = agents.find((a) => a.name === name);
+      expect(agent).toBeDefined();
+      const permission = agent?.config.permission as Record<string, unknown>;
+      for (const tool of READ_ONLY_ALLOWED_TOOLS) {
+        expect(permission[tool]).toBe("allow");
+      }
+    },
+  );
+
+  test.each(READ_ONLY_NAMES)(
+    "read-only agent '%s' does not have edit explicitly set (covered by '*')",
+    (name) => {
+      const agents = createAgents({ disabled_agents: [] });
+      const agent = agents.find((a) => a.name === name);
+      expect(agent).toBeDefined();
+      const permission = agent?.config.permission as Record<string, unknown>;
+      expect(permission.edit).toBeUndefined();
+    },
+  );
+
+  test.each(CAN_EDIT_NAMES)(
+    "edit-capable agent '%s' does not have wildcard deny",
+    (name) => {
+      const agents = createAgents();
+      const agent = agents.find((a) => a.name === name);
+      expect(agent).toBeDefined();
+      const permission = agent?.config.permission as Record<string, unknown>;
+      expect(permission["*"]).toBeUndefined();
+    },
+  );
+
+  test("councillor maintains its own wildcard-deny permission profile", () => {
+    const agents = createAgents();
+    const councillor = agents.find((a) => a.name === "councillor");
+    expect(councillor).toBeDefined();
+    const permission = councillor?.config.permission as Record<
+      string,
+      unknown
+    >;
+    // Councillor has its own '*': 'deny' set at the factory level
+    expect(permission["*"]).toBe("deny");
+    // Question is explicitly denied for councillor
+    expect(permission.question).toBe("deny");
+    // Read-only tools are explicitly allowed
+    expect(permission.read).toBe("allow");
+    expect(permission.glob).toBe("allow");
+    expect(permission.grep).toBe("allow");
+    // Edit is implicitly covered by '*': 'deny'
+    expect(permission.edit).toBeUndefined();
+  });
+
+  test("read-only agents still have question permission set to allow", () => {
+    const agents = createAgents({ disabled_agents: [] });
+    for (const name of READ_ONLY_NAMES) {
+      const agent = agents.find((a) => a.name === name);
+      expect(agent).toBeDefined();
+      const permission = agent?.config.permission as Record<string, unknown>;
+      expect(permission.question).toBe("allow");
+    }
+  });
+
+  test("council retains council_session permission explicitly", () => {
+    const agents = createAgents({ disabled_agents: [] });
+    const council = agents.find((a) => a.name === "council");
+    expect(council).toBeDefined();
+    const permission = council?.config.permission as Record<string, unknown>;
+    // Even with '*': 'deny', council_session is explicitly allowed
+    expect(permission["*"]).toBe("deny");
+    expect(permission.council_session).toBe("allow");
+  });
+
+  test("read-only agents have ast_grep_search allowed for structural search", () => {
+    const agents = createAgents({ disabled_agents: [] });
+    for (const name of READ_ONLY_NAMES) {
+      const agent = agents.find((a) => a.name === name);
+      expect(agent).toBeDefined();
+      const permission = agent?.config.permission as Record<string, unknown>;
+      expect(permission.ast_grep_search).toBe("allow");
+    }
+  });
+
+  test("read-only agents do NOT have webfetch allowed (can write via save_binary)", () => {
+    const agents = createAgents({ disabled_agents: [] });
+    for (const name of READ_ONLY_NAMES) {
+      const agent = agents.find((a) => a.name === name);
+      expect(agent).toBeDefined();
+      const permission = agent?.config.permission as Record<string, unknown>;
+      // webfetch is not in the allowlist; '*' deny covers it
+      expect(permission.webfetch).toBeUndefined();
+    }
+  });
+});
+
 describe("isSubagent type guard", () => {
   test("returns true for valid subagent names", () => {
     expect(isSubagent("explorer")).toBe(true);

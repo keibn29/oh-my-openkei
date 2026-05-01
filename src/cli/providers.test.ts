@@ -160,6 +160,6 @@ describe('providers', () => {
     expect(agents.librarian.mcps).toContain('context7');
     expect(agents.librarian.mcps).toContain('grep_app');
     expect(agents.designer.mcps).toEqual(['figma']);
-    expect(agents.explorer.mcps).toEqual(['serena']);
+    expect(agents.explorer.mcps).toEqual([]); // read-only, no write-capable MCPs by default
   });
 });
