@@ -293,4 +293,58 @@ describe('createFilterAvailableSkillsHook', () => {
       '<name>skill3</name>',
     );
   });
+
+  test('resolves agent via sessionID for delegated subagent sessions', async () => {
+    const config: PluginConfig = {
+      agents: {
+        'backend-developer': {
+          skills: ['skill1'],
+        },
+      },
+    };
+
+    const sessionAgentMap = new Map<string, string>();
+    sessionAgentMap.set('session-123', 'backend-developer');
+
+    const hook = createFilterAvailableSkillsHook(mockCtx, config, {
+      getSessionAgent: (sessionID: string) => sessionAgentMap.get(sessionID),
+    });
+
+    // Simulate a delegated session where parent orchestrator messages
+    // appear AFTER the current session's messages. Without sessionID
+    // resolution, getCurrentAgent would find the orchestrator message
+    // and show all skills.
+    const output = {
+      messages: [
+        {
+          info: { role: 'system' },
+          parts: [
+            {
+              type: 'text',
+              text: availableSkillsBlock('skill1', 'skill2', 'skill3'),
+            },
+          ],
+        },
+        {
+          info: {
+            role: 'user',
+            agent: 'backend-developer',
+            sessionID: 'session-123',
+          },
+          parts: [{ type: 'text', text: 'check skills' }],
+        },
+        {
+          info: { role: 'user', agent: 'orchestrator' },
+          parts: [{ type: 'text', text: 'parent context' }],
+        },
+      ],
+    };
+
+    await hook['experimental.chat.messages.transform']({}, output);
+
+    const resultText = output.messages[0].parts[0].text;
+    expect(resultText).toContain('<name>skill1</name>');
+    expect(resultText).not.toContain('<name>skill2</name>');
+    expect(resultText).not.toContain('<name>skill3</name>');
+  });
 });

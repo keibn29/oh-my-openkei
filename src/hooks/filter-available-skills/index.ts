@@ -10,6 +10,7 @@ import { getAgentOverride, type PluginConfig } from '../../config';
 interface MessageInfo {
   role: string;
   agent?: string;
+  sessionID?: string;
 }
 
 interface MessagePart {
@@ -43,6 +44,33 @@ function getCurrentAgent(messages: MessageWithParts[]): string {
   }
 
   return 'orchestrator';
+}
+
+/**
+ * Resolve the active agent name for the current conversation.
+ *
+ * First tries to find a user message with a sessionID and resolves via
+ * getSessionAgent (required for delegated subagent sessions where parent
+ * context messages would otherwise resolve to orchestrator). Falls back
+ * to scanning the last user message's info.agent.
+ */
+function resolveAgentName(
+  messages: MessageWithParts[],
+  getSessionAgent?: (sessionID: string) => string | undefined,
+): string {
+  if (getSessionAgent) {
+    for (let index = messages.length - 1; index >= 0; index -= 1) {
+      const message = messages[index];
+      if (message.info.role === 'user' && message.info.sessionID) {
+        const agent = getSessionAgent(message.info.sessionID);
+        if (agent) {
+          return agent;
+        }
+      }
+    }
+  }
+
+  return getCurrentAgent(messages);
 }
 
 function extractSkillEntries(blockContent: string): SkillEntry[] {
@@ -99,6 +127,16 @@ function filterAvailableSkillsText(
   );
 }
 
+interface FilterAvailableSkillsOptions {
+  /**
+   * Returns the agent name for a given session, or undefined if unknown.
+   * When provided, the hook resolves the active agent via sessionID first
+   * (needed for delegated subagent sessions where parent context messages
+   * would otherwise resolve to orchestrator).
+   */
+  getSessionAgent?: (sessionID: string) => string | undefined;
+}
+
 /**
  * Creates the experimental.chat.messages.transform hook for filtering available skills.
  * This hook runs right before sending to API, so it doesn't affect UI display.
@@ -106,6 +144,7 @@ function filterAvailableSkillsText(
 export function createFilterAvailableSkillsHook(
   _ctx: PluginInput,
   config: PluginConfig,
+  options?: FilterAvailableSkillsOptions,
 ) {
   const permissionRulesByAgent = new Map<string, Record<string, SkillRule>>();
 
@@ -134,7 +173,7 @@ export function createFilterAvailableSkillsHook(
         return;
       }
 
-      const agentName = getCurrentAgent(messages);
+      const agentName = resolveAgentName(messages, options?.getSessionAgent);
       const permissionRules = getPermissionRules(agentName);
 
       for (const message of messages) {

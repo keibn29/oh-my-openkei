@@ -212,7 +212,9 @@ const OhMyOpenKei: Plugin = async (ctx) => {
     phaseReminderHook = createPhaseReminderHook();
 
     // Initialize available skills filter hook
-    filterAvailableSkillsHook = createFilterAvailableSkillsHook(ctx, config);
+    filterAvailableSkillsHook = createFilterAvailableSkillsHook(ctx, config, {
+      getSessionAgent: (sessionID: string) => sessionAgentMap.get(sessionID),
+    });
 
     // Track session → agent mapping for serve-mode system prompt injection
     sessionAgentMap = new Map<string, string>();
