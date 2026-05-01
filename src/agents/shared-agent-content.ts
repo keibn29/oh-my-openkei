@@ -37,12 +37,12 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
     name: 'explorer',
     restrictedTo: 'both',
     description: `@explorer
-- Role: Parallel search specialist for discovering unknowns across the codebase
+- Role: Codebase reconnaissance specialist — locates files, code patterns, and evidence.
 - Permissions: Read files
 - Stats: 2x faster codebase search than {owner}, 1/2 cost of {owner}
 - Capabilities: Glob, grep, AST queries to locate files, symbols, patterns
 - **Delegate when:** Need to discover what exists before planning • Parallel searches speed discovery • Need summarized map vs full contents • Broad/uncertain scope
-- **Don't delegate when:** Know the path and need actual content • Need full file anyway • Single specific lookup • About to edit the file`,
+- **Don't delegate when:** Know the path and need actual content • Need full file anyway • Single specific lookup • About to edit the file • Need diagnosis or root cause analysis (use @debugger)`,
   },
   {
     name: 'librarian',
@@ -60,7 +60,7 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
     name: 'debugger',
     restrictedTo: 'orchestrator',
     description: `@debugger
-- Role: Bug investigation specialist — finds root causes without implementing fixes
+- Role: Bug investigation specialist — diagnoses root causes without implementing fixes.
 - Permissions: Read files
 - Stats: 2x faster targeted debugging than {owner}, 1/2 cost of {owner}
 - Capabilities: Systematic code tracing, error path analysis, root cause identification, regression tracing
@@ -72,11 +72,11 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
     name: 'oracle',
     restrictedTo: 'both',
     description: `@oracle
-- Role: Strategic advisor and escalation point for high-stakes decisions, unresolved bugs, and code review
+- Role: Strategic advisor and escalation point for high-stakes decisions, architecture-impacting bugs, and code review.
 - Permissions: Read files
 - Stats: 5x better decision maker, problem solver, investigator than {owner}, 0.8x speed of {owner}, same cost.
-- Capabilities: Deep architectural reasoning, system-level trade-offs, code review, simplification, maintainability review, escalation for stubborn bugs
-- **Delegate when:** Major architectural decisions with long-term impact • Bugs that persist after @debugger investigation • High-risk multi-system refactors • Costly trade-offs (performance vs maintainability) • Security/scalability/data integrity decisions • Genuinely uncertain and cost of wrong choice is high • When a workflow calls for a **reviewer** subagent • Code needs simplification or YAGNI scrutiny
+- Capabilities: Deep architectural reasoning, system-level trade-offs, code review, simplification, maintainability review, escalation for stubborn or high-risk bugs
+- **Delegate when:** Major architectural decisions with long-term impact • Bugs that persist after @debugger investigation or have architectural implications • High-risk multi-system refactors • Costly trade-offs (performance vs maintainability) • Security/scalability/data integrity decisions • Genuinely uncertain and cost of wrong choice is high • When a workflow calls for a **reviewer** subagent • Code needs simplification or YAGNI scrutiny
 - **Don't delegate when:** Routine decisions you're confident about • First bug investigation (use @debugger) • Straightforward trade-offs • Tactical "how" vs strategic "should" • Time-sensitive good-enough decisions • Quick research/testing can answer
 - **Rule of thumb:** Need senior architect review? → @oracle. Need bug investigation? → @debugger first. Need code review or simplification? → @oracle. Just do it and PR? → yourself.`,
   },
