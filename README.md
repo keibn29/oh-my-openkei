@@ -1,3 +1,5 @@
+[🇻🇳 Tiếng Việt](README.vi.md)
+
 # oh-my-openkei
 
 **Open Multi Agent Suite** · Mix any models · Auto delegate tasks
@@ -42,8 +44,6 @@ bunx oh-my-openkei@latest install --no-tui --skills=yes
 ```
 
 ### Getting Started
-
-The installer generates a mixed-provider preset by default, using `openai/gpt-5.4-fast` (`high`) / `openai/gpt-5.5-fast` for Orchestrator and Planner, `openai/gpt-5.3-codex` (`low`) for Sprinter, `openai/gpt-5.5-fast` (`high`) for Business Analyst, `openai/gpt-5.3-codex` (`high`) for Debugger, `minimax-coding-plan/MiniMax-M2.7` for librarian/explorer, and `opencode-go/kimi-k2.6` / `opencode-go/deepseek-v4-flash` for designer/developer agents.
 
 1. **Log in to providers**:
    ```bash
@@ -265,7 +265,7 @@ The following agents are delegated to by the primary agents based on task type.
 **Role:** Codebase reconnaissance  
 **Prompt:** [explorer.ts](src/agents/explorer.ts)  
 **Default Model:** `minimax-coding-plan/MiniMax-M2.7`  
-**Recommended Models:** `cerebras/zai-glm-4.7`, `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
+**Recommended Models:** `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
 **Model Guidance:** Choose a fast, low-cost model. Explorer handles broad scouting work, so speed and efficiency usually matter more than using your strongest reasoning model.
 
 #### Librarian
@@ -273,7 +273,7 @@ The following agents are delegated to by the primary agents based on task type.
 **Role:** External knowledge retrieval  
 **Prompt:** [librarian.ts](src/agents/librarian.ts)  
 **Default Model:** `minimax-coding-plan/MiniMax-M2.7`  
-**Recommended Models:** `cerebras/zai-glm-4.7`, `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
+**Recommended Models:** `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
 **Model Guidance:** Choose a fast, low-cost model. Librarian handles research and documentation lookups, so speed and efficiency usually matter more than using your strongest reasoning model.
 
 #### Designer

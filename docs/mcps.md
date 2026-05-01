@@ -11,8 +11,10 @@ Built-in Model Context Protocol (MCP) servers ship with oh-my-openkei and give a
 | `websearch` | Real-time web search via Exa AI | `https://mcp.exa.ai/mcp` |
 | `context7` | Official library documentation (up-to-date) | `https://mcp.context7.com/mcp` |
 | `grep_app` | GitHub code search via grep.app | `https://mcp.grep.app` |
-| `figma` | Design file access and management | `https://mcp.figma.com/mcp` |
+| `figma` | Design file access and management | `https://mcp.figma.com/mcp`¹ |
 | `serena` | Semantic code exploration and editing | `uvx --from git+https://github.com/oraios/serena serena start-mcp-server` |
+
+> ¹ Figma MCP requires the Figma desktop app to be running with **local MCP** enabled. Open Figma Desktop → Settings → Enable local MCP server.
 
 ---
 

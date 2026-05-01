@@ -22,6 +22,7 @@ Skills are installed via the `oh-my-openkei` installer. External skills can also
 | [`codemap`](#codemap) | Repository codemap generation | `orchestrator`, `planner` |
 | [`vercel-react-best-practices`](#vercel-react-best-practices) | React and Next.js performance guidelines | `frontend-developer` |
 | [`backend-developer`](#backend-developer) | Clean architecture and Python/FastAPI patterns | `backend-developer` |
+| [`business-analyst`](#business-analyst) | Market research, competitive analysis, requirements elicitation, and strategic planning | `business-analyst` |
 | [`karpathy-guidelines`](#karpathy-guidelines) | LLM coding pitfall guidelines | `frontend-developer`, `backend-developer` |
 
 ---
@@ -88,6 +89,18 @@ Source: bundled locally.
 
 ---
 
+## business-analyst
+
+**Senior business analyst skill for market research, competitive analysis, requirements elicitation, and strategic planning.**
+
+`business-analyst` is a bundled skill containing comprehensive business analysis guidelines including stakeholder interviews, SWOT analysis, Jobs-to-be-Done frameworks, PRD templates, and the AI-Friendly Documentation Standard. It helps `business-analyst` apply structured analysis and documentation standards when converting ideas into product strategies.
+
+By default, this skill is assigned to `business-analyst`.
+
+Source: bundled locally.
+
+---
+
 ## karpathy-guidelines
 
 **Inspired by Andrej Karpathy's observations on LLM coding pitfalls.**
@@ -104,7 +117,7 @@ Source: inspired by Andrej Karpathy's guidelines, bundled locally.
 
 Control which skills each agent can use in `~/.config/opencode/oh-my-openkei.json` (or `.jsonc`):
 
-For `frontend-developer` and `backend-developer`, any skills available after this filtering are treated as **mandatory workflow instructions**. Those agents are prompted to load every available skill via the `skill` tool before doing substantive work.
+For `frontend-developer`, `backend-developer`, and `business-analyst`, any skills available after this filtering are treated as **mandatory workflow instructions**. Those agents are prompted to load every available skill via the `skill` tool before doing substantive work.
 
 | Syntax | Meaning |
 |--------|---------|
@@ -130,6 +143,9 @@ For `frontend-developer` and `backend-developer`, any skills available after thi
       },
       "planner": {
         "skills": ["codemap"]
+      },
+      "business-analyst": {
+        "skills": ["business-analyst"]
       },
       "oracle": {
         "skills": ["simplify"]
