@@ -1,4 +1,5 @@
-import type { AgentDefinition } from './orchestrator';
+import type { AgentDefinition } from "./orchestrator";
+import { SHARED_SUBAGENT_PROMPT_FRAGMENTS } from "./shared-agent-content";
 
 const OBSERVER_PROMPT = `You are Observer — a visual analysis specialist.
 
@@ -33,12 +34,12 @@ export function createObserverAgent(
   }
 
   return {
-    name: 'observer',
-    description: 'Visual analysis specialist',
+    name: "observer",
+    description: "Visual analysis specialist",
     config: {
       model,
       temperature: 0.1,
-      prompt,
+      prompt: `${prompt}\n\n${SHARED_SUBAGENT_PROMPT_FRAGMENTS}`,
     },
   };
 }

@@ -3,8 +3,15 @@ import type { AgentDefinition } from './orchestrator';
 import {
   renderSpecialists,
   SHARED_COMMUNICATION_RULES,
-  SKILL_REQUIREMENT,
 } from './shared-agent-content';
+
+/**
+ * Custom skill-loading instruction for business-analyst.
+ * Loads the native 'business-analyst' skill by default.
+ * Additional skills are loaded only when the user explicitly requests it.
+ */
+export const BUSINESS_ANALYST_SKILL_INSTRUCTION =
+  "**Skills**: Your native 'business-analyst' skill provides your analysis methodology, frameworks, and output standards. Load it using the `skill` tool as your first action — it is MANDATORY before any substantive work. Additional skills are available — only load them when the user explicitly asks you to use a specific skill. Follow loaded skill instructions for the duration of the task.";
 
 /**
  * Build the business-analyst prompt with a restricted delegate set.
@@ -68,14 +75,16 @@ export function createBusinessAnalystAgent(
 ): AgentDefinition {
   const base_prompt = buildBusinessAnalystPrompt(disabledAgents);
 
-  // Append skill requirement in all cases, matching frontend/backend-developer pattern
+  // Append custom skill-loading instruction for business-analyst.
+  // Primary agents have full skill visibility; this agent loads its native
+  // skill by default and additional skills only when user explicitly requests.
   let prompt: string;
   if (customPrompt) {
-    prompt = `${customPrompt}\n\n${SKILL_REQUIREMENT}`;
+    prompt = `${customPrompt}\n\n${BUSINESS_ANALYST_SKILL_INSTRUCTION}`;
   } else if (customAppendPrompt) {
-    prompt = `${base_prompt}\n\n${customAppendPrompt}\n\n${SKILL_REQUIREMENT}`;
+    prompt = `${base_prompt}\n\n${customAppendPrompt}\n\n${BUSINESS_ANALYST_SKILL_INSTRUCTION}`;
   } else {
-    prompt = `${base_prompt}\n\n${SKILL_REQUIREMENT}`;
+    prompt = `${base_prompt}\n\n${BUSINESS_ANALYST_SKILL_INSTRUCTION}`;
   }
 
   const definition: AgentDefinition = {

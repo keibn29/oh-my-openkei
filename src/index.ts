@@ -1,9 +1,11 @@
 import type { Plugin } from '@opencode-ai/plugin';
 import { createAgents, getAgentConfigs, getDisabledAgents } from './agents';
-import { buildBusinessAnalystPrompt } from './agents/business-analyst';
+import {
+  BUSINESS_ANALYST_SKILL_INSTRUCTION,
+  buildBusinessAnalystPrompt,
+} from './agents/business-analyst';
 import { buildOrchestratorPrompt } from './agents/orchestrator';
 import { buildPlannerPrompt } from './agents/planner';
-import { SKILL_REQUIREMENT } from './agents/shared-agent-content';
 import { buildSprinterPrompt } from './agents/sprinter';
 import { loadPluginConfig } from './config';
 import { parseList } from './config/agent-mcps';
@@ -711,7 +713,7 @@ const OhMyOpenKei: Plugin = async (ctx) => {
           } else if (agentName === 'planner') {
             agentPrompt = buildPlannerPrompt(disabledAgents);
           } else if (agentName === 'business-analyst') {
-            agentPrompt = `${buildBusinessAnalystPrompt(disabledAgents)}\n\n${SKILL_REQUIREMENT}`;
+            agentPrompt = `${buildBusinessAnalystPrompt(disabledAgents)}\n\n${BUSINESS_ANALYST_SKILL_INSTRUCTION}`;
           } else {
             agentPrompt = buildSprinterPrompt(disabledAgents);
           }

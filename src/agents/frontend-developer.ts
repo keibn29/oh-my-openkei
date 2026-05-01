@@ -1,5 +1,8 @@
-import type { AgentDefinition } from './orchestrator';
-import { SKILL_REQUIREMENT } from './shared-agent-content';
+import type { AgentDefinition } from "./orchestrator";
+import {
+  SHARED_SUBAGENT_PROMPT_FRAGMENTS,
+  SUBAGENT_SKILL_REQUIREMENT,
+} from "./shared-agent-content";
 
 const FRONTEND_DEVELOPER_PROMPT = `You are Frontend Developer - a fast, focused implementation specialist for client-facing code.
 
@@ -61,21 +64,21 @@ export function createFrontendDeveloperAgent(
   customPrompt?: string,
   customAppendPrompt?: string,
 ): AgentDefinition {
-  let prompt = `${FRONTEND_DEVELOPER_PROMPT}\n\n${SKILL_REQUIREMENT}`;
+  let prompt = FRONTEND_DEVELOPER_PROMPT;
 
   if (customPrompt) {
-    prompt = `${customPrompt}\n\n${SKILL_REQUIREMENT}`;
+    prompt = customPrompt;
   } else if (customAppendPrompt) {
-    prompt = `${FRONTEND_DEVELOPER_PROMPT}\n\n${customAppendPrompt}\n\n${SKILL_REQUIREMENT}`;
+    prompt = `${FRONTEND_DEVELOPER_PROMPT}\n\n${customAppendPrompt}`;
   }
 
   return {
-    name: 'frontend-developer',
-    description: 'Frontend implementation specialist',
+    name: "frontend-developer",
+    description: "Frontend implementation specialist",
     config: {
       model,
       temperature: 0.2,
-      prompt,
+      prompt: `${prompt}\n\n${SUBAGENT_SKILL_REQUIREMENT}\n\n${SHARED_SUBAGENT_PROMPT_FRAGMENTS}`,
     },
   };
 }

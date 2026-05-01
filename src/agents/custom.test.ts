@@ -22,9 +22,10 @@ describe('custom-agent creation', () => {
     const customAgent = agents.find((agent) => agent.name === 'reviewer');
     expect(customAgent).toBeDefined();
     expect(customAgent?.config.model).toBe('openai/gpt-5.5');
-    expect(customAgent?.config.prompt).toBe(
+    expect(customAgent?.config.prompt).toContain(
       'You are the custom reviewer agent.',
     );
+    expect(customAgent?.config.prompt).toContain('use the `question` tool');
   });
 
   test('supports prompt and orchestratorPrompt for custom agents', () => {
@@ -43,9 +44,10 @@ describe('custom-agent creation', () => {
     const customAgent = agents.find((agent) => agent.name === 'test-auditor');
 
     expect(customAgent).toBeDefined();
-    expect(customAgent?.config.prompt).toBe(
+    expect(customAgent?.config.prompt).toContain(
       'You are a custom subagent for auditing.',
     );
+    expect(customAgent?.config.prompt).toContain('use the `question` tool');
 
     const orchestrator = agents.find((agent) => agent.name === 'orchestrator');
     expect(orchestrator?.config.prompt).toContain(

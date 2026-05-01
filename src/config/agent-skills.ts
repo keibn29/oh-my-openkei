@@ -16,7 +16,7 @@ export const DEFAULT_AGENT_SKILLS: Record<AgentName, string[]> = {
   orchestrator: ['*'],
   planner: ['*'],
   sprinter: ['*'],
-  'business-analyst': ['business-analyst'],
+  'business-analyst': ['*'], // full skill visibility as a primary agent
   designer: ['agent-browser'],
   oracle: ['simplify', 'requesting-code-review'],
   librarian: [],

@@ -58,9 +58,8 @@ describe('skills permissions', () => {
     expect(wildcardPerms['*']).toBe('allow');
   });
 
-  it('should deny wildcard for business-analyst with specific skill allow', () => {
+  it('should allow wildcard for business-analyst like other primary agents', () => {
     const baPerms = getSkillPermissionsForAgent('business-analyst');
-    expect(baPerms['*']).toBe('deny');
-    expect(baPerms['business-analyst']).toBe('allow');
+    expect(baPerms['*']).toBe('allow');
   });
 });

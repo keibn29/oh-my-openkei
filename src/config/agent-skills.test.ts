@@ -14,10 +14,8 @@ describe('DEFAULT_AGENT_SKILLS', () => {
     expect(DEFAULT_AGENT_SKILLS.sprinter).toEqual(['*']);
   });
 
-  test('business-analyst gets exactly its own skill', () => {
-    expect(DEFAULT_AGENT_SKILLS['business-analyst']).toEqual([
-      'business-analyst',
-    ]);
+  test('business-analyst gets wildcard like other primary agents', () => {
+    expect(DEFAULT_AGENT_SKILLS['business-analyst']).toEqual(['*']);
   });
 
   test('designer gets agent-browser', () => {

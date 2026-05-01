@@ -129,8 +129,8 @@ describe('providers', () => {
     expect(agents['backend-developer'].skills).toContain('backend-developer');
     expect(agents['backend-developer'].skills).toContain('karpathy-guidelines');
 
-    // Business-analyst should have exactly its own skill
-    expect(agents['business-analyst'].skills).toEqual(['business-analyst']);
+    // Business-analyst should have wildcard like other primary agents
+    expect(agents['business-analyst'].skills).toEqual(['*']);
   });
 
   test('generateLiteConfig includes mcps field', () => {

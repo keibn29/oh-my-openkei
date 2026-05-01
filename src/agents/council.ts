@@ -1,5 +1,6 @@
-import { shortModelLabel } from '../utils/session';
-import { type AgentDefinition, resolvePrompt } from './orchestrator';
+import { shortModelLabel } from "../utils/session";
+import { type AgentDefinition, resolvePrompt } from "./orchestrator";
+import { SHARED_SUBAGENT_PROMPT_FRAGMENTS } from "./shared-agent-content";
 
 // NOTE: Councillor system prompts live in the councillor agent factory.
 // The format functions below only structure the USER message content — the
@@ -71,15 +72,15 @@ export function createCouncilAgent(
   customPrompt?: string,
   customAppendPrompt?: string,
 ): AgentDefinition {
-  const prompt = resolvePrompt(
+  const prompt = `${resolvePrompt(
     COUNCIL_AGENT_PROMPT,
     customPrompt,
     customAppendPrompt,
-  );
+  )}\n\n${SHARED_SUBAGENT_PROMPT_FRAGMENTS}`;
 
   const definition: AgentDefinition = {
-    name: 'council',
-    description: 'Multi-model consensus and synthesis',
+    name: "council",
+    description: "Multi-model consensus and synthesis",
     config: {
       temperature: 0.1,
       prompt,
@@ -131,7 +132,7 @@ export function formatCouncillorResults(
   }>,
 ): string {
   const completedWithResults = councillorResults.filter(
-    (cr) => cr.status === 'completed' && cr.result,
+    (cr) => cr.status === "completed" && cr.result,
   );
 
   const councillorSection = completedWithResults
@@ -139,12 +140,12 @@ export function formatCouncillorResults(
       const shortModel = shortModelLabel(cr.model);
       return `**${cr.name}** (${shortModel}):\n${cr.result}`;
     })
-    .join('\n\n');
+    .join("\n\n");
 
   const failedSection = councillorResults
-    .filter((cr) => cr.status !== 'completed')
-    .map((cr) => `**${cr.name}**: ${cr.status} — ${cr.error ?? 'Unknown'}`)
-    .join('\n');
+    .filter((cr) => cr.status !== "completed")
+    .map((cr) => `**${cr.name}**: ${cr.status} — ${cr.error ?? "Unknown"}`)
+    .join("\n");
 
   // Defensive guard: caller (runCouncil) short-circuits when all fail,
   // but this function may be reused in other contexts.
@@ -153,10 +154,10 @@ export function formatCouncillorResults(
       .map(
         (cr) =>
           `**${cr.name}** (${shortModelLabel(cr.model)}): ${cr.status} — ${
-            cr.error ?? 'Unknown'
+            cr.error ?? "Unknown"
           }`,
       )
-      .join('\n');
+      .join("\n");
 
     return `---\n\n**Original Prompt**:\n${originalPrompt}\n\n---\n\n**Councillor Responses**:\nAll councillors failed to produce output:\n${errorDetails}\n\nPlease generate a response based on the original prompt alone.`;
   }
@@ -168,7 +169,7 @@ export function formatCouncillorResults(
   }
 
   prompt +=
-    '\n\n---\n\nYou MUST follow the Synthesis Process steps before producing output: review each councillor response individually, then produce the required output with a synthesized Council Response, per-councillor details using their exact names, and a Council Summary with consensus confidence rating (unanimous, majority, or split).';
+    "\n\n---\n\nYou MUST follow the Synthesis Process steps before producing output: review each councillor response individually, then produce the required output with a synthesized Council Response, per-councillor details using their exact names, and a Council Summary with consensus confidence rating (unanimous, majority, or split).";
 
   return prompt;
 }

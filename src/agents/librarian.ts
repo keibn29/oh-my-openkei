@@ -1,4 +1,5 @@
-import type { AgentDefinition } from './orchestrator';
+import type { AgentDefinition } from "./orchestrator";
+import { SHARED_SUBAGENT_PROMPT_FRAGMENTS } from "./shared-agent-content";
 
 const LIBRARIAN_PROMPT = `You are Librarian - a research specialist for codebases and documentation.
 
@@ -36,12 +37,12 @@ export function createLibrarianAgent(
   }
 
   return {
-    name: 'librarian',
-    description: 'Docs and library research specialist',
+    name: "librarian",
+    description: "Docs and library research specialist",
     config: {
       model,
       temperature: 0.1,
-      prompt,
+      prompt: `${prompt}\n\n${SHARED_SUBAGENT_PROMPT_FRAGMENTS}`,
     },
   };
 }

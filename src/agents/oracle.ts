@@ -1,4 +1,5 @@
-import type { AgentDefinition } from './orchestrator';
+import type { AgentDefinition } from "./orchestrator";
+import { SHARED_SUBAGENT_PROMPT_FRAGMENTS } from "./shared-agent-content";
 
 const ORACLE_PROMPT = `You are Oracle - a strategic technical advisor and code reviewer.
 
@@ -38,12 +39,12 @@ export function createOracleAgent(
   }
 
   return {
-    name: 'oracle',
-    description: 'Architecture and code review advisor',
+    name: "oracle",
+    description: "Architecture and code review advisor",
     config: {
       model,
       temperature: 0.1,
-      prompt,
+      prompt: `${prompt}\n\n${SHARED_SUBAGENT_PROMPT_FRAGMENTS}`,
     },
   };
 }

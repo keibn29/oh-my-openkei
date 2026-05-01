@@ -1,4 +1,5 @@
-import type { AgentDefinition } from './orchestrator';
+import type { AgentDefinition } from "./orchestrator";
+import { SHARED_SUBAGENT_PROMPT_FRAGMENTS } from "./shared-agent-content";
 
 const EXPLORER_PROMPT = `You are Explorer - a fast codebase navigation specialist.
 
@@ -44,12 +45,12 @@ export function createExplorerAgent(
   }
 
   return {
-    name: 'explorer',
-    description: 'Codebase search and pattern matching',
+    name: "explorer",
+    description: "Codebase search and pattern matching",
     config: {
       model,
       temperature: 0.1,
-      prompt,
+      prompt: `${prompt}\n\n${SHARED_SUBAGENT_PROMPT_FRAGMENTS}`,
     },
   };
 }

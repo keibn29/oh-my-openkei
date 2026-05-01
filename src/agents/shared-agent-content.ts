@@ -9,11 +9,13 @@
  */
 
 /**
- * Mandatory skill loading instruction shared across agents.
- * Appended to every agent's system prompt to ensure skills are loaded before work.
+ * Mandatory skill loading instruction for subagents.
+ * Subagents must load all available (permission-filtered) skills before work.
+ * Primary agents (orchestrator, planner, sprinter) do not use this;
+ * business-analyst uses its own custom skill-loading prompt.
  */
-export const SKILL_REQUIREMENT =
-  '**Skills**: If any skills are available to you, they are MANDATORY. Your FIRST action on every user prompt must be to use the `skill` tool to load all available skills. Do NOT begin any substantive work — analysis, planning, coding, or research — until you have loaded and read every available skill. Follow the loaded skill instructions throughout the entire task.';
+export const SUBAGENT_SKILL_REQUIREMENT =
+  "**Skills**: If any skills are available to you, they are MANDATORY. Your FIRST action on every user prompt must be to use the `skill` tool to load all available skills. Do NOT begin any substantive work — analysis, planning, coding, or research — until you have loaded and read every available skill. Follow the loaded skill instructions throughout the entire task.";
 
 /**
  * Specialist description catalog.
@@ -27,13 +29,13 @@ export const SKILL_REQUIREMENT =
  */
 export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
   name: string;
-  restrictedTo: 'orchestrator' | 'planner' | 'both';
+  restrictedTo: "orchestrator" | "planner" | "both";
   description: string;
   descriptionForOwner?: Record<string, string>;
 }> = [
   {
-    name: 'explorer',
-    restrictedTo: 'both',
+    name: "explorer",
+    restrictedTo: "both",
     description: `@explorer
 - Role: Parallel search specialist for discovering unknowns across the codebase
 - Permissions: Read files
@@ -43,8 +45,8 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
 - **Don't delegate when:** Know the path and need actual content • Need full file anyway • Single specific lookup • About to edit the file`,
   },
   {
-    name: 'librarian',
-    restrictedTo: 'both',
+    name: "librarian",
+    restrictedTo: "both",
     description: `@librarian
 - Role: Authoritative source for current library docs and API references
 - Permissions: None
@@ -55,8 +57,8 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
 - **Rule of thumb:** "How does this library work?" → @librarian. "How does programming work?" → yourself.`,
   },
   {
-    name: 'oracle',
-    restrictedTo: 'both',
+    name: "oracle",
+    restrictedTo: "both",
     description: `@oracle
 - Role: Strategic advisor for high-stakes decisions and persistent problems, code reviewer
 - Permissions: Read files
@@ -67,8 +69,8 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
 - **Rule of thumb:** Need senior architect review? → @oracle. Need code review or simplification? → @oracle. Just do it and PR? → yourself.`,
   },
   {
-    name: 'designer',
-    restrictedTo: 'both',
+    name: "designer",
+    restrictedTo: "both",
     description: `@designer
 - Role: UI/UX decision specialist — owns direction, layout, interaction decisions, accessibility judgment, and visual polish
 - Permissions: Read/write files
@@ -90,8 +92,8 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
     },
   },
   {
-    name: 'frontend-developer',
-    restrictedTo: 'orchestrator',
+    name: "frontend-developer",
+    restrictedTo: "orchestrator",
     description: `@frontend-developer
 - Role: Fast execution specialist for frontend/client-side code — implements what @designer decides
 - Permissions: Read/write files
@@ -107,8 +109,8 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
 - **Stop short when:** UX/visual direction, interaction intent, styling direction, or UX expectations are ambiguous — do not decide autonomously; hand back to {owner} to route through @designer first`,
   },
   {
-    name: 'backend-developer',
-    restrictedTo: 'orchestrator',
+    name: "backend-developer",
+    restrictedTo: "orchestrator",
     description: `@backend-developer
 - Role: Fast execution specialist for backend/server-side code
 - Permissions: Read/write files
@@ -120,8 +122,8 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
 - **Rule of thumb:** Server/data code? → @backend-developer. Client/UI code? → @frontend-developer. Strategy/review instead of execution? → @oracle.`,
   },
   {
-    name: 'council',
-    restrictedTo: 'orchestrator',
+    name: "council",
+    restrictedTo: "orchestrator",
     description: `@council
 - Role: Multi-LLM consensus engine that runs several councillors, synthesizes their views, and returns a structured council report.
 - Permissions: Read files
@@ -134,8 +136,8 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
 - **Rule of thumb:** Need second/third opinions from different models? → @council. Need one expert agent or direct execution? → use the specialist or yourself.`,
   },
   {
-    name: 'observer',
-    restrictedTo: 'orchestrator',
+    name: "observer",
+    restrictedTo: "orchestrator",
     description: `@observer
 - Role: Visual analysis specialist for images, PDFs, and diagrams
 - Permissions: Read files
@@ -147,8 +149,8 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
 - **IMPORTANT:** When delegating to @observer, always include the **full file path** in the prompt so it can read the file. Example: "Analyze the screenshot at /path/to/file.png — describe the UI elements and error messages."`,
   },
   {
-    name: 'councillor',
-    restrictedTo: 'orchestrator',
+    name: "councillor",
+    restrictedTo: "orchestrator",
     description: `@councillor
 - Role: Internal specialist used by @council for multi-LLM consensus
 - Permissions: Read files
@@ -171,7 +173,7 @@ export function renderSpecialists(
 
   return SHARED_SPECIALIST_DESCRIPTIONS.filter((s) => {
     // Skip if this specialist is not allowed for this primary agent
-    if (s.restrictedTo !== 'both' && s.restrictedTo !== primaryAgent) {
+    if (s.restrictedTo !== "both" && s.restrictedTo !== primaryAgent) {
       return false;
     }
     // Skip if this specialist is not in the allowed set
@@ -188,13 +190,24 @@ export function renderSpecialists(
       const text = s.descriptionForOwner?.[primaryAgent] ?? s.description;
       return text.replace(/\{owner\}/g, primaryAgent);
     })
-    .join('\n\n');
+    .join("\n\n");
 }
+
+/**
+ * Shared prompt fragments appended to all applicable agent prompts.
+ * Contains common behavioral instructions that apply broadly.
+ * Add new shared fragments here as the prompt architecture evolves.
+ */
+export const SHARED_SUBAGENT_PROMPT_FRAGMENTS =
+  "When you need to ask the user a question, you MUST use the `question` tool. Do NOT ask questions as a normal chat message and then wait for the user to answer in a follow-up prompt.";
 
 /**
  * Shared communication rules text used by all primary agents.
  */
-export const SHARED_COMMUNICATION_RULES = `## Clarity Over Assumptions
+export const SHARED_COMMUNICATION_RULES = `## Asking Questions
+${SHARED_SUBAGENT_PROMPT_FRAGMENTS}
+
+## Clarity Over Assumptions
 - If request is vague or has multiple valid interpretations, ask a targeted question before proceeding
 - Don't guess at critical details (file paths, API choices, architectural decisions)
 - Do make reasonable assumptions for minor details and state them briefly
