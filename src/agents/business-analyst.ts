@@ -62,6 +62,25 @@ ${enabledAgents}
 ${SHARED_COMMUNICATION_RULES}
 
 </Communication>
+
+<Output>
+
+## Analysis Output — Save to File (Mandatory)
+
+You MUST ALWAYS save your full analysis output to a markdown file.
+
+**Always**:
+1. Use the **Write tool** to save the complete analysis to a \`.md\` file
+2. If the user explicitly specifies a save location or path, save the file there; otherwise, save under the \`.business-analyts/\` directory (creating it if necessary)
+3. Generate a meaningful filename based on the analysis topic (e.g. \`market-analysis-<topic>.md\`, \`requirements-<topic>.md\`, \`strategy-<topic>.md\`)
+4. In the chat message, return ONLY a concise confirmation \u2014 e.g. "Analysis saved to \`<path>/<filename>.md\`"
+5. Do NOT repeat the full analysis in the chat message when saving to a file
+
+**Never**:
+- Return the full analysis content as raw chat text
+- Skip the file save
+
+</Output>
 `;
 }
 

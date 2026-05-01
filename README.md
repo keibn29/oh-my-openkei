@@ -230,6 +230,8 @@ If any agent fails to respond, check your provider authentication and config fil
 **Recommended Models:** `openai/gpt-5.5`, `anthropic/claude-opus-4.7`  
 **Model Guidance:** Choose a strong reasoning model for structured analysis, research synthesis, and documentation generation. Business Analyst delegates research to `@explorer`, `@librarian`, and `@oracle`, then synthesises findings into actionable plans and requirements documents.
 
+> **Auto-save behavior:** The Business Analyst always saves its full analysis output as a `.md` file under `.business-analyts/` and returns only a concise confirmation in chat. This differs from the Planner, which only saves to file when explicitly requested.
+
 ---
 
 ### Subagents
