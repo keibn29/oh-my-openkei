@@ -19,6 +19,7 @@ export const DEFAULT_AGENT_SKILLS: Record<AgentName, string[]> = {
   'business-analyst': ['*'], // full skill visibility as a primary agent
   designer: ['agent-browser'],
   oracle: ['simplify', 'requesting-code-review'],
+  debugger: [],
   librarian: [],
   explorer: [],
   'frontend-developer': ['vercel-react-best-practices', 'karpathy-guidelines'],

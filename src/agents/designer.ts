@@ -1,5 +1,5 @@
-import type { AgentDefinition } from "./orchestrator";
-import { SHARED_SUBAGENT_PROMPT_FRAGMENTS } from "./shared-agent-content";
+import type { AgentDefinition } from './orchestrator';
+import { SHARED_SUBAGENT_PROMPT_FRAGMENTS } from './shared-agent-content';
 
 const DESIGNER_PROMPT = `You are a Designer — the UI/UX direction, review, and specification authority.
 
@@ -77,8 +77,8 @@ export function createDesignerAgent(
   }
 
   return {
-    name: "designer",
-    description: "UI/UX direction and design decisions",
+    name: 'designer',
+    description: 'UI/UX direction and design decisions',
     config: {
       model,
       temperature: 0.7,

@@ -10,6 +10,7 @@ export const MODEL_MAPPINGS = {
   planner: { model: 'openai/gpt-5.5-fast', variant: 'xhigh' },
   sprinter: { model: 'openai/gpt-5.3-codex', variant: 'low' },
   oracle: { model: 'openai/gpt-5.5-fast', variant: 'high' },
+  debugger: { model: 'openai/gpt-5.3-codex', variant: 'high' },
   council: { model: 'openai/gpt-5.4-fast', variant: 'xhigh' },
   librarian: { model: 'minimax-coding-plan/MiniMax-M2.7' },
   explorer: { model: 'minimax-coding-plan/MiniMax-M2.7' },

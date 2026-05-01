@@ -14,6 +14,7 @@ export const DEFAULT_AGENT_MCPS: Record<AgentName, string[]> = {
   'business-analyst': ['*', '!context7'], // same as orchestrator - analysis primary agent
   designer: ['figma'],
   oracle: [],
+  debugger: [],
   // Research MCPs (websearch, context7, grep_app) are safe for read-only
   // agents because they only fetch/search external content — no file mutation.
   // MCPs like serena are intentionally excluded from read-only agents because

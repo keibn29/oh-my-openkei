@@ -15,7 +15,7 @@
  * business-analyst uses its own custom skill-loading prompt.
  */
 export const SUBAGENT_SKILL_REQUIREMENT =
-  "**Skills**: If any skills are available to you, they are MANDATORY. Your FIRST action on every user prompt must be to use the `skill` tool to load all available skills. Do NOT begin any substantive work — analysis, planning, coding, or research — until you have loaded and read every available skill. Follow the loaded skill instructions throughout the entire task.";
+  '**Skills**: If any skills are available to you, they are MANDATORY. Your FIRST action on every user prompt must be to use the `skill` tool to load all available skills. Do NOT begin any substantive work — analysis, planning, coding, or research — until you have loaded and read every available skill. Follow the loaded skill instructions throughout the entire task.';
 
 /**
  * Specialist description catalog.
@@ -29,13 +29,13 @@ export const SUBAGENT_SKILL_REQUIREMENT =
  */
 export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
   name: string;
-  restrictedTo: "orchestrator" | "planner" | "both";
+  restrictedTo: 'orchestrator' | 'planner' | 'both';
   description: string;
   descriptionForOwner?: Record<string, string>;
 }> = [
   {
-    name: "explorer",
-    restrictedTo: "both",
+    name: 'explorer',
+    restrictedTo: 'both',
     description: `@explorer
 - Role: Parallel search specialist for discovering unknowns across the codebase
 - Permissions: Read files
@@ -45,8 +45,8 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
 - **Don't delegate when:** Know the path and need actual content • Need full file anyway • Single specific lookup • About to edit the file`,
   },
   {
-    name: "librarian",
-    restrictedTo: "both",
+    name: 'librarian',
+    restrictedTo: 'both',
     description: `@librarian
 - Role: Authoritative source for current library docs and API references
 - Permissions: None
@@ -57,20 +57,32 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
 - **Rule of thumb:** "How does this library work?" → @librarian. "How does programming work?" → yourself.`,
   },
   {
-    name: "oracle",
-    restrictedTo: "both",
-    description: `@oracle
-- Role: Strategic advisor for high-stakes decisions and persistent problems, code reviewer
+    name: 'debugger',
+    restrictedTo: 'orchestrator',
+    description: `@debugger
+- Role: Bug investigation specialist — finds root causes without implementing fixes
 - Permissions: Read files
-- Stats: 5x better decision maker, problem solver, investigator than {owner}, 0.8x speed of {owner}, same cost.
-- Capabilities: Deep architectural reasoning, system-level trade-offs, complex debugging, code review, simplification, maintainability review
-- **Delegate when:** Major architectural decisions with long-term impact • Problems persisting after 2+ fix attempts • High-risk multi-system refactors • Costly trade-offs (performance vs maintainability) • Complex debugging with unclear root cause • Security/scalability/data integrity decisions • Genuinely uncertain and cost of wrong choice is high • When a workflow calls for a **reviewer** subagent • Code needs simplification or YAGNI scrutiny
-- **Don't delegate when:** Routine decisions you're confident about • First bug fix attempt • Straightforward trade-offs • Tactical "how" vs strategic "should" • Time-sensitive good-enough decisions • Quick research/testing can answer
-- **Rule of thumb:** Need senior architect review? → @oracle. Need code review or simplification? → @oracle. Just do it and PR? → yourself.`,
+- Stats: 2x faster targeted debugging than {owner}, 1/2 cost of {owner}
+- Capabilities: Systematic code tracing, error path analysis, root cause identification, regression tracing
+- **Delegate when:** Bug investigation needed • Error/failure diagnosis • Root cause analysis • Understanding unexpected behavior • Regression tracing • Needs investigation before deciding on a fix approach
+- **Don't delegate when:** Need search/discovery only (use @explorer) • Fix implementation is the goal (use @frontend-developer or @backend-developer) • Need architectural guidance for a high-risk bug (use @oracle) • Quick known fix (do it directly or use @frontend-developer/@backend-developer)
+- **Rule of thumb:** "Why is this broken?" → @debugger. "Where is the thing?" → @explorer. "How should we fix this high-risk issue?" → @oracle. "Fix this" → @frontend-developer or @backend-developer.`,
   },
   {
-    name: "designer",
-    restrictedTo: "both",
+    name: 'oracle',
+    restrictedTo: 'both',
+    description: `@oracle
+- Role: Strategic advisor and escalation point for high-stakes decisions, unresolved bugs, and code review
+- Permissions: Read files
+- Stats: 5x better decision maker, problem solver, investigator than {owner}, 0.8x speed of {owner}, same cost.
+- Capabilities: Deep architectural reasoning, system-level trade-offs, code review, simplification, maintainability review, escalation for stubborn bugs
+- **Delegate when:** Major architectural decisions with long-term impact • Bugs that persist after @debugger investigation • High-risk multi-system refactors • Costly trade-offs (performance vs maintainability) • Security/scalability/data integrity decisions • Genuinely uncertain and cost of wrong choice is high • When a workflow calls for a **reviewer** subagent • Code needs simplification or YAGNI scrutiny
+- **Don't delegate when:** Routine decisions you're confident about • First bug investigation (use @debugger) • Straightforward trade-offs • Tactical "how" vs strategic "should" • Time-sensitive good-enough decisions • Quick research/testing can answer
+- **Rule of thumb:** Need senior architect review? → @oracle. Need bug investigation? → @debugger first. Need code review or simplification? → @oracle. Just do it and PR? → yourself.`,
+  },
+  {
+    name: 'designer',
+    restrictedTo: 'both',
     description: `@designer
 - Role: UI/UX decision specialist — owns direction, layout, interaction decisions, accessibility judgment, and visual polish
 - Permissions: Read/write files
@@ -92,8 +104,8 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
     },
   },
   {
-    name: "frontend-developer",
-    restrictedTo: "orchestrator",
+    name: 'frontend-developer',
+    restrictedTo: 'orchestrator',
     description: `@frontend-developer
 - Role: Fast execution specialist for frontend/client-side code — implements what @designer decides
 - Permissions: Read/write files
@@ -109,8 +121,8 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
 - **Stop short when:** UX/visual direction, interaction intent, styling direction, or UX expectations are ambiguous — do not decide autonomously; hand back to {owner} to route through @designer first`,
   },
   {
-    name: "backend-developer",
-    restrictedTo: "orchestrator",
+    name: 'backend-developer',
+    restrictedTo: 'orchestrator',
     description: `@backend-developer
 - Role: Fast execution specialist for backend/server-side code
 - Permissions: Read/write files
@@ -122,8 +134,8 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
 - **Rule of thumb:** Server/data code? → @backend-developer. Client/UI code? → @frontend-developer. Strategy/review instead of execution? → @oracle.`,
   },
   {
-    name: "council",
-    restrictedTo: "orchestrator",
+    name: 'council',
+    restrictedTo: 'orchestrator',
     description: `@council
 - Role: Multi-LLM consensus engine that runs several councillors, synthesizes their views, and returns a structured council report.
 - Permissions: Read files
@@ -136,8 +148,8 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
 - **Rule of thumb:** Need second/third opinions from different models? → @council. Need one expert agent or direct execution? → use the specialist or yourself.`,
   },
   {
-    name: "observer",
-    restrictedTo: "orchestrator",
+    name: 'observer',
+    restrictedTo: 'orchestrator',
     description: `@observer
 - Role: Visual analysis specialist for images, PDFs, and diagrams
 - Permissions: Read files
@@ -149,8 +161,8 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
 - **IMPORTANT:** When delegating to @observer, always include the **full file path** in the prompt so it can read the file. Example: "Analyze the screenshot at /path/to/file.png — describe the UI elements and error messages."`,
   },
   {
-    name: "councillor",
-    restrictedTo: "orchestrator",
+    name: 'councillor',
+    restrictedTo: 'orchestrator',
     description: `@councillor
 - Role: Internal specialist used by @council for multi-LLM consensus
 - Permissions: Read files
@@ -173,7 +185,7 @@ export function renderSpecialists(
 
   return SHARED_SPECIALIST_DESCRIPTIONS.filter((s) => {
     // Skip if this specialist is not allowed for this primary agent
-    if (s.restrictedTo !== "both" && s.restrictedTo !== primaryAgent) {
+    if (s.restrictedTo !== 'both' && s.restrictedTo !== primaryAgent) {
       return false;
     }
     // Skip if this specialist is not in the allowed set
@@ -190,7 +202,7 @@ export function renderSpecialists(
       const text = s.descriptionForOwner?.[primaryAgent] ?? s.description;
       return text.replace(/\{owner\}/g, primaryAgent);
     })
-    .join("\n\n");
+    .join('\n\n');
 }
 
 /**
@@ -199,7 +211,7 @@ export function renderSpecialists(
  * Add new shared fragments here as the prompt architecture evolves.
  */
 export const SHARED_SUBAGENT_PROMPT_FRAGMENTS =
-  "When you need to ask the user a question, you MUST use the `question` tool. Do NOT ask questions as a normal chat message and then wait for the user to answer in a follow-up prompt.";
+  'When you need to ask the user a question, you MUST use the `question` tool. Do NOT ask questions as a normal chat message and then wait for the user to answer in a follow-up prompt.';
 
 /**
  * Shared communication rules text used by all primary agents.

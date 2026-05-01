@@ -1,8 +1,8 @@
-import type { AgentDefinition } from "./orchestrator";
+import type { AgentDefinition } from './orchestrator';
 import {
   SHARED_SUBAGENT_PROMPT_FRAGMENTS,
   SUBAGENT_SKILL_REQUIREMENT,
-} from "./shared-agent-content";
+} from './shared-agent-content';
 
 const FRONTEND_DEVELOPER_PROMPT = `You are Frontend Developer - a fast, focused implementation specialist for client-facing code.
 
@@ -73,8 +73,8 @@ export function createFrontendDeveloperAgent(
   }
 
   return {
-    name: "frontend-developer",
-    description: "Frontend implementation specialist",
+    name: 'frontend-developer',
+    description: 'Frontend implementation specialist',
     config: {
       model,
       temperature: 0.2,

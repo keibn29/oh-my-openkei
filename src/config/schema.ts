@@ -2,10 +2,11 @@ import { z } from 'zod';
 import { AGENT_ALIASES, ALL_AGENT_NAMES } from './constants';
 import { CouncilConfigSchema } from './council-schema';
 
-const FALLBACK_AGENT_NAMES = [
+const MANUAL_AGENT_NAMES = [
   'orchestrator',
   'planner',
   'business-analyst',
+  'debugger',
   'oracle',
   'designer',
   'explorer',
@@ -14,17 +15,7 @@ const FALLBACK_AGENT_NAMES = [
   'backend-developer',
 ] as const;
 
-const MANUAL_AGENT_NAMES = [
-  'orchestrator',
-  'planner',
-  'business-analyst',
-  'oracle',
-  'designer',
-  'explorer',
-  'librarian',
-  'frontend-developer',
-  'backend-developer',
-] as const;
+const FALLBACK_AGENT_NAMES = MANUAL_AGENT_NAMES;
 
 export const ProviderModelIdSchema = z
   .string()
@@ -60,6 +51,7 @@ export const ManualPlanSchema = z
     orchestrator: ManualAgentPlanSchema,
     planner: ManualAgentPlanSchema.optional(),
     'business-analyst': ManualAgentPlanSchema.optional(),
+    debugger: ManualAgentPlanSchema.optional(),
     oracle: ManualAgentPlanSchema,
     designer: ManualAgentPlanSchema,
     explorer: ManualAgentPlanSchema,
@@ -143,7 +135,7 @@ export const ManualPlanSchema = z
         });
       }
     }
-    const known = new Set([...required, 'fixer']);
+    const known = new Set([...required, 'debugger', 'fixer']);
     for (const key of Object.keys(data as object)) {
       if (!known.has(key)) {
         ctx.addIssue({
@@ -167,6 +159,7 @@ const FallbackChainsSchema = z
     orchestrator: AgentModelChainSchema.optional(),
     planner: AgentModelChainSchema.optional(),
     'business-analyst': AgentModelChainSchema.optional(),
+    debugger: AgentModelChainSchema.optional(),
     oracle: AgentModelChainSchema.optional(),
     designer: AgentModelChainSchema.optional(),
     explorer: AgentModelChainSchema.optional(),

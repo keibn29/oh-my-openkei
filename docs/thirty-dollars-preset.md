@@ -17,6 +17,7 @@ Provider pricing changes often, so treat "$30" as a rough target rather than a g
       "planner": { "model": "openai/gpt-5.5", "skills": ["*"], "mcps": ["*", "!context7"] },
       "sprinter": { "model": "openai/gpt-5.3-codex", "variant": "low", "skills": ["*"], "mcps": ["*", "!context7"] },
       "oracle": { "model": "openai/gpt-5.5", "variant": "high", "skills": ["simplify"], "mcps": [] },
+      "debugger": { "model": "openai/gpt-5.3-codex", "variant": "high", "skills": [], "mcps": [] },
       "council": { "model": "openai/gpt-5.5", "variant": "xhigh", "skills": [], "mcps": [] },
       "librarian": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": ["websearch", "context7", "grep_app"] },
       "explorer": { "model": "openai/gpt-5.4-mini", "variant": "low", "skills": [], "mcps": ["serena"] },

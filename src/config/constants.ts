@@ -1,26 +1,27 @@
 // Agent names
 export const AGENT_ALIASES: Record<string, string> = {
-  explore: "explorer",
-  "frontend-ui-ux-engineer": "designer",
-  fixer: "frontend-developer", // legacy fallback
+  explore: 'explorer',
+  'frontend-ui-ux-engineer': 'designer',
+  fixer: 'frontend-developer', // legacy fallback
 };
 
 export const SUBAGENT_NAMES = [
-  "explorer",
-  "librarian",
-  "oracle",
-  "designer",
-  "frontend-developer",
-  "backend-developer",
-  "observer",
-  "council",
-  "councillor",
+  'debugger',
+  'explorer',
+  'librarian',
+  'oracle',
+  'designer',
+  'frontend-developer',
+  'backend-developer',
+  'observer',
+  'council',
+  'councillor',
 ] as const;
 
-export const ORCHESTRATOR_NAME = "orchestrator" as const;
-export const PLANNER_NAME = "planner" as const;
-export const SPRINTER_NAME = "sprinter" as const;
-export const BUSINESS_ANALYST_NAME = "business-analyst" as const;
+export const ORCHESTRATOR_NAME = 'orchestrator' as const;
+export const PLANNER_NAME = 'planner' as const;
+export const SPRINTER_NAME = 'sprinter' as const;
+export const BUSINESS_ANALYST_NAME = 'business-analyst' as const;
 
 export const PRIMARY_AGENT_NAMES = [
   ORCHESTRATOR_NAME,
@@ -35,10 +36,10 @@ export const PRIMARY_AGENT_NAMES = [
  * delegation rules (SUBAGENT_DELEGATION_RULES.planner).
  */
 export const PLANNER_DELEGATE_SET = [
-  "explorer",
-  "librarian",
-  "oracle",
-  "designer",
+  'explorer',
+  'librarian',
+  'oracle',
+  'designer',
 ] as const;
 
 /**
@@ -47,9 +48,9 @@ export const PLANNER_DELEGATE_SET = [
  * (SUBAGENT_DELEGATION_RULES.business-analyst).
  */
 export const BUSINESS_ANALYST_DELEGATE_SET = [
-  "explorer",
-  "librarian",
-  "oracle",
+  'explorer',
+  'librarian',
+  'oracle',
 ] as const;
 
 export const ALL_AGENT_NAMES = [
@@ -73,18 +74,19 @@ export type AgentName = (typeof ALL_AGENT_NAMES)[number];
 // Which agents each agent type can spawn via delegation.
 // councillor is internal — only CouncilManager spawns it.
 export const ORCHESTRATABLE_AGENTS = [
-  "explorer",
-  "librarian",
-  "oracle",
-  "designer",
-  "frontend-developer",
-  "backend-developer",
-  "observer",
-  "council",
+  'debugger',
+  'explorer',
+  'librarian',
+  'oracle',
+  'designer',
+  'frontend-developer',
+  'backend-developer',
+  'observer',
+  'council',
 ] as const;
 
 /** Agents that cannot be disabled even if listed in disabled_agents config. */
-export const PROTECTED_AGENTS = new Set(["orchestrator", "councillor"]);
+export const PROTECTED_AGENTS = new Set(['orchestrator', 'councillor']);
 
 /**
  * Get the list of orchestratable agents, excluding any disabled agents.
@@ -100,9 +102,10 @@ export const SUBAGENT_DELEGATION_RULES: Record<AgentName, readonly string[]> = {
   orchestrator: ORCHESTRATABLE_AGENTS,
   planner: PLANNER_DELEGATE_SET, // restricted set
   sprinter: [], // self-executing, no delegation by default
-  "business-analyst": BUSINESS_ANALYST_DELEGATE_SET,
-  "frontend-developer": [],
-  "backend-developer": [],
+  'business-analyst': BUSINESS_ANALYST_DELEGATE_SET,
+  'frontend-developer': [],
+  'backend-developer': [],
+  debugger: [],
   designer: [],
   explorer: [],
   librarian: [],
@@ -118,18 +121,19 @@ export const SUBAGENT_DELEGATION_RULES: Record<AgentName, readonly string[]> = {
 // sprinter: openai/gpt-5.3-codex with low variant for fast Q&A and direct execution
 export const DEFAULT_MODELS: Record<AgentName, string | undefined> = {
   orchestrator: undefined,
-  planner: "openai/gpt-5.5", // strong planning model, runtime-safe default
-  sprinter: "openai/gpt-5.3-codex",
-  "business-analyst": "openai/gpt-5.5", // strong reasoning model for analysis
-  oracle: "openai/gpt-5.5",
-  librarian: "openai/gpt-5.4-mini",
-  explorer: "openai/gpt-5.4-mini",
-  designer: "openai/gpt-5.4-mini",
-  "frontend-developer": "openai/gpt-5.4-mini",
-  "backend-developer": "openai/gpt-5.4-mini",
-  observer: "openai/gpt-5.4-mini",
-  council: "openai/gpt-5.4-mini",
-  councillor: "openai/gpt-5.4-mini",
+  planner: 'openai/gpt-5.5', // strong planning model, runtime-safe default
+  sprinter: 'openai/gpt-5.3-codex',
+  'business-analyst': 'openai/gpt-5.5', // strong reasoning model for analysis
+  debugger: 'openai/gpt-5.3-codex', // cheaper than oracle for first-pass debugging
+  oracle: 'openai/gpt-5.5',
+  librarian: 'openai/gpt-5.4-mini',
+  explorer: 'openai/gpt-5.4-mini',
+  designer: 'openai/gpt-5.4-mini',
+  'frontend-developer': 'openai/gpt-5.4-mini',
+  'backend-developer': 'openai/gpt-5.4-mini',
+  observer: 'openai/gpt-5.4-mini',
+  council: 'openai/gpt-5.4-mini',
+  councillor: 'openai/gpt-5.4-mini',
 };
 
 // Polling configuration
@@ -159,10 +163,10 @@ export const STABLE_POLLS_THRESHOLD = 3;
  * orchestrator prompt builder to generate a deterministic delegation rule.
  */
 export const SUBAGENT_MUST_LOAD_SKILLS_FIRST: readonly string[] = [
-  "frontend-developer",
-  "backend-developer",
+  'frontend-developer',
+  'backend-developer',
 ] as const;
 
 /** Agents that are disabled by default. Users must explicitly enable them
  *  by removing from disabled_agents and configuring an appropriate model. */
-export const DEFAULT_DISABLED_AGENTS: string[] = ["observer"];
+export const DEFAULT_DISABLED_AGENTS: string[] = ['observer'];

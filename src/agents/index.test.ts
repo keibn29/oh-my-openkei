@@ -902,6 +902,7 @@ describe('tool permissions', () => {
 
 describe('permission profiles', () => {
   const READ_ONLY_NAMES = [
+    'debugger',
     'explorer',
     'oracle',
     'observer',
@@ -1037,6 +1038,7 @@ describe('permission profiles', () => {
 
 describe('isSubagent type guard', () => {
   test('returns true for valid subagent names', () => {
+    expect(isSubagent('debugger')).toBe(true);
     expect(isSubagent('explorer')).toBe(true);
     expect(isSubagent('librarian')).toBe(true);
     expect(isSubagent('oracle')).toBe(true);
@@ -1094,6 +1096,7 @@ describe('createAgents', () => {
     const names = agents.map((a) => a.name);
     expect(names).toContain('orchestrator');
     expect(names).toContain('planner');
+    expect(names).toContain('debugger');
     expect(names).toContain('explorer');
     expect(names).toContain('designer');
     expect(names).toContain('oracle');
@@ -1102,9 +1105,9 @@ describe('createAgents', () => {
     expect(names).toContain('backend-developer');
   });
 
-  test('creates exactly 12 agents by default (4 primary + 8 subagents, observer disabled)', () => {
+  test('creates exactly 13 agents by default (4 primary + 9 subagents, observer disabled)', () => {
     const agents = createAgents();
-    expect(agents.length).toBe(12);
+    expect(agents.length).toBe(13);
   });
 });
 
@@ -1536,13 +1539,13 @@ describe('disabled_agents', () => {
 
   test('agent count decreases when agents are disabled', () => {
     const agents = createAgents();
-    expect(agents.length).toBe(12); // 4 primary + 8 (observer disabled by default)
+    expect(agents.length).toBe(13); // 4 primary + 9 (observer disabled by default)
 
     const disabledConfig: PluginConfig = {
       disabled_agents: ['observer', 'designer'],
     };
     const disabledAgents = createAgents(disabledConfig);
-    expect(disabledAgents.length).toBe(11);
+    expect(disabledAgents.length).toBe(12);
   });
 
   test('getDisabledAgents respects protection rules', () => {
@@ -1585,7 +1588,7 @@ describe('disabled_agents', () => {
       disabled_agents: [],
     };
     const agents = createAgents(config);
-    expect(agents.length).toBe(13); // 4 primary + 9 subagents (observer enabled)
+    expect(agents.length).toBe(14); // 4 primary + 10 subagents (observer enabled)
     expect(agents.map((a) => a.name)).toContain('observer');
   });
 });
@@ -1615,6 +1618,12 @@ describe('question tool instruction in agent prompts', () => {
   test('business-analyst prompt includes question tool instruction', () => {
     const agents = createAgents();
     const agent = agents.find((a) => a.name === 'business-analyst');
+    expect(agent?.config.prompt).toContain(expectedText);
+  });
+
+  test('debugger prompt includes question tool instruction', () => {
+    const agents = createAgents();
+    const agent = agents.find((a) => a.name === 'debugger');
     expect(agent?.config.prompt).toContain(expectedText);
   });
 
@@ -1732,6 +1741,70 @@ describe('observer agent', () => {
 
   test('DEFAULT_DISABLED_AGENTS contains observer', () => {
     expect(DEFAULT_DISABLED_AGENTS).toContain('observer');
+  });
+});
+
+describe('debugger agent', () => {
+  test('debugger is created and in agents array', () => {
+    const agents = createAgents();
+    const agent = agents.find((a) => a.name === 'debugger');
+    expect(agent).toBeDefined();
+  });
+
+  test('debugger uses cheaper model than oracle', () => {
+    const agents = createAgents();
+    const debuggerAgent = agents.find((a) => a.name === 'debugger');
+    const oracleAgent = agents.find((a) => a.name === 'oracle');
+    expect(debuggerAgent?.config.model).toBe(DEFAULT_MODELS.debugger);
+    expect(oracleAgent?.config.model).toBe(DEFAULT_MODELS.oracle);
+    // debugger should be cheaper/smaller model than oracle
+    expect(debuggerAgent?.config.model).not.toBe(oracleAgent?.config.model);
+  });
+
+  test('debugger is read-only with wildcard deny', () => {
+    const agents = createAgents({ disabled_agents: [] });
+    const agent = agents.find((a) => a.name === 'debugger');
+    expect(agent).toBeDefined();
+    const permission = agent?.config.permission as Record<string, unknown>;
+    expect(permission['*']).toBe('deny');
+    // Read-only tools allowed
+    expect(permission.read).toBe('allow');
+    expect(permission.glob).toBe('allow');
+    expect(permission.grep).toBe('allow');
+    expect(permission.ast_grep_search).toBe('allow');
+  });
+
+  test('debugger is denied access to council_session', () => {
+    const agents = createAgents();
+    const agent = agents.find((a) => a.name === 'debugger');
+    expect((agent?.config.permission as any).council_session).toBe('deny');
+  });
+
+  test('debugger prompt emphasizes investigation over implementation', () => {
+    const agents = createAgents();
+    const agent = agents.find((a) => a.name === 'debugger');
+    const prompt = agent?.config.prompt as string;
+    expect(prompt).toContain('root cause');
+    expect(prompt).toContain('READ-ONLY');
+    expect(prompt).toContain('do NOT implement');
+  });
+
+  test('debugger accepts model override', () => {
+    const config: PluginConfig = {
+      agents: {
+        debugger: { model: 'custom-debugger-model', temperature: 0.3 },
+      },
+    };
+    const agents = createAgents(config);
+    const agent = agents.find((a) => a.name === 'debugger');
+    expect(agent?.config.model).toBe('custom-debugger-model');
+    expect(agent?.config.temperature).toBe(0.3);
+  });
+
+  test('debugger is not disabled by default', () => {
+    const agents = createAgents();
+    const names = agents.map((a) => a.name);
+    expect(names).toContain('debugger');
   });
 });
 

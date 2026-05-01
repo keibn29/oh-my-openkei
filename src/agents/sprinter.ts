@@ -1,5 +1,5 @@
-import type { AgentDefinition } from "./orchestrator";
-import { SHARED_SUBAGENT_PROMPT_FRAGMENTS } from "./shared-agent-content";
+import type { AgentDefinition } from './orchestrator';
+import { SHARED_SUBAGENT_PROMPT_FRAGMENTS } from './shared-agent-content';
 
 const SPRINTER_PROMPT = `You are Sprinter — a fast, self-executing coding specialist.
 
@@ -55,10 +55,10 @@ export function createSprinterAgent(
   }
 
   const definition: AgentDefinition = {
-    name: "sprinter",
-    description: "Fast self-executing coding agent",
+    name: 'sprinter',
+    description: 'Fast self-executing coding agent',
     config: {
-      variant: "low",
+      variant: 'low',
       temperature: 0.1,
       prompt: `${prompt}\n\n${SHARED_SUBAGENT_PROMPT_FRAGMENTS}`,
     },
@@ -66,9 +66,9 @@ export function createSprinterAgent(
 
   if (Array.isArray(model)) {
     definition._modelArray = model.map((m) =>
-      typeof m === "string" ? { id: m } : m,
+      typeof m === 'string' ? { id: m } : m,
     );
-  } else if (typeof model === "string" && model) {
+  } else if (typeof model === 'string' && model) {
     definition.config.model = model;
   }
 

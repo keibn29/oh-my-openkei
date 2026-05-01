@@ -1,9 +1,9 @@
-import type { AgentConfig } from "@opencode-ai/sdk/v2";
-import { SUBAGENT_MUST_LOAD_SKILLS_FIRST } from "../config/constants";
+import type { AgentConfig } from '@opencode-ai/sdk/v2';
+import { SUBAGENT_MUST_LOAD_SKILLS_FIRST } from '../config/constants';
 import {
   renderSpecialists,
   SHARED_COMMUNICATION_RULES,
-} from "./shared-agent-content";
+} from './shared-agent-content';
 
 export interface AgentDefinition {
   name: string;
@@ -31,32 +31,34 @@ export function resolvePrompt(
 
 // Which specialists the orchestrator can delegate to (all except councillor)
 const ORCHESTRATOR_DELEGATE_SET = [
-  "explorer",
-  "librarian",
-  "oracle",
-  "designer",
-  "frontend-developer",
-  "backend-developer",
-  "observer",
-  "council",
+  'debugger',
+  'explorer',
+  'librarian',
+  'oracle',
+  'designer',
+  'frontend-developer',
+  'backend-developer',
+  'observer',
+  'council',
 ] as const;
 
 // Validation routing lines that reference agents
 const VALIDATION_ROUTING = [
-  "- Route UI/UX validation and review to @designer",
-  "- Route code review, simplification, maintainability review, and YAGNI checks to @oracle",
-  "- Route frontend implementation (components, styling, forms, client logic) to @frontend-developer",
-  "- Route backend implementation (APIs, services, DB, auth, jobs) to @backend-developer",
-  "- Route visual/media analysis and interpretation to @observer",
-  "- If a request spans multiple lanes, delegate only the lanes that add clear value",
+  '- Route UI/UX validation and review to @designer',
+  '- Route code review, simplification, maintainability review, and YAGNI checks to @oracle',
+  '- Route bug investigation and root cause analysis to @debugger',
+  '- Route frontend implementation (components, styling, forms, client logic) to @frontend-developer',
+  '- Route backend implementation (APIs, services, DB, auth, jobs) to @backend-developer',
+  '- Route visual/media analysis and interpretation to @observer',
+  '- If a request spans multiple lanes, delegate only the lanes that add clear value',
 ];
 
 // Parallel delegation examples
 const PARALLEL_DELEGATION_EXAMPLES = [
-  "- Multiple @explorer searches across different domains?",
-  "- @explorer + @librarian research in parallel?",
-  "- Multiple @frontend-developer or @backend-developer instances for faster, scoped implementation?",
-  "- @observer + @explorer in parallel (visual analysis + code search)?",
+  '- Multiple @explorer searches across different domains?',
+  '- @explorer + @librarian research in parallel?',
+  '- Multiple @frontend-developer or @backend-developer instances for faster, scoped implementation?',
+  '- @observer + @explorer in parallel (visual analysis + code search)?',
 ];
 
 /**
@@ -70,7 +72,7 @@ export function buildOrchestratorPrompt(disabledAgents?: Set<string>): string {
     const mentions = [...line.matchAll(/@([a-zA-Z0-9_-]+)/g)].map((m) => m[1]);
     if (mentions.length === 0) return true;
     return mentions.every((name) => !disabledAgents?.has(name));
-  }).join("\n");
+  }).join('\n');
 
   // Filter parallel delegation examples — remove lines mentioning any disabled agent
   const enabledParallelExamples = PARALLEL_DELEGATION_EXAMPLES.filter(
@@ -81,7 +83,7 @@ export function buildOrchestratorPrompt(disabledAgents?: Set<string>): string {
       if (mentions.length === 0) return true;
       return mentions.every((name) => !disabledAgents?.has(name));
     },
-  ).join("\n");
+  ).join('\n');
 
   // Build mandatory skill-loading section from SUBAGENT_MUST_LOAD_SKILLS_FIRST constant
   const enabledMustLoadAgents = SUBAGENT_MUST_LOAD_SKILLS_FIRST.filter(
@@ -92,12 +94,12 @@ export function buildOrchestratorPrompt(disabledAgents?: Set<string>): string {
       ? `\n### Mandatory Skill Loading\nWhen delegating to ${enabledMustLoadAgents
           .map((a) => `@${a}`)
           .join(
-            " or ",
+            ' or ',
           )}, you MUST include "Load all available skills using the skill tool before doing any work." as the first instruction in your delegation message.\n`
-      : "";
+      : '';
 
   const enabledAgents = renderSpecialists(
-    "orchestrator",
+    'orchestrator',
     ORCHESTRATOR_DELEGATE_SET,
     disabledAgents,
   );
@@ -210,8 +212,8 @@ export function createOrchestratorAgent(
   const prompt = resolvePrompt(basePrompt, customPrompt, customAppendPrompt);
 
   const definition: AgentDefinition = {
-    name: "orchestrator",
-    description: "Delegation-first coding coordinator",
+    name: 'orchestrator',
+    description: 'Delegation-first coding coordinator',
     config: {
       temperature: 0.1,
       prompt,
@@ -220,9 +222,9 @@ export function createOrchestratorAgent(
 
   if (Array.isArray(model)) {
     definition._modelArray = model.map((m) =>
-      typeof m === "string" ? { id: m } : m,
+      typeof m === 'string' ? { id: m } : m,
     );
-  } else if (typeof model === "string" && model) {
+  } else if (typeof model === 'string' && model) {
     definition.config.model = model;
   }
 

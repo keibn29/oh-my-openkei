@@ -1,5 +1,5 @@
-import type { AgentConfig as SDKAgentConfig } from "@opencode-ai/sdk/v2";
-import { getSkillPermissionsForAgent } from "../cli/skills";
+import type { AgentConfig as SDKAgentConfig } from '@opencode-ai/sdk/v2';
+import { getSkillPermissionsForAgent } from '../cli/skills';
 import {
   type AgentOverrideConfig,
   ALL_AGENT_NAMES,
@@ -12,28 +12,29 @@ import {
   PRIMARY_AGENT_NAMES,
   PROTECTED_AGENTS,
   SUBAGENT_NAMES,
-} from "../config";
-import { getAgentMcpList } from "../config/agent-mcps";
-import { createBackendDeveloperAgent } from "./backend-developer";
-import { createBusinessAnalystAgent } from "./business-analyst";
-import { createCouncilAgent } from "./council";
-import { createCouncillorAgent } from "./councillor";
-import { createDesignerAgent } from "./designer";
-import { createExplorerAgent } from "./explorer";
-import { createFrontendDeveloperAgent } from "./frontend-developer";
-import { createLibrarianAgent } from "./librarian";
-import { createObserverAgent } from "./observer";
-import { createOracleAgent } from "./oracle";
+} from '../config';
+import { getAgentMcpList } from '../config/agent-mcps';
+import { createBackendDeveloperAgent } from './backend-developer';
+import { createBusinessAnalystAgent } from './business-analyst';
+import { createCouncilAgent } from './council';
+import { createCouncillorAgent } from './councillor';
+import { createDebuggerAgent } from './debugger';
+import { createDesignerAgent } from './designer';
+import { createExplorerAgent } from './explorer';
+import { createFrontendDeveloperAgent } from './frontend-developer';
+import { createLibrarianAgent } from './librarian';
+import { createObserverAgent } from './observer';
+import { createOracleAgent } from './oracle';
 import {
   type AgentDefinition,
   createOrchestratorAgent,
   resolvePrompt,
-} from "./orchestrator";
-import { createPlannerAgent } from "./planner";
-import { SHARED_SUBAGENT_PROMPT_FRAGMENTS } from "./shared-agent-content";
-import { createSprinterAgent } from "./sprinter";
+} from './orchestrator';
+import { createPlannerAgent } from './planner';
+import { SHARED_SUBAGENT_PROMPT_FRAGMENTS } from './shared-agent-content';
+import { createSprinterAgent } from './sprinter';
 
-export type { AgentDefinition } from "./orchestrator";
+export type { AgentDefinition } from './orchestrator';
 
 type AgentFactory = (
   model: string,
@@ -41,7 +42,7 @@ type AgentFactory = (
   customAppendPrompt?: string,
 ) => AgentDefinition;
 
-const COUNCIL_TOOL_ALLOWED_AGENTS = new Set(["council"]);
+const COUNCIL_TOOL_ALLOWED_AGENTS = new Set(['council']);
 
 /**
  * Subagents that are read-only at the config/permission layer.
@@ -53,20 +54,21 @@ const COUNCIL_TOOL_ALLOWED_AGENTS = new Set(["council"]);
  * a per-tool allowlist.
  */
 const READ_ONLY_SUBAGENTS = new Set([
-  "explorer",
-  "oracle",
-  "observer",
-  "librarian",
-  "council",
+  'debugger',
+  'explorer',
+  'oracle',
+  'observer',
+  'librarian',
+  'council',
 ]);
 
 function normalizeDisplayName(displayName: string): string {
   const trimmed = displayName.trim();
-  return trimmed.startsWith("@") ? trimmed.slice(1) : trimmed;
+  return trimmed.startsWith('@') ? trimmed.slice(1) : trimmed;
 }
 
 function escapeRegExp(value: string): string {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 // Agent Configuration Helpers
@@ -84,7 +86,7 @@ function applyOverrides(
   if (override.model) {
     if (Array.isArray(override.model)) {
       agent._modelArray = override.model.map((m) =>
-        typeof m === "string" ? { id: m } : m,
+        typeof m === 'string' ? { id: m } : m,
       );
       agent.config.model = undefined; // cleared; runtime hook resolves from _modelArray
     } else {
@@ -120,7 +122,7 @@ function isSafeCustomAgentName(name: string): boolean {
 function hasCustomAgentModel(
   override: AgentOverrideConfig | undefined,
 ): override is AgentOverrideConfig & {
-  model: NonNullable<AgentOverrideConfig["model"]>;
+  model: NonNullable<AgentOverrideConfig['model']>;
 } {
   if (!override?.model) {
     return false;
@@ -146,9 +148,9 @@ function buildCustomAgentDefinition(
     name,
     config: {
       model:
-        typeof override.model === "string"
+        typeof override.model === 'string'
           ? override.model
-          : DEFAULT_MODELS.orchestrator ?? DEFAULT_MODELS.oracle,
+          : (DEFAULT_MODELS.orchestrator ?? DEFAULT_MODELS.oracle),
       temperature: 0.2,
       prompt: `${resolvedPrompt}\n\n${SHARED_SUBAGENT_PROMPT_FRAGMENTS}`,
     },
@@ -163,7 +165,7 @@ function getLegacyAgentModel(
   if (!override?.model) return undefined;
   if (Array.isArray(override.model)) {
     const first = override.model[0];
-    return typeof first === "string" ? first : first?.id;
+    return typeof first === 'string' ? first : first?.id;
   }
   return override.model;
 }
@@ -176,7 +178,7 @@ function getModelFromAgent(
   if (!override?.model) return undefined;
   if (Array.isArray(override.model)) {
     const first = override.model[0];
-    return typeof first === "string" ? first : first?.id;
+    return typeof first === 'string' ? first : first?.id;
   }
   return override.model;
 }
@@ -191,7 +193,7 @@ function injectDisplayNames(
 
   for (const [internalName, displayName] of nameMap) {
     prompt = prompt.replace(
-      new RegExp(`@${escapeRegExp(internalName)}\\b`, "g"),
+      new RegExp(`@${escapeRegExp(internalName)}\\b`, 'g'),
       `@${normalizeDisplayName(displayName)}`,
     );
   }
@@ -213,7 +215,7 @@ function applyDefaultPermissions(
 ): void {
   const existing = (agent.config.permission ?? {}) as Record<
     string,
-    "ask" | "allow" | "deny" | Record<string, "ask" | "allow" | "deny">
+    'ask' | 'allow' | 'deny' | Record<string, 'ask' | 'allow' | 'deny'>
   >;
 
   // Get skill-specific permissions for this agent
@@ -223,30 +225,30 @@ function applyDefaultPermissions(
   );
 
   // Respect explicit deny on question (councillor)
-  const questionPerm = existing.question === "deny" ? "deny" : "allow";
+  const questionPerm = existing.question === 'deny' ? 'deny' : 'allow';
   const councilSessionPerm = COUNCIL_TOOL_ALLOWED_AGENTS.has(agent.name)
-    ? existing.council_session ?? "allow"
-    : "deny";
+    ? (existing.council_session ?? 'allow')
+    : 'deny';
 
   if (READ_ONLY_SUBAGENTS.has(agent.name)) {
     agent.config.permission = {
-      "*": "deny",
+      '*': 'deny',
       question: questionPerm,
       council_session: councilSessionPerm,
-      read: "allow",
-      glob: "allow",
-      grep: "allow",
-      ast_grep_search: "allow",
-      list: "allow",
-      lsp: "allow",
-      codesearch: "allow",
-      external_directory: "allow",
+      read: 'allow',
+      glob: 'allow',
+      grep: 'allow',
+      ast_grep_search: 'allow',
+      list: 'allow',
+      lsp: 'allow',
+      codesearch: 'allow',
+      external_directory: 'allow',
       // Apply skill permissions as nested object under 'skill' key
       skill: {
-        ...(typeof existing.skill === "object" ? existing.skill : {}),
+        ...(typeof existing.skill === 'object' ? existing.skill : {}),
         ...skillPermissions,
       },
-    } as SDKAgentConfig["permission"];
+    } as SDKAgentConfig['permission'];
     return;
   }
 
@@ -257,10 +259,10 @@ function applyDefaultPermissions(
     council_session: councilSessionPerm,
     // Apply skill permissions as nested object under 'skill' key
     skill: {
-      ...(typeof existing.skill === "object" ? existing.skill : {}),
+      ...(typeof existing.skill === 'object' ? existing.skill : {}),
       ...skillPermissions,
     },
-  } as SDKAgentConfig["permission"];
+  } as SDKAgentConfig['permission'];
 }
 
 // Agent Classification
@@ -274,12 +276,13 @@ export function isSubagent(name: string): name is SubagentName {
 // Agent Factories
 
 const SUBAGENT_FACTORIES: Record<SubagentName, AgentFactory> = {
+  debugger: createDebuggerAgent,
   explorer: createExplorerAgent,
   librarian: createLibrarianAgent,
   oracle: createOracleAgent,
   designer: createDesignerAgent,
-  "frontend-developer": createFrontendDeveloperAgent,
-  "backend-developer": createBackendDeveloperAgent,
+  'frontend-developer': createFrontendDeveloperAgent,
+  'backend-developer': createBackendDeveloperAgent,
   observer: createObserverAgent,
   council: createCouncilAgent,
   councillor: createCouncillorAgent,
@@ -303,13 +306,13 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
   // (pre-split era) for backward compatibility.
   const getModelForAgent = (name: SubagentName): string => {
     if (
-      (name === "frontend-developer" || name === "backend-developer") &&
+      (name === 'frontend-developer' || name === 'backend-developer') &&
       !getAgentOverride(config, name)?.model
     ) {
       // Try legacy fixer config first, then librarian
-      const legacyFixerModel = getLegacyAgentModel(config, "fixer");
+      const legacyFixerModel = getLegacyAgentModel(config, 'fixer');
       if (legacyFixerModel) return legacyFixerModel;
-      const librarianModel = getModelFromAgent(config, "librarian");
+      const librarianModel = getModelFromAgent(config, 'librarian');
       return librarianModel ?? (DEFAULT_MODELS.librarian as string);
     }
     // Subagents always have a defined default model; cast is safe here
@@ -380,10 +383,10 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
   // See https://github.com/keibn29/oh-my-openkei/issues/369
   const legacyMasterModel = config?.council?._legacyMasterModel;
   if (legacyMasterModel) {
-    const councilAgent = builtInSubAgents.find((a) => a.name === "council");
+    const councilAgent = builtInSubAgents.find((a) => a.name === 'council');
     if (
       councilAgent &&
-      !getAgentOverride(config, "council")?.model &&
+      !getAgentOverride(config, 'council')?.model &&
       councilAgent.config.model === DEFAULT_MODELS.council
     ) {
       councilAgent.config.model = legacyMasterModel;
@@ -404,10 +407,10 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
   // 3. Create Orchestrator (with its own overrides and custom prompts)
   // DEFAULT_MODELS.orchestrator is undefined; model is resolved via override or
   // left unset so the runtime chat.message hook can pick it from _modelArray.
-  const orchestratorOverride = getAgentOverride(config, "orchestrator");
+  const orchestratorOverride = getAgentOverride(config, 'orchestrator');
   const orchestratorModel =
     orchestratorOverride?.model ?? DEFAULT_MODELS.orchestrator;
-  const orchestratorPrompts = loadAgentPrompt("orchestrator", config?.preset);
+  const orchestratorPrompts = loadAgentPrompt('orchestrator', config?.preset);
   const orchestrator = createOrchestratorAgent(
     orchestratorModel,
     orchestratorPrompts.prompt,
@@ -422,12 +425,12 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
   // 3b. Create Planner (with its own overrides and custom prompts)
   // Only create if not disabled - planner is NOT protected like orchestrator
   let planner: ReturnType<typeof createPlannerAgent> | null = null;
-  if (!disabled.has("planner")) {
+  if (!disabled.has('planner')) {
     // DEFAULT_MODELS.planner is undefined; model is resolved via override or
     // left unset so the runtime chat.message hook can pick it from _modelArray.
-    const plannerOverride = getAgentOverride(config, "planner");
+    const plannerOverride = getAgentOverride(config, 'planner');
     const plannerModel = plannerOverride?.model ?? DEFAULT_MODELS.planner;
-    const plannerPrompts = loadAgentPrompt("planner", config?.preset);
+    const plannerPrompts = loadAgentPrompt('planner', config?.preset);
     planner = createPlannerAgent(
       plannerModel,
       plannerPrompts.prompt,
@@ -444,10 +447,10 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
   // Self-executing primary agent for fast Q&A and direct task execution.
   // NOT protected — can be disabled via disabled_agents.
   let sprinter: ReturnType<typeof createSprinterAgent> | null = null;
-  if (!disabled.has("sprinter")) {
-    const sprinterOverride = getAgentOverride(config, "sprinter");
+  if (!disabled.has('sprinter')) {
+    const sprinterOverride = getAgentOverride(config, 'sprinter');
     const sprinterModel = sprinterOverride?.model ?? DEFAULT_MODELS.sprinter;
-    const sprinterPrompts = loadAgentPrompt("sprinter", config?.preset);
+    const sprinterPrompts = loadAgentPrompt('sprinter', config?.preset);
     sprinter = createSprinterAgent(
       sprinterModel,
       sprinterPrompts.prompt,
@@ -466,15 +469,15 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
   // via disabled_agents.
   let businessAnalyst: ReturnType<typeof createBusinessAnalystAgent> | null =
     null;
-  if (!disabled.has("business-analyst")) {
+  if (!disabled.has('business-analyst')) {
     const businessAnalystOverride = getAgentOverride(
       config,
-      "business-analyst",
+      'business-analyst',
     );
     const businessAnalystModel =
-      businessAnalystOverride?.model ?? DEFAULT_MODELS["business-analyst"];
+      businessAnalystOverride?.model ?? DEFAULT_MODELS['business-analyst'];
     const businessAnalystPrompts = loadAgentPrompt(
-      "business-analyst",
+      'business-analyst',
       config?.preset,
     );
     businessAnalyst = createBusinessAnalystAgent(
@@ -492,16 +495,16 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
   // Collect all display names from orchestrator, planner, sprinter, business-analyst, and all subagents
   const displayNameMap = new Map<string, string>();
   if (orchestrator.displayName) {
-    displayNameMap.set("orchestrator", orchestrator.displayName);
+    displayNameMap.set('orchestrator', orchestrator.displayName);
   }
   if (planner?.displayName) {
-    displayNameMap.set("planner", planner.displayName);
+    displayNameMap.set('planner', planner.displayName);
   }
   if (sprinter?.displayName) {
-    displayNameMap.set("sprinter", sprinter.displayName);
+    displayNameMap.set('sprinter', sprinter.displayName);
   }
   if (businessAnalyst?.displayName) {
-    displayNameMap.set("business-analyst", businessAnalyst.displayName);
+    displayNameMap.set('business-analyst', businessAnalyst.displayName);
   }
   for (const agent of allSubAgents) {
     if (agent.displayName) {
@@ -556,7 +559,7 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
       let text = promptText;
       for (const [internalName, displayName] of displayNameMap) {
         text = text.replace(
-          new RegExp(`@${escapeRegExp(internalName)}\\b`, "g"),
+          new RegExp(`@${escapeRegExp(internalName)}\\b`, 'g'),
           `@${normalizeDisplayName(displayName)}`,
         );
       }
@@ -565,7 +568,7 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
 
     orchestrator.config.prompt = `${
       orchestrator.config.prompt
-    }\n\n${rewrittenPrompts.join("\n\n")}`;
+    }\n\n${rewrittenPrompts.join('\n\n')}`;
   }
 
   return [
@@ -597,24 +600,24 @@ export function getAgentConfigs(
       hidden?: boolean;
     },
   ): void => {
-    if (name === "council") {
+    if (name === 'council') {
       // Council is callable both as a primary agent (user-facing)
       // and as a subagent (orchestrator can delegate to it)
-      sdkConfig.mode = "all";
-    } else if (name === "councillor") {
+      sdkConfig.mode = 'all';
+    } else if (name === 'councillor') {
       // Internal agent — subagent mode, hidden from @ autocomplete
-      sdkConfig.mode = "subagent";
+      sdkConfig.mode = 'subagent';
       sdkConfig.hidden = true;
     } else if (isSubagent(name)) {
-      sdkConfig.mode = "subagent";
+      sdkConfig.mode = 'subagent';
     } else if ((PRIMARY_AGENT_NAMES as readonly string[]).includes(name)) {
-      sdkConfig.mode = "primary";
+      sdkConfig.mode = 'primary';
     } else {
-      sdkConfig.mode = "subagent";
+      sdkConfig.mode = 'subagent';
     }
   };
 
-  const isInternalOnly = (name: string): boolean => name === "councillor";
+  const isInternalOnly = (name: string): boolean => name === 'councillor';
 
   const entries: Array<[string, SDKAgentConfig]> = [];
 

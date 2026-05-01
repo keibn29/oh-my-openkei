@@ -26,6 +26,7 @@ Built-in Model Context Protocol (MCP) servers ship with oh-my-openkei and give a
 | `librarian` | `websearch`, `context7`, `grep_app` |
 | `designer` | `figma` |
 | `oracle` | none |
+| `debugger` | none |
 | `explorer` | `serena` |
 | `frontend-developer` | none |
 | `backend-developer` | none |

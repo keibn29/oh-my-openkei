@@ -555,7 +555,9 @@ const OhMyOpenKei: Plugin = async (ctx) => {
           // MCPs. Write-capable MCPs are denied to prevent accidental
           // re-grant of file mutation through the MCP layer.
           const effectiveAction =
-            isReadOnly && action === 'allow' && !READ_ONLY_SAFE_MCPS.has(mcpName)
+            isReadOnly &&
+            action === 'allow' &&
+            !READ_ONLY_SAFE_MCPS.has(mcpName)
               ? 'deny'
               : action;
 

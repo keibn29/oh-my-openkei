@@ -1,8 +1,8 @@
-import type { AgentDefinition } from "./orchestrator";
+import type { AgentDefinition } from './orchestrator';
 import {
   SHARED_SUBAGENT_PROMPT_FRAGMENTS,
   SUBAGENT_SKILL_REQUIREMENT,
-} from "./shared-agent-content";
+} from './shared-agent-content';
 
 const BACKEND_DEVELOPER_PROMPT = `You are Backend Developer - a fast, focused implementation specialist for server-side code.
 
@@ -70,8 +70,8 @@ export function createBackendDeveloperAgent(
   }
 
   return {
-    name: "backend-developer",
-    description: "Backend implementation specialist",
+    name: 'backend-developer',
+    description: 'Backend implementation specialist',
     config: {
       model,
       temperature: 0.2,

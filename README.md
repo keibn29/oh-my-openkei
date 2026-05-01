@@ -43,7 +43,7 @@ bunx oh-my-openkei@latest install --no-tui --skills=yes
 
 ### Getting Started
 
-The installer generates a mixed-provider preset by default, using `openai/gpt-5.4-fast` (`high`) / `openai/gpt-5.5-fast` for Orchestrator and Planner, `openai/gpt-5.3-codex` (`low`) for Sprinter, `openai/gpt-5.5-fast` (`high`) for Business Analyst, `minimax-coding-plan/MiniMax-M2.7` for librarian/explorer, and `opencode-go/kimi-k2.6` / `opencode-go/deepseek-v4-flash` for specialist agents.
+The installer generates a mixed-provider preset by default, using `openai/gpt-5.4-fast` (`high`) / `openai/gpt-5.5-fast` for Orchestrator and Planner, `openai/gpt-5.3-codex` (`low`) for Sprinter, `openai/gpt-5.5-fast` (`high`) for Business Analyst, `openai/gpt-5.3-codex` (`high`) for Debugger, `minimax-coding-plan/MiniMax-M2.7` for librarian/explorer, and `opencode-go/kimi-k2.6` / `opencode-go/deepseek-v4-flash` for designer/developer agents.
 
 1. **Log in to providers**:
    ```bash
@@ -103,6 +103,12 @@ The default generated configuration:
         "model": "openai/gpt-5.5-fast",
         "variant": "high",
         "skills": ["simplify", "requesting-code-review"],
+        "mcps": []
+      },
+      "debugger": {
+        "model": "openai/gpt-5.3-codex",
+        "variant": "high",
+        "skills": [],
         "mcps": []
       },
       "council": {
@@ -189,7 +195,7 @@ If any agent fails to respond, check your provider authentication and config fil
 
 #### Routing Flow
 
-- **Orchestrator** can delegate to `explorer`, `librarian`, `oracle`, `designer`, `frontend-developer`, `backend-developer`, `observer`, and `council`.
+- **Orchestrator** can delegate to `debugger`, `explorer`, `librarian`, `oracle`, `designer`, `frontend-developer`, `backend-developer`, `observer`, and `council`.
 - **Planner** is planning-only and can delegate only to `explorer`, `librarian`, `oracle`, and `designer`.
 - **Sprinter** is self-executing and does not delegate.
 - **Business Analyst** can delegate research to `explorer`, `librarian`, and `oracle`.
@@ -240,11 +246,19 @@ The following agents are delegated to by the primary agents based on task type.
 
 #### Oracle
 
-**Role:** Strategic advisor, code reviewer and debugger of last resort  
+**Role:** Strategic advisor and escalation point for high-stakes decisions, unresolved bugs, and code review  
 **Prompt:** [oracle.ts](src/agents/oracle.ts)  
 **Default Model:** `openai/gpt-5.5-fast` (`high`)  
 **Recommended Models:** `openai/gpt-5.5` (high), `google/gemini-3.1-pro-preview` (high)  
-**Model Guidance:** Choose your strongest high-reasoning model for architecture, hard debugging, trade-offs, and code review.
+**Model Guidance:** Choose your strongest high-reasoning model for architecture review, escalation debugging, trade-offs, and code review. First-pass bug investigation should go to `@debugger` — route to Oracle only when the bug persists after initial investigation or has architectural implications.
+
+#### Debugger
+
+**Role:** Bug investigation specialist — finds root causes without implementing fixes  
+**Prompt:** [debugger.ts](src/agents/debugger.ts)  
+**Default Model:** `openai/gpt-5.3-codex` (`high`)  
+**Recommended Models:** `openai/gpt-5.4-mini`, `minimax-coding-plan/MiniMax-M2.7`  
+**Model Guidance:** Choose a capable coding model for systematic debugging. Debugger is read-only and focused on investigation — it traces error paths, analyzes root causes, and reports findings for implementation agents to act on. It does NOT implement fixes.
 
 #### Explorer
 
