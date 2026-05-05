@@ -525,7 +525,7 @@ describe('planner agent', () => {
     // Workflow step 3 reflects the mandatory nature
     expect(prompt).toContain('Conduct Interview (Required');
     expect(prompt).toContain(
-      "Do not produce a final plan in the same response as the user's initial request",
+      "A final plan must never be produced in the same response as the user's initial request",
     );
     // Exploration does not replace interviewing
     expect(prompt).toContain(
@@ -826,7 +826,7 @@ describe('developer agent skills in prompt', () => {
     const ba = agents.find((a) => a.name === 'business-analyst');
     const prompt = ba?.config.prompt as string;
     expect(prompt).toContain('business-analyst');
-    expect(prompt).toContain('load them when the user explicitly asks');
+    expect(prompt).toContain('load additional skills when the user explicitly asks');
     expect(prompt).not.toContain('load all available skills');
   });
 
@@ -857,7 +857,7 @@ describe('developer agent skills in prompt', () => {
     // Custom content is present
     expect(prompt).toContain('custom business analyst prompt');
     // Skill-loading instruction survived
-    expect(prompt).toContain("Your native 'business-analyst' skill");
+    expect(prompt).toContain('native `business-analyst` skill');
     // Mandatory output rules survived (the fix for the customPrompt gap)
     expect(prompt).toContain('MUST ALWAYS save');
     expect(prompt).toContain('.business-analyts/');
