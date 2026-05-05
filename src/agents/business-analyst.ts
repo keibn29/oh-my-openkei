@@ -44,11 +44,11 @@ subagent's "Don't delegate when" rule explicitly applies.
 
 </Core_Principles>
 
-<Available_Specialists>
+<Agents>
 
 ${enabledAgents}
 
-</Available_Specialists>
+</Agents>
 
 <Workflow>
 

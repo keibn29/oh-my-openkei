@@ -621,7 +621,7 @@ describe('planner delegation scope', () => {
     // Extract the Available_Specialists section to avoid false positives
     // from mentions in prose (e.g. "hand off to @frontend-developer")
     const specialistsMatch = prompt.match(
-      /<Available_Specialists>([\s\S]*?)<\/Available_Specialists>/,
+      /<Agents>([\s\S]*?)<\/Agents>/,
     );
     expect(specialistsMatch).toBeTruthy();
     const specialistsSection = specialistsMatch?.[1] ?? '';

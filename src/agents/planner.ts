@@ -46,11 +46,11 @@ You do substantive work directly ONLY when a subagent's "Don't delegate when" ru
 
 </Core_Principles>
 
-<Available_Specialists>
+<Agents>
 
 ${enabledAgents}
 
-</Available_Specialists>
+</Agents>
 
 <Workflow>
 
