@@ -11,7 +11,7 @@ import {
  * Additional skills are loaded only when the user explicitly requests it.
  */
 export const BUSINESS_ANALYST_SKILL_INSTRUCTION =
-  "**Skills**: Your native 'business-analyst' skill provides your analysis methodology, frameworks, and output standards. Load it using the `skill` tool as your first action — it is MANDATORY before any substantive work. Additional skills are available — only load them when the user explicitly asks you to use a specific skill. Follow loaded skill instructions for the duration of the task.";
+  "**Skills**: Before any substantive work, your first action is MANDATORY: use the `skill` tool to load your native `business-analyst` skill. After loading it, you MUST read and follow all file references listed in that skill's SKILL documentation. Only load additional skills when the user explicitly asks for a specific one. For the entire task, follow instructions from loaded skills.";
 
 /**
  * Build the business-analyst prompt with a restricted delegate set.
