@@ -236,7 +236,7 @@ Nếu bất kỳ agent nào không phản hồi, hãy kiểm tra xác thực nh�
 **Mô hình đề xuất:** `openai/gpt-5.5`, `anthropic/claude-opus-4.7`  
 **Hướng dẫn chọn model:** Chọn một model suy luận mạnh cho việc phân tích có cấu trúc, tổng hợp nghiên cứu và tạo tài liệu. Business Analyst phân công nghiên cứu cho `@explorer`, `@librarian` và `@oracle`, sau đó tổng hợp các phát hiện thành các kế hoạch hành động và tài liệu yêu cầu.
 
-> **Hành vi tự động lưu:** Business Analyst luôn lưu toàn bộ đầu ra phân tích của mình dưới dạng tệp `.md` trong thư mục `.business-analyts/` và chỉ trả về một xác nhận ngắn gọn trong chat. Điều này khác với Planner, chỉ lưu vào tệp khi được yêu cầu một cách rõ ràng.
+> **Hành vi tự động lưu:** Business Analyst luôn lưu toàn bộ đầu ra phân tích của mình dưới dạng tệp `.md` trong thư mục `.business-analyst/` và chỉ trả về một xác nhận ngắn gọn trong chat. Điều này khác với Planner, chỉ lưu vào tệp khi được yêu cầu một cách rõ ràng.
 
 ---
 
@@ -335,33 +335,33 @@ Sử dụng phần này như một bản đồ: bắt đầu với cài đặt, 
 
 ### 🚀 Bắt Đầu Tại Đây
 
-| Tài liệu                                           | Nội dung bao gồm                                                           |
-| -------------------------------------------------- | -------------------------------------------------------------------------- |
-| **[Installation Guide](docs/installation.md)**     | Cài đặt plugin, sử dụng cờ CLI, đặt lại cấu hình và khắc phục sự cố        |
-| **[Quick Reference](docs/quick-reference.md)**     | Bảng tra cứu nhanh về cài đặt, cấu hình, kỹ năng, MCP, công cụ và preset  |
+| Tài liệu                                       | Nội dung bao gồm                                                         |
+| ---------------------------------------------- | ------------------------------------------------------------------------ |
+| **[Installation Guide](docs/installation.md)** | Cài đặt plugin, sử dụng cờ CLI, đặt lại cấu hình và khắc phục sự cố      |
+| **[Quick Reference](docs/quick-reference.md)** | Bảng tra cứu nhanh về cài đặt, cấu hình, kỹ năng, MCP, công cụ và preset |
 
 ### ✨ Tính Năng & Quy Trình
 
-| Tài liệu                                               | Nội dung bao gồm                                                                 |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| **[Council](docs/council.md)**                         | Chạy nhiều model song song và tổng hợp một câu trả lời duy nhất với `@council` |
-| **[Session Management](docs/session-management.md)**   | Tái sử dụng các phiên agent con gần đây với bí danh ngắn thay vì bắt đầu lại  |
-| **[Codemap](docs/codemap.md)**                         | Tạo bản đồ phân cấp codemap để hiểu cơ sở mã nguồn lớn nhanh hơn                 |
+| Tài liệu                                             | Nội dung bao gồm                                                               |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------ |
+| **[Council](docs/council.md)**                       | Chạy nhiều model song song và tổng hợp một câu trả lời duy nhất với `@council` |
+| **[Session Management](docs/session-management.md)** | Tái sử dụng các phiên agent con gần đây với bí danh ngắn thay vì bắt đầu lại   |
+| **[Codemap](docs/codemap.md)**                       | Tạo bản đồ phân cấp codemap để hiểu cơ sở mã nguồn lớn nhanh hơn               |
 
 ### ⚙️ Cấu Hình & Tham Khảo
 
-| Tài liệu                                       | Nội dung bao gồm                                                                                     |
-| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
-| **[Configuration](docs/configuration.md)**     | Vị trí tệp cấu hình, hỗ trợ JSONC, ghi đè prompt và tham khảo tùy chọn đầy đủ                       |
-| **[Skills](docs/skills.md)**                   | Các kỹ năng được tích hợp sẵn và đề xuất như `simplify`, `agent-browser` và `codemap`               |
-| **[MCPs](docs/mcps.md)**                       | `websearch`, `context7`, `grep_app`, `figma`, `serena` và cách quyền MCP hoạt động theo từng agent |
-| **[Tools](docs/tools.md)**                     | Các khả năng công cụ tích hợp sẵn như `webfetch`, công cụ LSP, tìm kiếm mã và định dạng              |
+| Tài liệu                                   | Nội dung bao gồm                                                                                   |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------- |
+| **[Configuration](docs/configuration.md)** | Vị trí tệp cấu hình, hỗ trợ JSONC, ghi đè prompt và tham khảo tùy chọn đầy đủ                      |
+| **[Skills](docs/skills.md)**               | Các kỹ năng được tích hợp sẵn và đề xuất như `simplify`, `agent-browser` và `codemap`              |
+| **[MCPs](docs/mcps.md)**                   | `websearch`, `context7`, `grep_app`, `figma`, `serena` và cách quyền MCP hoạt động theo từng agent |
+| **[Tools](docs/tools.md)**                 | Các khả năng công cụ tích hợp sẵn như `webfetch`, công cụ LSP, tìm kiếm mã và định dạng            |
 
 ### 💡 Preset Ví Dụ
 
-| Tài liệu                                            | Nội dung bao gồm                                       |
-| --------------------------------------------------- | ------------------------------------------------------ |
-| **[$30 Preset](docs/thirty-dollars-preset.md)**     | Thiết lập đa nhà cung cấp tiết kiệm khoảng $30/tháng  |
+| Tài liệu                                        | Nội dung bao gồm                                     |
+| ----------------------------------------------- | ---------------------------------------------------- |
+| **[$30 Preset](docs/thirty-dollars-preset.md)** | Thiết lập đa nhà cung cấp tiết kiệm khoảng $30/tháng |
 
 ---
 
