@@ -20,6 +20,9 @@ Thay vì bắt một model duy nhất làm mọi thứ, plugin này định tuy�
 
 ### Bắt Đầu Nhanh
 
+Bạn phải download opencode trước để có thể sử dụng plugin này.  
+- https://opencode.ai/download
+
 Package đã xuất bản:
 
 - https://www.npmjs.com/package/oh-my-openkei

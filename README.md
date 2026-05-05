@@ -20,6 +20,9 @@ To explore the agents, see **[Meet the Pantheon](#meet-the-pantheon)**. For the 
 
 ### Quick Start
 
+You must download the opencode first to use this plugin.  
+- https://opencode.ai/download
+
 Published package page:
 
 - https://www.npmjs.com/package/oh-my-openkei
