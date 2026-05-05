@@ -532,6 +532,23 @@ describe('planner agent', () => {
       'Exploration does NOT replace the mandatory interview step',
     );
   });
+
+  test('planner prompt restricts direct work to coordinator activities only', () => {
+    const agents = createAgents();
+    const planner = agents.find((a) => a.name === 'planner');
+    const prompt = planner?.config.prompt as string;
+
+    // The "What you MAY do directly" section must be scoped to coordinator activities
+    expect(prompt).toContain('coordinator activities only');
+
+    // Only legitimate coordinator activities are listed — no substantive work
+    expect(prompt).toContain('Synthesize results from multiple specialists');
+    expect(prompt).toContain('Verify and integrate delegated outputs');
+    expect(prompt).toContain(
+      'Ask clarifying questions using the Question tool',
+    );
+    expect(prompt).toContain('Produce the final plan document');
+  });
 });
 
 describe('sprinter agent', () => {
@@ -620,9 +637,7 @@ describe('planner delegation scope', () => {
 
     // Extract the Available_Specialists section to avoid false positives
     // from mentions in prose (e.g. "hand off to @frontend-developer")
-    const specialistsMatch = prompt.match(
-      /<Agents>([\s\S]*?)<\/Agents>/,
-    );
+    const specialistsMatch = prompt.match(/<Agents>([\s\S]*?)<\/Agents>/);
     expect(specialistsMatch).toBeTruthy();
     const specialistsSection = specialistsMatch?.[1] ?? '';
 
@@ -826,7 +841,12 @@ describe('developer agent skills in prompt', () => {
     const ba = agents.find((a) => a.name === 'business-analyst');
     const prompt = ba?.config.prompt as string;
     expect(prompt).toContain('business-analyst');
-    expect(prompt).toContain('load additional skills when the user explicitly asks');
+    expect(prompt).toContain(
+      'continue using the `skill` tool to load every skill, file, and resource referenced',
+    );
+    expect(prompt).toContain(
+      'load additional skills when the user explicitly asks',
+    );
     expect(prompt).not.toContain('load all available skills');
   });
 
@@ -863,6 +883,22 @@ describe('developer agent skills in prompt', () => {
     expect(prompt).toContain('.business-analyts/');
     expect(prompt).toContain('Write tool');
     expect(prompt).toContain('Skip the file save');
+  });
+
+  test('business-analyst prompt restricts direct work to coordinator activities only', () => {
+    const agents = createAgents();
+    const ba = agents.find((a) => a.name === 'business-analyst');
+    const prompt = ba?.config.prompt as string;
+
+    // The "What you MAY do directly" section must be scoped to coordinator activities
+    expect(prompt).toContain('coordinator activities only');
+
+    // Only coordinator/post-delegation activities are listed — no substantive work done directly
+    expect(prompt).toContain('Synthesize delegated research results');
+    expect(prompt).toContain(
+      'Apply standard business analysis frameworks to synthesized results',
+    );
+    expect(prompt).toContain('write the final structured analysis document');
   });
 
   test('backend-developer custom prompt still includes the appended skill requirement', () => {

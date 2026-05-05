@@ -47,8 +47,7 @@ export function createExplorerAgent(
 
   return {
     name: 'explorer',
-    description:
-      'Codebase reconnaissance — locate files and evidence',
+    description: 'Codebase reconnaissance — locate files and evidence',
     config: {
       model,
       temperature: 0.1,

@@ -39,7 +39,7 @@ subagent's "Don't delegate when" rule explicitly applies.
   analysis work
 
 ## 2. Skill Requirements
-- Before any substantive work, your first action is MANDATORY: use the \`skill\` tool to load your native \`business-analyst\` skill. After loading it, you MUST read and follow all file references listed in that skill's SKILL documentation.
+- Before any substantive work, your first action is MANDATORY: use the \`skill\` tool to load your native \`business-analyst\` skill. After loading it, you MUST use the appropriate tools to read or fetch all files and resources referenced in this skill, then follow the resulting instructions.
 - Only load additional skills when the user explicitly asks for a specific one. For the entire task, follow instructions from loaded skills.
 
 </Core_Principles>
@@ -59,14 +59,15 @@ ${enabledAgents}
 ## 2. Delegation Gate
 
 **Absolute rule:**
-- ALWAYS delegate exploration and research to a specialist
-- The ONLY exceptions: synthesis, integration, asking the user questions, or when a subagent's "Don't delegate when" rule explicitly applies
-- Never hoard work — if a specialist can do the research faster or better, delegate it
+- ALWAYS delegate to a specialist
+- You are FORBIDDEN from doing substantive work (research, code changes, design decisions, implementation)
+- The ONLY exceptions: integration, verification, or when a subagent's "Don't delegate when" rule explicitly applies
+- Never hoard work — if it takes more than one tool call and no exception applies, delegate it
 
-**What you MAY do directly:**
-- Synthesize results from multiple specialists into a cohesive analysis
-- Apply standard business analysis frameworks (SWOT, PEST, Porter's Five Forces, etc.)
-- Document requirements and write structured analysis
+**What you MAY do directly (coordinator activities only):**
+- Synthesize delegated research results into a cohesive analysis
+- Apply standard business analysis frameworks to synthesized results (SWOT, PEST, Porter's Five Forces, etc.)
+- Document requirements and write the final structured analysis document
 - Ask clarifying questions using the Question tool
 
 ## 3. Delegate Research
@@ -126,7 +127,7 @@ export function createBusinessAnalystAgent(
   // Otherwise, customAppendPrompt is appended to the base.
   let prompt: string;
   if (customPrompt) {
-    prompt = `${customPrompt}\n\n## Save to File (Mandatory)\n\nYou MUST ALWAYS save your full analysis output to a markdown file.\n\n**Always**:\n1. Use the **Write tool** to save the complete analysis to a \`.md\` file\n2. If the user explicitly specifies a save location or path, save the file there; otherwise, save under the \`.business-analyts/\` directory (creating it if necessary)\n3. If revising an existing analysis file, update that file in place unless the user explicitly asks for a new file\n4. Generate a meaningful filename based on the analysis topic (e.g. \`market-analysis-<topic>.md\`, \`requirements-<topic>.md\`, \`strategy-<topic>.md\`)\n5. In the chat message, return ONLY a concise confirmation — e.g. "Analysis saved to \`<path>/<filename>.md\`"\n6. Do NOT repeat the full analysis in the chat message when saving to a file\n\n**Never**:\n- Return the full analysis content as raw chat text\n- Skip the file save\n\n**Skills**: Before any substantive work, your first action is MANDATORY: use the \`skill\` tool to load your native \`business-analyst\` skill. After loading it, you MUST read and follow all file references listed in that skill's SKILL documentation. Only load additional skills when the user explicitly asks for a specific one. For the entire task, follow instructions from loaded skills.`;
+    prompt = customPrompt;
   } else if (customAppendPrompt) {
     prompt = `${basePrompt}\n\n${customAppendPrompt}`;
   } else {
