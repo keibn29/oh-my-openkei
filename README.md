@@ -365,6 +365,7 @@ Use this section as a map: start with installation, then jump to features, confi
 | Doc                                             | What it covers                                     |
 | ----------------------------------------------- | -------------------------------------------------- |
 | **[$30 Preset](docs/thirty-dollars-preset.md)** | A budget mixed-provider setup for around $30/month |
+| **[Minimax Preset](docs/minimax-codingplan-preset.md)** | Minimax M2.7 Preset |
 
 ---
 
