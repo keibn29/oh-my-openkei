@@ -19,7 +19,7 @@ export const DEFAULT_AGENT_MCPS: Record<AgentName, string[]> = {
   // agents because they only fetch/search external content — no file mutation.
   // MCPs like serena are intentionally excluded from read-only agents because
   // they can edit files. Users may explicitly configure them if desired.
-  librarian: ['websearch', 'context7', 'grep_app'],
+  librarian: ['websearch', 'context7', 'grep_app', 'atlassian'],
   explorer: [], // removed serena — read-only agent, no write-capable MCPs
   'frontend-developer': ['figma'],
   'backend-developer': [],

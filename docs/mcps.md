@@ -13,8 +13,11 @@ Built-in Model Context Protocol (MCP) servers ship with oh-my-openkei and give a
 | `grep_app` | GitHub code search via grep.app | `https://mcp.grep.app` |
 | `figma` | Design file access and management | `https://mcp.figma.com/mcp`¹ |
 | `serena` | Semantic code exploration and editing | `uvx --from git+https://github.com/oraios/serena serena start-mcp-server` |
+| `atlassian` | Read-only access to Confluence and Jira | `https://mcp.atlassian.com/v1/mcp?capabilities=READ_JIRA,SEARCH_JIRA,READ_CONFLUENCE,SEARCH_CONFLUENCE`² |
 
 > ¹ Figma MCP requires the Figma desktop app to be running with **local MCP** enabled. Open Figma Desktop → Settings → Enable local MCP server.
+> 
+> ² Atlassian MCP uses OAuth authentication. To open the browser and complete the OAuth flow with Atlassian, run command `opencode mcp auth atlassian`.
 
 ---
 
@@ -25,7 +28,7 @@ Built-in Model Context Protocol (MCP) servers ship with oh-my-openkei and give a
 | `orchestrator` | `*`, `!context7` |
 | `planner` | `*`, `!context7` |
 | `sprinter` | `*`, `!context7` |
-| `librarian` | `websearch`, `context7`, `grep_app` |
+| `librarian` | `websearch`, `context7`, `grep_app`, `atlassian` |
 | `designer` | `figma` |
 | `oracle` | none |
 | `debugger` | none |
@@ -66,7 +69,7 @@ Control which MCPs each agent can use via the `mcps` array in your preset config
         "mcps": ["*", "!context7"]
       },
       "librarian": {
-        "mcps": ["websearch", "context7", "grep_app"]
+        "mcps": ["websearch", "context7", "grep_app", "atlassian"]
       },
       "oracle": {
         "mcps": ["*", "!websearch"]

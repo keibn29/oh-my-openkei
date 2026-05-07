@@ -4,7 +4,7 @@ export type RemoteMcpConfig = {
   type: 'remote';
   url: string;
   headers?: Record<string, string>;
-  oauth?: false;
+  oauth?: boolean;
 };
 
 export type LocalMcpConfig = {

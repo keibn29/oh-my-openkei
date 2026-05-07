@@ -511,6 +511,7 @@ const OhMyOpenKei: Plugin = async (ctx) => {
         'websearch',
         'context7',
         'grep_app',
+        'atlassian',
       ]);
 
       // For each agent, create permission rules based on their mcps list

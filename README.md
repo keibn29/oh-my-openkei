@@ -123,7 +123,7 @@ The default generated configuration:
       "librarian": {
         "model": "minimax-coding-plan/MiniMax-M2.7",
         "skills": [],
-        "mcps": ["websearch", "context7", "grep_app"]
+        "mcps": ["websearch", "context7", "grep_app", "atlassian"]
       },
       "explorer": {
         "model": "minimax-coding-plan/MiniMax-M2.7",
@@ -273,7 +273,7 @@ The following agents are delegated to by the primary agents based on task type.
 
 #### Librarian
 
-**Role:** External knowledge retrieval  
+**Role:** External knowledge retrieval (docs, web, Confluence, Jira)  
 **Prompt:** [librarian.ts](src/agents/librarian.ts)  
 **Default Model:** `minimax-coding-plan/MiniMax-M2.7`  
 **Recommended Models:** `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
@@ -357,7 +357,7 @@ Use this section as a map: start with installation, then jump to features, confi
 | ------------------------------------------ | ---------------------------------------------------------------------------------------------- |
 | **[Configuration](docs/configuration.md)** | Config file locations, JSONC support, prompt overrides, and full option reference              |
 | **[Skills](docs/skills.md)**               | Built-in and recommended skills such as `simplify`, `agent-browser`, and `codemap`             |
-| **[MCPs](docs/mcps.md)**                   | `websearch`, `context7`, `grep_app`, `figma`, `serena`, and how MCP permissions work per agent |
+| **[MCPs](docs/mcps.md)**                   | `websearch`, `context7`, `grep_app`, `figma`, `serena`, `atlassian`, and how MCP permissions work per agent |
 | **[Tools](docs/tools.md)**                 | Built-in tool capabilities like `webfetch`, LSP tools, code search, and formatters             |
 
 ### 💡 Example Presets

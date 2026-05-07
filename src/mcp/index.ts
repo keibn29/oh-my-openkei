@@ -1,4 +1,5 @@
 import type { McpName, WebsearchConfig } from '../config';
+import { atlassian } from './atlassian';
 import { context7 } from './context7';
 import { figma } from './figma';
 import { grep_app } from './grep-app';
@@ -14,6 +15,7 @@ const allBuiltinMcps: Record<McpName, McpConfig> = {
   grep_app,
   figma,
   serena,
+  atlassian,
 };
 
 /**

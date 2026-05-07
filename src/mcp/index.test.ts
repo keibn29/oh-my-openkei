@@ -11,18 +11,20 @@ describe('createBuiltinMcps', () => {
     expect(names).toContain('grep_app');
     expect(names).toContain('figma');
     expect(names).toContain('serena');
+    expect(names).toContain('atlassian');
   });
 
   test('returns all MCPs with empty disabled list', () => {
     const mcps = createBuiltinMcps([]);
     const names = Object.keys(mcps);
 
-    expect(names.length).toBe(5);
+    expect(names.length).toBe(6);
     expect(names).toContain('websearch');
     expect(names).toContain('context7');
     expect(names).toContain('grep_app');
     expect(names).toContain('figma');
     expect(names).toContain('serena');
+    expect(names).toContain('atlassian');
   });
 
   test('excludes single disabled MCP', () => {
@@ -34,6 +36,7 @@ describe('createBuiltinMcps', () => {
     expect(names).toContain('grep_app');
     expect(names).toContain('figma');
     expect(names).toContain('serena');
+    expect(names).toContain('atlassian');
   });
 
   test('excludes multiple disabled MCPs', () => {
@@ -45,7 +48,8 @@ describe('createBuiltinMcps', () => {
     expect(names).toContain('context7');
     expect(names).toContain('figma');
     expect(names).toContain('serena');
-    expect(names.length).toBe(3);
+    expect(names).toContain('atlassian');
+    expect(names.length).toBe(4);
   });
 
   test('excludes all MCPs when all disabled', () => {
@@ -55,6 +59,7 @@ describe('createBuiltinMcps', () => {
       'grep_app',
       'figma',
       'serena',
+      'atlassian',
     ]);
     const names = Object.keys(mcps);
 
@@ -66,12 +71,13 @@ describe('createBuiltinMcps', () => {
     const names = Object.keys(mcps);
 
     // All valid MCPs should still be present
-    expect(names.length).toBe(5);
+    expect(names.length).toBe(6);
     expect(names).toContain('websearch');
     expect(names).toContain('context7');
     expect(names).toContain('grep_app');
     expect(names).toContain('figma');
     expect(names).toContain('serena');
+    expect(names).toContain('atlassian');
   });
 
   test('MCP configs have required properties', () => {
@@ -124,5 +130,14 @@ describe('createBuiltinMcps', () => {
 
     expect(serenaConfig).toBeDefined();
     expect('command' in serenaConfig).toBe(true);
+  });
+
+  test('atlassian MCP has correct structure', () => {
+    const mcps = createBuiltinMcps();
+    const atlassianConfig = mcps.atlassian;
+
+    expect(atlassianConfig).toBeDefined();
+    expect('url' in atlassianConfig).toBe(true);
+    expect(atlassianConfig.type).toBe('remote');
   });
 });

@@ -67,6 +67,7 @@ describe('getDefaultAgentMcps', () => {
       'websearch',
       'context7',
       'grep_app',
+      'atlassian',
     ]);
   });
 

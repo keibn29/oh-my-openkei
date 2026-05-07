@@ -223,6 +223,7 @@ export const McpNameSchema = z.enum([
   'grep_app',
   'figma',
   'serena',
+  'atlassian',
 ]);
 export type McpName = z.infer<typeof McpNameSchema>;
 
