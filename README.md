@@ -341,6 +341,7 @@ Use this section as a map: start with installation, then jump to features, confi
 | Doc                                            | What it covers                                                          |
 | ---------------------------------------------- | ----------------------------------------------------------------------- |
 | **[Installation Guide](docs/installation.md)** | Install the plugin, use CLI flags, reset config, and troubleshoot setup |
+| **[Low-tech Setup Guide](docs/lowtech-setup.md)** | Step-by-step setup for non-technical users (commands + success checks) |
 | **[Quick Reference](docs/quick-reference.md)** | Jump table for install, configuration, skills, MCPs, tools, and presets |
 
 ### ✨ Features & Workflows
