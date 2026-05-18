@@ -43,6 +43,18 @@ describe('DEFAULT_AGENT_SKILLS', () => {
     ]);
   });
 
+  test('trigger-developer gets trigger-related skills and karpathy-guidelines', () => {
+    expect(DEFAULT_AGENT_SKILLS['trigger-developer']).toEqual([
+      'trigger-setup',
+      'trigger-tasks',
+      'trigger-agents',
+      'trigger-config',
+      'trigger-realtime',
+      'trigger-cost-savings',
+      'karpathy-guidelines',
+    ]);
+  });
+
   test('getDefaultAgentSkills returns empty array for unknown agent', () => {
     expect(getDefaultAgentSkills('unknown-agent')).toEqual([]);
   });

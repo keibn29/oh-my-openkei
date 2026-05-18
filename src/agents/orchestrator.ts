@@ -38,6 +38,7 @@ const ORCHESTRATOR_DELEGATE_SET = [
   'designer',
   'frontend-developer',
   'backend-developer',
+  'trigger-developer',
   'observer',
   'council',
 ] as const;
@@ -49,6 +50,7 @@ const VALIDATION_ROUTING = [
   '- Route bug investigation and root cause analysis to @debugger',
   '- Route frontend implementation (components, styling, forms, client logic) to @frontend-developer',
   '- Route backend implementation (APIs, services, DB, auth, jobs) to @backend-developer',
+  '- Route Trigger.dev implementation (tasks, config, schedules, integrations) to @trigger-developer',
   '- Route visual/media analysis and interpretation to @observer',
   '- If a request spans multiple lanes, delegate only the lanes that add clear value',
 ];
@@ -58,6 +60,7 @@ const PARALLEL_DELEGATION_EXAMPLES = [
   '- Multiple @explorer searches across different domains?',
   '- @explorer + @librarian research in parallel?',
   '- Multiple @frontend-developer or @backend-developer instances for faster, scoped implementation?',
+  '- @trigger-developer + @backend-developer in parallel for Trigger.dev + supporting backend work?',
   '- @observer + @explorer in parallel (visual analysis + code search)?',
 ];
 

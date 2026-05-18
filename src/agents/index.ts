@@ -33,6 +33,7 @@ import {
 import { createPlannerAgent } from './planner';
 import { SHARED_SUBAGENT_PROMPT_FRAGMENTS } from './shared-agent-content';
 import { createSprinterAgent } from './sprinter';
+import { createTriggerDeveloperAgent } from './trigger-developer';
 
 export type { AgentDefinition } from './orchestrator';
 
@@ -283,6 +284,7 @@ const SUBAGENT_FACTORIES: Record<SubagentName, AgentFactory> = {
   designer: createDesignerAgent,
   'frontend-developer': createFrontendDeveloperAgent,
   'backend-developer': createBackendDeveloperAgent,
+  'trigger-developer': createTriggerDeveloperAgent,
   observer: createObserverAgent,
   council: createCouncilAgent,
   councillor: createCouncillorAgent,

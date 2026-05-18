@@ -1,9 +1,9 @@
-import { BUSINESS_ANALYST_DELEGATE_SET } from "../config/constants";
-import type { AgentDefinition } from "./orchestrator";
+import { BUSINESS_ANALYST_DELEGATE_SET } from '../config/constants';
+import type { AgentDefinition } from './orchestrator';
 import {
   renderSpecialists,
   SHARED_COMMUNICATION_RULES,
-} from "./shared-agent-content";
+} from './shared-agent-content';
 
 /**
  * Build the business-analyst prompt with a restricted delegate set.
@@ -18,7 +18,7 @@ export function buildBusinessAnalystPrompt(
   disabledAgents?: Set<string>,
 ): string {
   const enabledAgents = renderSpecialists(
-    "business-analyst",
+    'business-analyst',
     BUSINESS_ANALYST_DELEGATE_SET,
     disabledAgents,
   );
@@ -135,8 +135,8 @@ export function createBusinessAnalystAgent(
   }
 
   const definition: AgentDefinition = {
-    name: "business-analyst",
-    description: "Market research and strategic analysis specialist",
+    name: 'business-analyst',
+    description: 'Market research and strategic analysis specialist',
     config: {
       temperature: 0.1,
       prompt,
@@ -145,9 +145,9 @@ export function createBusinessAnalystAgent(
 
   if (Array.isArray(model)) {
     definition._modelArray = model.map((m) =>
-      typeof m === "string" ? { id: m } : m,
+      typeof m === 'string' ? { id: m } : m,
     );
-  } else if (typeof model === "string" && model) {
+  } else if (typeof model === 'string' && model) {
     definition.config.model = model;
   }
 

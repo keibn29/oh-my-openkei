@@ -13,6 +13,7 @@ const MANUAL_AGENT_NAMES = [
   'librarian',
   'frontend-developer',
   'backend-developer',
+  'trigger-developer',
 ] as const;
 
 const FALLBACK_AGENT_NAMES = MANUAL_AGENT_NAMES;
@@ -58,6 +59,7 @@ export const ManualPlanSchema = z
     librarian: ManualAgentPlanSchema,
     'frontend-developer': ManualAgentPlanSchema.optional(),
     'backend-developer': ManualAgentPlanSchema.optional(),
+    'trigger-developer': ManualAgentPlanSchema.optional(),
     // Legacy fixer key — accepted for backward compat, stripped from output
     fixer: ManualAgentPlanSchema.optional(),
   })
@@ -135,7 +137,12 @@ export const ManualPlanSchema = z
         });
       }
     }
-    const known = new Set([...required, 'debugger', 'fixer']);
+    const known = new Set([
+      ...required,
+      'debugger',
+      'trigger-developer',
+      'fixer',
+    ]);
     for (const key of Object.keys(data as object)) {
       if (!known.has(key)) {
         ctx.addIssue({
@@ -166,6 +173,7 @@ const FallbackChainsSchema = z
     librarian: AgentModelChainSchema.optional(),
     'frontend-developer': AgentModelChainSchema.optional(),
     'backend-developer': AgentModelChainSchema.optional(),
+    'trigger-developer': AgentModelChainSchema.optional(),
   })
   .catchall(AgentModelChainSchema);
 
@@ -224,6 +232,7 @@ export const McpNameSchema = z.enum([
   'figma',
   'serena',
   'atlassian',
+  'trigger',
 ]);
 export type McpName = z.infer<typeof McpNameSchema>;
 

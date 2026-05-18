@@ -14,10 +14,13 @@ Built-in Model Context Protocol (MCP) servers ship with oh-my-openkei and give a
 | `figma` | Design file access and management | `https://mcp.figma.com/mcp`¹ |
 | `serena` | Semantic code exploration and editing | `uvx --from git+https://github.com/oraios/serena serena start-mcp-server` |
 | `atlassian` | Read-only access to Confluence and Jira | `https://mcp.atlassian.com/v1/mcp?capabilities=READ_JIRA,SEARCH_JIRA,READ_CONFLUENCE,SEARCH_CONFLUENCE`² |
+| `trigger` | Trigger.dev task management and configuration | `npx trigger.dev@latest mcp --readonly`³ |
 
 > ¹ Figma MCP requires the Figma desktop app to be running with **local MCP** enabled. Open Figma Desktop → Settings → Enable local MCP server.
 > 
 > ² Atlassian MCP uses OAuth authentication. To open the browser and complete the OAuth flow with Atlassian, run command `opencode mcp auth atlassian`.
+> 
+> ³ The `trigger` MCP runs as a local subprocess via `npx`. First invocation may be slow due to npx caching. Run `npx trigger.dev@latest mcp --readonly` once beforehand to warm the cache. The current MCP type does not support a configurable startup timeout.
 
 ---
 
@@ -35,7 +38,8 @@ Built-in Model Context Protocol (MCP) servers ship with oh-my-openkei and give a
 | `explorer` | `serena` |
 | `frontend-developer` | none |
 | `backend-developer` | none |
- | `councillor` | none |
+| `trigger-developer` | `trigger` |
+| `councillor` | none |
 
 ---
 

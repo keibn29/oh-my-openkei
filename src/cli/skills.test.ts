@@ -35,6 +35,16 @@ describe('skills permissions', () => {
     const backendPerms = getSkillPermissionsForAgent('backend-developer');
     expect(backendPerms['backend-developer']).toBe('allow');
     expect(backendPerms['karpathy-guidelines']).toBe('allow');
+
+    // Trigger-dev should have trigger skills allowed
+    const triggerDevPerms = getSkillPermissionsForAgent('trigger-developer');
+    expect(triggerDevPerms['trigger-setup']).toBe('allow');
+    expect(triggerDevPerms['trigger-tasks']).toBe('allow');
+    expect(triggerDevPerms['trigger-agents']).toBe('allow');
+    expect(triggerDevPerms['trigger-config']).toBe('allow');
+    expect(triggerDevPerms['trigger-realtime']).toBe('allow');
+    expect(triggerDevPerms['trigger-cost-savings']).toBe('allow');
+    expect(triggerDevPerms['karpathy-guidelines']).toBe('allow');
   });
 
   it('should honor explicit skill list overrides', () => {

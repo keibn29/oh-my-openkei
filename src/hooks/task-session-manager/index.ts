@@ -31,6 +31,7 @@ const AGENT_NAME_SET = new Set<AgentName>([
   'librarian',
   'frontend-developer',
   'backend-developer',
+  'trigger-developer',
   'observer',
   'council',
   'councillor',

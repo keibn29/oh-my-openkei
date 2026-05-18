@@ -12,19 +12,21 @@ describe('createBuiltinMcps', () => {
     expect(names).toContain('figma');
     expect(names).toContain('serena');
     expect(names).toContain('atlassian');
+    expect(names).toContain('trigger');
   });
 
   test('returns all MCPs with empty disabled list', () => {
     const mcps = createBuiltinMcps([]);
     const names = Object.keys(mcps);
 
-    expect(names.length).toBe(6);
+    expect(names.length).toBe(7);
     expect(names).toContain('websearch');
     expect(names).toContain('context7');
     expect(names).toContain('grep_app');
     expect(names).toContain('figma');
     expect(names).toContain('serena');
     expect(names).toContain('atlassian');
+    expect(names).toContain('trigger');
   });
 
   test('excludes single disabled MCP', () => {
@@ -49,7 +51,8 @@ describe('createBuiltinMcps', () => {
     expect(names).toContain('figma');
     expect(names).toContain('serena');
     expect(names).toContain('atlassian');
-    expect(names.length).toBe(4);
+    expect(names).toContain('trigger');
+    expect(names.length).toBe(5);
   });
 
   test('excludes all MCPs when all disabled', () => {
@@ -60,6 +63,7 @@ describe('createBuiltinMcps', () => {
       'figma',
       'serena',
       'atlassian',
+      'trigger',
     ]);
     const names = Object.keys(mcps);
 
@@ -71,13 +75,14 @@ describe('createBuiltinMcps', () => {
     const names = Object.keys(mcps);
 
     // All valid MCPs should still be present
-    expect(names.length).toBe(6);
+    expect(names.length).toBe(7);
     expect(names).toContain('websearch');
     expect(names).toContain('context7');
     expect(names).toContain('grep_app');
     expect(names).toContain('figma');
     expect(names).toContain('serena');
     expect(names).toContain('atlassian');
+    expect(names).toContain('trigger');
   });
 
   test('MCP configs have required properties', () => {
@@ -139,5 +144,16 @@ describe('createBuiltinMcps', () => {
     expect(atlassianConfig).toBeDefined();
     expect('url' in atlassianConfig).toBe(true);
     expect(atlassianConfig.type).toBe('remote');
+  });
+
+  test('trigger MCP has correct structure', () => {
+    const mcps = createBuiltinMcps();
+    const triggerConfig = mcps.trigger;
+
+    expect(triggerConfig).toBeDefined();
+    expect('command' in triggerConfig).toBe(true);
+    expect(triggerConfig.type).toBe('local');
+    expect(triggerConfig.command).toContain('trigger.dev@latest');
+    expect(triggerConfig.command).toContain('--readonly');
   });
 });

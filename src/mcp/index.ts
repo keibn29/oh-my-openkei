@@ -4,6 +4,7 @@ import { context7 } from './context7';
 import { figma } from './figma';
 import { grep_app } from './grep-app';
 import { serena } from './serena';
+import { trigger } from './trigger';
 import type { McpConfig } from './types';
 import { createWebsearchConfig, websearch } from './websearch';
 
@@ -16,6 +17,7 @@ const allBuiltinMcps: Record<McpName, McpConfig> = {
   figma,
   serena,
   atlassian,
+  trigger,
 };
 
 /**

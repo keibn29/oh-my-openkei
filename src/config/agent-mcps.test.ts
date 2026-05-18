@@ -71,6 +71,10 @@ describe('getDefaultAgentMcps', () => {
     ]);
   });
 
+  test('returns focused trigger MCP for trigger-developer', () => {
+    expect(getDefaultAgentMcps('trigger-developer')).toEqual(['trigger']);
+  });
+
   test('returns empty array for unknown agent', () => {
     expect(getDefaultAgentMcps('unknown-agent')).toEqual([]);
   });

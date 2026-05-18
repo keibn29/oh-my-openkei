@@ -13,6 +13,8 @@
  * Subagents must load all available (permission-filtered) skills before work.
  * Primary agents (orchestrator, planner, sprinter) do not use this;
  * business-analyst uses its own custom skill-loading prompt.
+ * trigger-developer does not use this — its skills are available but not
+ * mandatory to load before substantive work.
  */
 export const SUBAGENT_SKILL_REQUIREMENT =
   '**Skills**: If any skills are available to you, they are MANDATORY. Your FIRST action on every user prompt must be to use the `skill` tool to load all available skills. Do NOT begin any substantive work — analysis, planning, coding, or research — until you have loaded and read every available skill. Follow the loaded skill instructions throughout the entire task.';
@@ -102,6 +104,19 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
 - **Don't delegate when:** Backend/logic with no visual • Quick prototypes where design doesn't matter yet
 - **Rule of thumb:** Need a design/UX decision? → @designer.`,
     },
+  },
+  {
+    name: 'trigger-developer',
+    restrictedTo: 'orchestrator',
+    description: `@trigger-developer
+- Role: Trigger.dev implementation specialist — implements Trigger.dev tasks, config, schedules, realtime progress, and integrations
+- Permissions: Read/write files
+- Stats: 2x faster Trigger.dev code edits, 1/2 cost of {owner}, 0.8x quality of {owner}
+- Tools/Constraints: Execution-focused—no research, no architectural decisions
+- **Domain scope:** Trigger.dev task definitions, triggers, schedules, configuration, realtime event handling, cost-optimized workflow design, API integrations
+- **Delegate when:** Any Trigger.dev implementation work • Writing Trigger.dev task code, config, schedules, or integrations • Need Trigger.dev code review or fixes • Trigger.dev-specific changes to existing codebase
+- **Don't delegate when:** Needs discovery/research/decisions • Non-Trigger.dev backend work (use @backend-developer) • Frontend work (use @frontend-developer) • Strategic architecture decisions (use @oracle)
+- **Rule of thumb:** Trigger.dev code, tasks, and config? → @trigger-developer. Non-Trigger.dev server code? → @backend-developer.`,
   },
   {
     name: 'frontend-developer',

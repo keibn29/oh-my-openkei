@@ -2,7 +2,7 @@
 
 Skills are specialized capabilities you can assign to agents. Unlike MCPs (which are running servers), skills are **prompt-based tool configurations** — instructions injected into an agent's system prompt that describe how to use a particular tool.
 
-Skills are installed via the `oh-my-openkei` installer. External skills can also be installed manually with `npx skills add`.
+Skills are installed via the `oh-my-openkei` installer. Some skills are bundled in this repo; external skills from third-party authors are installed via `npx skills add` at install time. Official Trigger.dev skills are the only external skills currently recommended by the installer.
 
 ---
 
@@ -13,6 +13,12 @@ Skills are installed via the `oh-my-openkei` installer. External skills can also
 | Skill | Description | Assigned to by default |
 |-------|-------------|----------------------|
 | [`agent-browser`](#agent-browser) | High-performance browser automation | `designer` |
+| [`trigger-setup`](#trigger-setup) | Trigger.dev project setup and authentication (official) | `trigger-developer` |
+| [`trigger-tasks`](#trigger-tasks) | Trigger.dev task definitions and error handling (official) | `trigger-developer` |
+| [`trigger-agents`](#trigger-agents) | Trigger.dev machine agents and queue config (official) | `trigger-developer` |
+| [`trigger-config`](#trigger-config) | Trigger.dev configuration and environment (official) | `trigger-developer` |
+| [`trigger-realtime`](#trigger-realtime) | Trigger.dev realtime progress and live updates (official) | `trigger-developer` |
+| [`trigger-cost-savings`](#trigger-cost-savings) | Trigger.dev cost optimization (official) | `trigger-developer` |
 
 ### Bundled in repo
 
@@ -113,11 +119,40 @@ Source: inspired by Andrej Karpathy's guidelines, bundled locally.
 
 ---
 
+## Trigger.dev Skills (official)
+
+**External skills from `triggerdotdev/skills`, installed at setup time.**
+
+The following official Trigger.dev skills are recommended for `trigger-developer` and installed automatically when you run the installer with `--skills=yes`:
+
+| Skill | Covers |
+|-------|--------|
+| `trigger-setup` | Project initialization, environment setup, CLI authentication, local dev |
+| `trigger-tasks` | Task definitions, error handling, retry config, idempotency, testing |
+| `trigger-agents` | Machine agents, queue concurrency, deployment, monitoring, scaling |
+| `trigger-config` | `trigger.config.ts` structure, env vars, machine sizing, logging |
+| `trigger-realtime` | Streaming progress, WebSocket subscriptions, heartbeats, client integration |
+| `trigger-cost-savings` | Queue tuning, batching, right-sizing, retry policy, spend monitoring |
+
+These skills originate from the [triggerdotdev/skills](https://github.com/triggerdotdev/skills) repository and are installed via `npx skills add triggerdotdev/skills --skill <name>`. The installer wraps this automatically. To install them manually:
+
+```bash
+for skill in trigger-setup trigger-tasks trigger-agents trigger-config trigger-realtime trigger-cost-savings; do
+  npx skills add https://github.com/triggerdotdev/skills --skill "$skill" -a opencode -y --global
+done
+```
+
+By default, all six are assigned to `trigger-developer`.
+
+Source: official Trigger.dev skills, installed from `triggerdotdev/skills`.
+
+---
+
 ## Skills Assignment
 
 Control which skills each agent can use in `~/.config/opencode/oh-my-openkei.json` (or `.jsonc`):
 
-For `frontend-developer`, `backend-developer`, and `business-analyst`, any skills available after this filtering are treated as **mandatory workflow instructions**. Those agents are prompted to load every available skill via the `skill` tool before doing substantive work.
+For `frontend-developer`, `backend-developer`, and `business-analyst`, any skills available after this filtering are treated as **mandatory workflow instructions**. Those agents are prompted to load every available skill via the `skill` tool before doing substantive work. `trigger-developer` has its own set of default skills available but is not required to load them before substantive work.
 
 | Syntax | Meaning |
 |--------|---------|
@@ -158,6 +193,9 @@ For `frontend-developer`, `backend-developer`, and `business-analyst`, any skill
       },
       "backend-developer": {
         "skills": ["backend-developer", "karpathy-guidelines"]
+      },
+      "trigger-developer": {
+        "skills": ["trigger-setup", "trigger-tasks", "trigger-agents", "trigger-config", "trigger-realtime", "trigger-cost-savings", "karpathy-guidelines"]
       }
     }
   }

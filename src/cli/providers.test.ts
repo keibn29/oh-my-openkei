@@ -16,6 +16,7 @@ describe('providers', () => {
     expect(keys).toContain('designer');
     expect(keys).toContain('frontend-developer');
     expect(keys).toContain('backend-developer');
+    expect(keys).toContain('trigger-developer');
     expect(keys).toContain('business-analyst');
     // Each entry has model and optional variant
     for (const entry of Object.values(MODEL_MAPPINGS)) {
@@ -65,6 +66,10 @@ describe('providers', () => {
     expect(agents['backend-developer'].variant).toBe('high');
     expect(agents['business-analyst'].model).toBe('openai/gpt-5.5-fast');
     expect(agents['business-analyst'].variant).toBe('high');
+    expect(agents['trigger-developer'].model).toBe(
+      'opencode-go/deepseek-v4-flash',
+    );
+    expect(agents['trigger-developer'].variant).toBe('high');
   });
 
   test('generateLiteConfig uses correct OpenAI models', () => {

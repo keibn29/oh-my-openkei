@@ -43,6 +43,8 @@ function aliasPrefix(agentType: AgentName): string {
       return 'fed';
     case 'backend-developer':
       return 'bed';
+    case 'trigger-developer':
+      return 'trg';
     case 'observer':
       return 'obs';
     case 'council':

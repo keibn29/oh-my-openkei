@@ -35,6 +35,50 @@ export const RECOMMENDED_SKILLS: RecommendedSkill[] = [
       'agent-browser install',
     ],
   },
+  {
+    name: 'trigger-setup',
+    repo: 'https://github.com/triggerdotdev/skills',
+    skillName: 'trigger-setup',
+    recommendedFor: ['trigger-developer'],
+    description: 'Trigger.dev project setup and authentication (official)',
+  },
+  {
+    name: 'trigger-tasks',
+    repo: 'https://github.com/triggerdotdev/skills',
+    skillName: 'trigger-tasks',
+    recommendedFor: ['trigger-developer'],
+    description: 'Trigger.dev task definitions and error handling (official)',
+  },
+  {
+    name: 'trigger-agents',
+    repo: 'https://github.com/triggerdotdev/skills',
+    skillName: 'trigger-agents',
+    recommendedFor: ['trigger-developer'],
+    description:
+      'Trigger.dev machine agents and queue configuration (official)',
+  },
+  {
+    name: 'trigger-config',
+    repo: 'https://github.com/triggerdotdev/skills',
+    skillName: 'trigger-config',
+    recommendedFor: ['trigger-developer'],
+    description:
+      'Trigger.dev configuration and environment variables (official)',
+  },
+  {
+    name: 'trigger-realtime',
+    repo: 'https://github.com/triggerdotdev/skills',
+    skillName: 'trigger-realtime',
+    recommendedFor: ['trigger-developer'],
+    description: 'Trigger.dev realtime progress and live updates (official)',
+  },
+  {
+    name: 'trigger-cost-savings',
+    repo: 'https://github.com/triggerdotdev/skills',
+    skillName: 'trigger-cost-savings',
+    recommendedFor: ['trigger-developer'],
+    description: 'Trigger.dev cost optimization patterns (official)',
+  },
 ];
 
 /**

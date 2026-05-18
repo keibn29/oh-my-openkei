@@ -144,13 +144,18 @@ The default generated configuration:
         "model": "opencode-go/deepseek-v4-flash",
         "skills": ["backend-developer", "karpathy-guidelines"],
         "mcps": []
+      },
+      "trigger-developer": {
+        "model": "opencode-go/deepseek-v4-flash",
+        "skills": ["trigger-setup", "trigger-tasks", "trigger-agents", "trigger-config", "trigger-realtime", "trigger-cost-savings", "karpathy-guidelines"],
+        "mcps": ["trigger"]
       }
     }
   }
 }
 ```
 
-`frontend-developer`, `backend-developer`, and `business-analyst` treat their available skills as mandatory instructions: when skills are configured for them, they are prompted to load those skills via the `skill` tool before doing substantive work.
+`frontend-developer`, `backend-developer`, and `business-analyst` treat their available skills as mandatory instructions: when skills are configured for them, they are prompted to load those skills via the `skill` tool before doing substantive work. `trigger-developer` has its own set of default skills available but is not required to load them before substantive work.
 
 Session management is enabled by default even though it is not shown in the starter config. See **[Session Management](docs/session-management.md)** if you want to customize how many resumable child-agent sessions are remembered.
 
@@ -198,7 +203,7 @@ If any agent fails to respond, check your provider authentication and config fil
 
 #### Routing Flow
 
-- **Orchestrator** can delegate to `debugger`, `explorer`, `librarian`, `oracle`, `designer`, `frontend-developer`, `backend-developer`, `observer`, and `council`.
+- **Orchestrator** can delegate to `debugger`, `explorer`, `librarian`, `oracle`, `designer`, `frontend-developer`, `backend-developer`, `trigger-developer`, `observer`, and `council`.
 - **Planner** is planning-only and can delegate only to `explorer`, `librarian`, `oracle`, and `designer`.
 - **Sprinter** is self-executing and does not delegate.
 - **Business Analyst** can delegate research to `explorer`, `librarian`, and `oracle`.
@@ -294,6 +299,14 @@ The following agents are delegated to by the primary agents based on task type.
 **Default Model:** `opencode-go/deepseek-v4-flash` (`high`)  
 **Recommended Models:** `google/gemini-3.1-pro-preview`, `kimi-for-coding/k2p5`  
 **Model Guidance:** Choose a model strong at client-side implementation, component architecture, and styling execution. Receives bounded frontend tasks from Orchestrator once design direction is established.
+
+#### Trigger.dev Developer
+
+**Role:** Trigger.dev implementation specialist — implements tasks, config, schedules, realtime progress, and integrations  
+**Prompt:** [trigger-developer.ts](src/agents/trigger-developer.ts)  
+**Default Model:** `opencode-go/deepseek-v4-flash` (`high`)  
+**Recommended Models:** `openai/gpt-5.4-mini`, `opencode-go/deepseek-v4-flash`  
+**Model Guidance:** Choose a fast, reliable coding model. Receives bounded Trigger.dev implementation tasks from Orchestrator such as task definitions, trigger configuration, schedule setup, and API integrations.
 
 #### Backend Developer
 

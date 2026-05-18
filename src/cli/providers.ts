@@ -27,6 +27,10 @@ export const MODEL_MAPPINGS = {
     model: 'openai/gpt-5.5-fast',
     variant: 'high',
   },
+  'trigger-developer': {
+    model: 'opencode-go/deepseek-v4-flash',
+    variant: 'high',
+  },
 } as const;
 
 export function generateLiteConfig(

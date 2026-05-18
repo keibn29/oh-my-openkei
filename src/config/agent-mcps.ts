@@ -23,6 +23,7 @@ export const DEFAULT_AGENT_MCPS: Record<AgentName, string[]> = {
   explorer: [], // removed serena — read-only agent, no write-capable MCPs
   'frontend-developer': ['figma'],
   'backend-developer': [],
+  'trigger-developer': ['trigger'], // focused: only the native Trigger.dev MCP
   observer: [],
   council: [],
   councillor: [],
