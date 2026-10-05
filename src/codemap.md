@@ -27,7 +27,8 @@
   - injects orchestrator/system-level reminders when required,
   - applies task/session prompt enrichment from `task-session-manager`,
   - collapses all system entries into one message via `collapseSystemInPlace` for providers that reject multi-message system arrays.
-- `tool.execute.before/after` (`task`): records pending task calls, resolves short aliases to canonical IDs, parses outputs for new task IDs, and updates/removes remembered sessions.
+- `tool.execute.before/after` (`task`): records pending task calls, resolves short aliases to canonical IDs (failing the call on an unknown alias), parses metadata/output for new task IDs, and updates/removes remembered sessions.
+- `chat.message` (`task-session-manager`): only records which agent owns a session; it never invalidates remembered aliases.
 - CLI flow: `cli/install.ts` parses flags, optionally prompts, checks OpenCode installation, updates config via `cli/config-io.ts` and `cli/paths.ts`, disables default agents, writes lite config, and installs skills (`cli/skills.ts`, `cli/custom-skills.ts`).
 
 ## Integration

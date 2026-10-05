@@ -7,7 +7,7 @@ Cross-cutting runtime utilities used by orchestration, hooks, and plugin I/O.
 - **subagent-depth.ts**: Tracks delegated session depth and enforces max nested delegation depth.
 - **agent-variant.ts**: Normalizes agent names and applies optional variant labels without overriding existing body configuration.
 - **env.ts**: Unified environment lookup across Bun/Node with empty-string filtering.
-- **session-manager.ts**: Tracks resumable `task` tool sessions by parent session + agent type, normalizes user labels, assigns stable short aliases, and exposes prompt rendering/eviction behavior.
+- **session-manager.ts**: Tracks resumable `task` tool sessions by parent session + agent type, normalizes user labels, assigns stable short aliases, and exposes prompt rendering/eviction behavior. Aliases are not invalidated by new user messages.
 - **session.ts**: Session extraction helpers for multi-turn synthesis and prompt/result post-processing.
 - **polling.ts**: Shared polling with stability thresholds and abort-signal support.
 - **zip-extractor.ts**: Cross-platform zip/tar extraction with Windows fallback tooling.
@@ -21,7 +21,7 @@ Cross-cutting runtime utilities used by orchestration, hooks, and plugin I/O.
 ## Design
 
 - **Deterministic lifecycle tracking**: `SubagentDepthTracker` maps session IDs → depth and is cleaned on session deletion.
-- **Parent-scoped resumable session store**: `SessionManager` groups tasks by `{parentSessionId, agentType}` and maintains LRU-ish ordering by last-used counter so active resumable sessions stay in memory.
+- **Parent-scoped resumable session store**: `SessionManager` groups tasks by `{parentSessionId, agentType}` and maintains LRU-ish ordering by last-used counter so active resumable sessions stay in memory. Alias counters live for the parent lifetime, so a dropped alias is never recycled onto an unrelated child.
 - **Provider-safe env access**: `getEnv` falls back from `Bun.env` to `process.env` and normalizes blank values.
 - **Graceful shutdown protocol**: Multiplexer pane close path sends Ctrl+C before kill, then rebalances layout state.
 - **Session extraction model**: `extractSessionResult`/`parseModelReference` style helpers are centralized under `session.ts`.
@@ -59,7 +59,14 @@ Cross-cutting runtime utilities used by orchestration, hooks, and plugin I/O.
 
 ### `task.ts`
 
-- Scans task output line-by-line and extracts `task_id` from `task_id: <id>` format.
+- Recovers the child session ID from host metadata (`metadata.sessionId`, only a
+  non-array record), then the anchored `<task id="ses_..." state="completed">`
+  envelope (attributes must be fully consumed quoted `name="value"` pairs), then
+  a leading legacy `task_id: <id>` header. IDs are capped at 128 characters.
+- The child body is never scanned, so embedded examples cannot spoof an ID and
+  a malformed envelope does not fall back to body text.
+- Prompt-rendered filenames and labels are single-line encoded, so untrusted
+  tool output cannot inject a prompt line.
 
 ### `system-collapse.ts`
 

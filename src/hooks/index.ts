@@ -13,4 +13,7 @@ export { createJsonErrorRecoveryHook } from './json-error-recovery';
 export { createPhaseReminderHook } from './phase-reminder';
 export { createPlannerDelegateValidationHookWithSession } from './planner-delegate-validation';
 export { createPostFileToolNudgeHook } from './post-file-tool-nudge';
-export { createTaskSessionManagerHook } from './task-session-manager';
+export {
+  createTaskSessionManagerHook,
+  UnknownTaskSessionAliasError,
+} from './task-session-manager';

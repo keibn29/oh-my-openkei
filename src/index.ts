@@ -686,13 +686,6 @@ const OhMyOpenKei: Plugin = async (ctx) => {
       if (agent) {
         sessionAgentMap.set(input.sessionID, agent);
       }
-
-      // Increment session reuse turn boundary on new user messages.
-      // User messages have input.agent set (the addressed agent) while
-      // assistant responses populate output?.message?.agent instead.
-      if (input.sessionID && input.agent && !output?.message?.agent) {
-        taskSessionManagerHook.incrementTurn(input.sessionID);
-      }
     },
 
     // Inject orchestrator system prompt for serve-mode sessions. In serve
@@ -859,7 +852,7 @@ const OhMyOpenKei: Plugin = async (ctx) => {
           sessionID?: string;
           callID?: string;
         },
-        output as { output: unknown },
+        output as { output: unknown; metadata?: unknown },
       );
     },
   };

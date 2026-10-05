@@ -152,7 +152,7 @@ Cấu hình mặc định được tạo ra:
 
 `frontend-developer`, `backend-developer` và `business-analyst` coi các kỹ năng khả dụng của họ như những hướng dẫn bắt buộc: khi kỹ năng được cấu hình cho họ, họ được nhắc tải các kỹ năng đó qua công cụ `skill` trước khi thực hiện công việc chính.
 
-Quản lý phiên (session management) được bật theo mặc định dù không được hiển thị trong cấu hình khởi đầu. Xem **[Session Management](docs/session-management.md)** nếu bạn muốn tùy chỉnh số lượng phiên agent con có thể tiếp tục được ghi nhớ.
+Quản lý phiên (session management) được bật theo mặc định dù không được hiển thị trong cấu hình khởi đầu. Mỗi phiên agent con đã chạy được gán một bí danh ngắn (`exp-1`, `ora-1`); agent tiếp tục phiên đó bằng cách truyền `task_id` cùng specialist, còn bỏ trống `task_id` thì tạo phiên con mới. Xem **[Session Management](docs/session-management.md)** để biết quy tắc tái sử dụng và cách tùy chỉnh số lượng phiên agent con có thể tiếp tục được ghi nhớ.
 
 ### Dành Cho Các Nhà Cung Cấp Khác
 
@@ -348,7 +348,7 @@ Sử dụng phần này như một bản đồ: bắt đầu với cài đặt, 
 | Tài liệu                                             | Nội dung bao gồm                                                               |
 | ---------------------------------------------------- | ------------------------------------------------------------------------------ |
 | **[Council](docs/council.md)**                       | Chạy nhiều model song song và tổng hợp một câu trả lời duy nhất với `@council` |
-| **[Session Management](docs/session-management.md)** | Tái sử dụng các phiên agent con gần đây với bí danh ngắn thay vì bắt đầu lại   |
+| **[Session Management](docs/session-management.md)** | Tái sử dụng phiên agent con một cách tường minh bằng `task_id`/bí danh, hoặc tạo phiên mới khi bỏ trống `task_id` |
 | **[Codemap](docs/codemap.md)**                       | Tạo bản đồ phân cấp codemap để hiểu cơ sở mã nguồn lớn nhanh hơn               |
 
 ### ⚙️ Cấu Hình & Tham Khảo

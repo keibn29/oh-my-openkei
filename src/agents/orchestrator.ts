@@ -170,10 +170,12 @@ Balance: respect dependencies, avoid parallelizing what must be sequential.
 ${mustLoadSection}
 
 ### Session Reuse
-- Smartly reuse an available specialist session - constext reuse saves time and tokens
-- When too much unrelated, and really needed, start a fresh session with the specialist
-- If multiple remembered sessions fit, prefer the most recently used matching session.
-- Prefer re-uses over creating new sessions all the time
+- Child sessions are never reused implicitly. You decide explicitly, on the \`task\` call:
+  - Same topic, same specialist: pass the alias you want to continue, e.g. \`task_id="exp-1"\`, with the SAME \`subagent_type\`.
+  - New or unrelated topic: OMIT \`task_id\` so a fresh child session is created.
+- Never reuse an alias blindly. Reuse only for a clear continuation of the same thread; an alias that is unknown or already evicted is rejected before the call runs, so retry without \`task_id\` to start fresh.
+- If several remembered aliases fit, use the most recently used one for that specialist.
+- Reuse is worth it: the specialist already has the code, docs, and decisions in context, so it saves time and tokens.
 
 ### Validation routing
 - Validation is a workflow stage owned by the Orchestrator, not a separate specialist

@@ -15,8 +15,6 @@ export interface RememberedTaskSession {
   contextFiles: ContextFile[];
   createdAt: number;
   lastUsedAt: number;
-  /** Turn counter used to isolate session reuse to a single user message. */
-  turn: number;
 }
 
 type SessionGroupMap = Map<AgentName, RememberedTaskSession[]>;
@@ -29,41 +27,51 @@ interface SessionManagerOptions {
   readContextMaxFiles?: number;
 }
 
+/**
+ * Short alias prefixes. Typed as a total record so a newly registered agent
+ * cannot silently fall back to an empty (ambiguous) prefix; a unit test keeps
+ * the values unique and nonempty.
+ */
+const AGENT_ALIAS_PREFIX: Record<AgentName, string> = {
+  orchestrator: 'orc',
+  planner: 'pln',
+  sprinter: 'spr',
+  'business-analyst': 'bas',
+  debugger: 'dbg',
+  explorer: 'exp',
+  librarian: 'lib',
+  oracle: 'ora',
+  designer: 'des',
+  'frontend-developer': 'fed',
+  'backend-developer': 'bed',
+  'trigger-developer': 'trg',
+  observer: 'obs',
+  council: 'cnc',
+  councillor: 'clr',
+};
+
 function aliasPrefix(agentType: AgentName): string {
-  switch (agentType) {
-    case 'explorer':
-      return 'exp';
-    case 'librarian':
-      return 'lib';
-    case 'oracle':
-      return 'ora';
-    case 'designer':
-      return 'des';
-    case 'frontend-developer':
-      return 'fed';
-    case 'backend-developer':
-      return 'bed';
-    case 'trigger-developer':
-      return 'trg';
-    case 'observer':
-      return 'obs';
-    case 'council':
-      return 'cnc';
-    case 'councillor':
-      return 'clr';
-    case 'orchestrator':
-      return 'orc';
-    case 'planner':
-      return 'pln';
-    case 'sprinter':
-      return 'spr';
-    default:
-      return '';
-  }
+  return AGENT_ALIAS_PREFIX[agentType];
 }
 
 function normalizeWhitespace(value: string): string {
   return value.replace(/\s+/g, ' ').trim();
+}
+
+/** Characters that must not reach the prompt raw. */
+const UNSAFE_PROMPT_CHARS = new Set(['"', "'", '\\', '`', '<', '>']);
+
+/**
+ * A value is safe to inline verbatim only when it is single-line and free of
+ * markup characters. Anything else is JSON-encoded by `promptValue`.
+ */
+function isSafePromptValue(value: string): boolean {
+  for (const char of value) {
+    const code = char.codePointAt(0) ?? 0;
+    if (code < 0x20 || code === 0x7f) return false;
+    if (UNSAFE_PROMPT_CHARS.has(char)) return false;
+  }
+  return true;
 }
 
 export function deriveTaskSessionLabel(input: {
@@ -97,7 +105,6 @@ export class SessionManager {
     string,
     Map<AgentName, number>
   >();
-  private readonly currentTurnByParent = new Map<string, number>();
   private orderCounter = 0;
 
   constructor(
@@ -109,16 +116,6 @@ export class SessionManager {
       options.readContextMinLines ?? MIN_CONTEXT_FILE_LINES;
     this.readContextMaxFiles =
       options.readContextMaxFiles ?? MAX_CONTEXT_FILES_PER_SESSION;
-  }
-
-  /**
-   * Increment the turn counter for a parent session.
-   * Sessions created in prior turns will no longer be resolvable,
-   * forcing fresh child sessions on the next delegation.
-   */
-  incrementTurn(parentSessionId: string): void {
-    const current = this.currentTurnByParent.get(parentSessionId) ?? 0;
-    this.currentTurnByParent.set(parentSessionId, current + 1);
   }
 
   remember(input: {
@@ -152,7 +149,6 @@ export class SessionManager {
       contextFiles: [],
       createdAt: now,
       lastUsedAt: now,
-      turn: this.currentTurnByParent.get(input.parentSessionId) ?? 0,
     };
 
     group.push(remembered);
@@ -173,12 +169,7 @@ export class SessionManager {
 
   resolve(parentSessionId: string, agentType: AgentName, key: string) {
     const group = this.getAgentGroup(parentSessionId, agentType, false);
-    const currentTurn = this.currentTurnByParent.get(parentSessionId) ?? 0;
-    return group?.find(
-      (entry) =>
-        entry.turn === currentTurn &&
-        (entry.alias === key || entry.taskId === key),
-    );
+    return group?.find((entry) => entry.alias === key || entry.taskId === key);
   }
 
   drop(parentSessionId: string, agentType: AgentName, key: string): void {
@@ -243,22 +234,35 @@ export class SessionManager {
   clearParent(parentSessionId: string): void {
     this.sessionsByParent.delete(parentSessionId);
     this.nextAliasIndexByParent.delete(parentSessionId);
-    this.currentTurnByParent.delete(parentSessionId);
+  }
+
+  /**
+   * Compact `agent: alias, alias` list of everything remembered for a parent,
+   * most recently used first. Attached to an unknown-alias rejection so the
+   * message names the references that do resolve.
+   */
+  aliasSummary(parentSessionId: string): string {
+    const groups = this.sessionsByParent.get(parentSessionId);
+    if (!groups || groups.size === 0) return 'none';
+
+    return [...groups.entries()]
+      .map(([agentType, entries]) => {
+        const ranked = [...entries].sort((a, b) => b.lastUsedAt - a.lastUsedAt);
+        return `${agentType}: ${ranked.map((entry) => entry.alias).join(', ')}`;
+      })
+      .join('; ');
   }
 
   formatForPrompt(parentSessionId: string): string | undefined {
     const groups = this.sessionsByParent.get(parentSessionId);
     if (!groups || groups.size === 0) return undefined;
-    const currentTurn = this.currentTurnByParent.get(parentSessionId) ?? 0;
 
     const lines = [...groups.entries()]
       .map(
         ([agentType, entries]) =>
           [
             agentType,
-            [...entries]
-              .filter((entry) => entry.turn === currentTurn)
-              .sort((a, b) => b.lastUsedAt - a.lastUsedAt),
+            [...entries].sort((a, b) => b.lastUsedAt - a.lastUsedAt),
           ] as const,
       )
       .filter(([, entries]) => entries.length > 0)
@@ -266,7 +270,7 @@ export class SessionManager {
       .map(([agentType, entries]) =>
         [
           `- ${agentType}: ${entries
-            .map((entry) => `${entry.alias} ${entry.label}`)
+            .map((entry) => `${entry.alias} ${promptValue(entry.label)}`)
             .join('; ')}`,
           ...entries
             .map(
@@ -291,7 +295,11 @@ export class SessionManager {
 
     return [
       '### Resumable Sessions',
-      'Reuse only for clear continuation of the same thread. Otherwise start fresh.',
+      'Child sessions you already ran in this conversation. Reuse is always explicit:',
+      '- Continue the same thread: call `task` again with the SAME subagent_type and task_id="<alias>".',
+      '- New or unrelated topic: OMIT task_id so a fresh child session is created.',
+      '- If several aliases fit, use the most recently used one for that specialist.',
+      '- Never reuse an alias blindly; an alias that is unknown or evicted fails the call.',
       '',
       ...lines,
     ].join('\n');
@@ -329,7 +337,9 @@ export class SessionManager {
       groups.delete(agentType);
       if (groups.size === 0) {
         this.sessionsByParent.delete(parentSessionId);
-        this.nextAliasIndexByParent.delete(parentSessionId);
+        // Alias counters intentionally survive here: only clearParent()
+        // resets them. Recycling `exp-1` for an unrelated child would make
+        // a stale alias from an earlier message point somewhere new.
       }
       return;
     }
@@ -384,7 +394,17 @@ function formatContextFiles(
   const shown = eligible.slice(0, options.maxFiles);
   const rest = eligible.length - shown.length;
   const rendered = shown.map(
-    (file) => `${file.path} (${file.lineCount} lines)`,
+    (file) => `${promptValue(file.path)} (${file.lineCount} lines)`,
   );
   return `${rendered.join(', ')}${rest > 0 ? ` (+${rest} more)` : ''}`;
+}
+
+/**
+ * Readable, single-line rendering of untrusted prompt data. Filenames and
+ * labels come from tool output, so a value carrying control characters,
+ * quotes, or angle brackets is JSON-encoded instead of being able to inject a
+ * new prompt line or instruction.
+ */
+function promptValue(value: string): string {
+  return isSafePromptValue(value) ? value : JSON.stringify(value);
 }

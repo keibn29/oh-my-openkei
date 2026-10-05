@@ -33,13 +33,19 @@ When a child task runs, the plugin remembers it under a short alias such as:
 ```text
 exp-1
 ora-1
-fix-2
+fed-2
 ```
 
 The primary agent sees a compact reminder in its system context, for example:
 
 ```text
 ### Resumable Sessions
+Child sessions you already ran in this conversation. Reuse is always explicit:
+- Continue the same thread: call `task` again with the SAME subagent_type and task_id="<alias>".
+- New or unrelated topic: OMIT task_id so a fresh child session is created.
+- If several aliases fit, use the most recently used one for that specialist.
+- Never reuse an alias blindly; an alias that is unknown or evicted fails the call.
+
 - explorer: exp-1 Search routing files
   Context read by exp-1: src/router.ts (120 lines), src/routes/api.ts (74 lines)
 - oracle: ora-1 Review auth architecture
@@ -53,11 +59,29 @@ To keep the prompt small, read context only shows files where at least 10 lines
 were read, includes line counts, and caps each remembered session to the most
 recent 8 files by default. Both thresholds are configurable.
 
-On a related follow-up, the orchestrator can reuse that session instead of
-launching a fresh one. If the remembered child session no longer exists, the
-plugin drops the stale entry and falls back to a new session automatically.
+## Reuse Is Always Explicit
 
----
+The plugin never reuses a child session on its own. Every delegation either
+carries an alias or does not:
+
+| What the agent sends | What happens |
+|---|---|
+| `subagent_type: explorer, task_id: "exp-1"` | Continues the child session behind `exp-1` |
+| `subagent_type: explorer` (no `task_id`) | Starts a brand-new child session |
+| `task_id: "exp-9"` (unknown, evicted, or from another session/agent) | The plugin rejects the call with an error naming the aliases that *are* available |
+
+The rejection happens in the plugin, before the call runs, so the unknown alias
+never falls back to a silent fresh child. How the host surfaces a thrown tool
+error to the model has not been verified against the host, so treat the model-
+visible form of that error as unconfirmed.
+
+So a follow-up question about the same file keeps the specialist's context, and
+an unrelated request always starts clean. Aliases stay valid for the whole
+conversation, including across many user messages.
+
+If the referenced child session no longer exists, the plugin drops the stale
+entry, so the next call simply starts fresh. A cancelled or failed task is *not*
+treated as a deletion, so the alias survives and the same thread can be retried.
 
 ## Scope and Safety
 
@@ -65,15 +89,47 @@ Session management is intentionally narrow:
 
 - It only applies to primary-agent-managed `task` delegations (Orchestrator, Planner, or Sprinter).
 - It is scoped to the current parent orchestrator session.
-- It is in-memory only and disappears when OpenCode/plugin state restarts.
+- It is in-memory only: nothing is written to disk, and nothing survives an
+  OpenCode or plugin restart. After a restart the agent starts a fresh child.
+- Aliases last until the parent session is deleted, the child is deleted, or
+  the entry is pushed out of the per-specialist window.
 - It does not change manual `@agent` calls.
 - It keeps only a small number of recent sessions per specialist type.
-- Missing or deleted child sessions are cleaned up automatically.
+- Deleted child sessions are cleaned up automatically, and a delegation that is
+  still running when its child is deleted is invalidated so the late result
+  cannot register an alias.
 - Read context is best-effort and tracks normal OpenCode `read` tool usage, not
   arbitrary filesystem access through shell commands or external MCP tools.
 
 This keeps the feature useful for continuity without turning child sessions into
 long-lived global state.
+
+### Known Limits
+
+- The child session ID is read from the host's task result (metadata
+  `sessionId`, the `<task id="..." state="completed">` envelope, or a leading
+  legacy `task_id:` header). A host that reports none of these yields no
+  alias for that call.
+- Deleted ids are remembered in a bounded window (the most recent 200). A
+  fresh delegation whose result arrives after more than 200 other sessions were
+  deleted can therefore still register an alias for an already-deleted child.
+  In-flight resumes of a deleted child are invalidated directly and are not
+  subject to this window.
+- Child sessions are tracked through the host's `session.created` event, which
+  does not report the originating call. A child is therefore tracked only while
+  its parent has a `task` call in flight; a child created outside a delegation,
+  or reads that happen after every call of its parent finished, are not tracked.
+- Only explicit references are accepted: a raw child ID works when the plugin
+  already remembers it for that parent and agent.
+- Tracking is released from a tool result, not from the tool itself: OpenCode
+  awaits the native `task` item and only then runs `after`, with no `finally`,
+  so an execution that throws never produces a result. Its pending entry, the
+  provisional child markers, and any read context stay in place until the same
+  `callID` is recorded again, the entry is evicted from the bounded pending
+  window, the relevant session is deleted, or the plugin restarts. While such a
+  stranded call exists its parent keeps being treated as having a delegation in
+  flight, which is conservative: children and read context are retained rather
+  than cleared.
 
 ---
 
