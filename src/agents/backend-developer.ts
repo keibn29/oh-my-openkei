@@ -1,5 +1,6 @@
 import type { AgentDefinition } from './orchestrator';
 import {
+  ENGLISH_COMMENTS_RULE,
   SHARED_SUBAGENT_PROMPT_FRAGMENTS,
   SUBAGENT_SKILL_REQUIREMENT,
 } from './shared-agent-content';
@@ -75,7 +76,7 @@ export function createBackendDeveloperAgent(
     config: {
       model,
       temperature: 0.2,
-      prompt: `${prompt}\n\n${SUBAGENT_SKILL_REQUIREMENT}\n\n${SHARED_SUBAGENT_PROMPT_FRAGMENTS}`,
+      prompt: `${prompt}\n\n${SUBAGENT_SKILL_REQUIREMENT}\n\n${SHARED_SUBAGENT_PROMPT_FRAGMENTS}\n\n${ENGLISH_COMMENTS_RULE}`,
     },
   };
 }

@@ -15,8 +15,6 @@ export const SUBAGENT_NAMES = [
   'backend-developer',
   'trigger-developer',
   'observer',
-  'council',
-  'councillor',
 ] as const;
 
 export const ORCHESTRATOR_NAME = 'orchestrator' as const;
@@ -62,6 +60,16 @@ export const ALL_AGENT_NAMES = [
   ...SUBAGENT_NAMES,
 ] as const;
 
+/**
+ * Agent names that were removed from the runtime. Their keys are still
+ * tolerated in existing user config (agents/presets/fallback chains) but must
+ * never be instantiated as agents nor advertised as delegatable specialists.
+ */
+export const RETIRED_AGENT_NAMES: ReadonlySet<string> = new Set([
+  'council',
+  'councillor',
+]);
+
 // Agent name type (for use in DEFAULT_MODELS)
 export type AgentName = (typeof ALL_AGENT_NAMES)[number];
 
@@ -73,7 +81,6 @@ export type AgentName = (typeof ALL_AGENT_NAMES)[number];
 // explorer/librarian/oracle: cannot spawn any subagents (leaf nodes)
 // Unknown agent types not listed here default to explorer-only access
 // Which agents each agent type can spawn via delegation.
-// councillor is internal — only CouncilManager spawns it.
 export const ORCHESTRATABLE_AGENTS = [
   'debugger',
   'explorer',
@@ -84,11 +91,10 @@ export const ORCHESTRATABLE_AGENTS = [
   'backend-developer',
   'trigger-developer',
   'observer',
-  'council',
 ] as const;
 
 /** Agents that cannot be disabled even if listed in disabled_agents config. */
-export const PROTECTED_AGENTS = new Set(['orchestrator', 'councillor']);
+export const PROTECTED_AGENTS = new Set(['orchestrator']);
 
 /**
  * Get the list of orchestratable agents, excluding any disabled agents.
@@ -114,8 +120,6 @@ export const SUBAGENT_DELEGATION_RULES: Record<AgentName, readonly string[]> = {
   librarian: [],
   oracle: [],
   observer: [],
-  council: [],
-  councillor: [],
 };
 
 // Default models for each agent
@@ -136,8 +140,6 @@ export const DEFAULT_MODELS: Record<AgentName, string | undefined> = {
   'backend-developer': 'openai/gpt-5.4-mini',
   'trigger-developer': 'openai/gpt-5.4-mini',
   observer: 'openai/gpt-5.4-mini',
-  council: 'openai/gpt-5.4-mini',
-  councillor: 'openai/gpt-5.4-mini',
 };
 
 // Polling configuration

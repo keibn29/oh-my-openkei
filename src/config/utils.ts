@@ -1,4 +1,8 @@
-import { AGENT_ALIASES, ALL_AGENT_NAMES } from './constants';
+import {
+  AGENT_ALIASES,
+  ALL_AGENT_NAMES,
+  RETIRED_AGENT_NAMES,
+} from './constants';
 import type { AgentOverrideConfig, PluginConfig } from './schema';
 
 /**
@@ -43,7 +47,9 @@ export function getAgentOverride(
  * Get custom agent names declared in config.agents.
  *
  * Custom agents are unknown keys that are neither built-in agent names nor
- * legacy aliases.
+ * legacy aliases. Retired agent names are excluded too, so a leftover
+ * retired entry (e.g. `council`, `councillor`) in an existing config never
+ * resurrects the removed agent as a custom one.
  */
 export function getCustomAgentNames(
   config: PluginConfig | undefined,
@@ -51,6 +57,10 @@ export function getCustomAgentNames(
   const overrides = config?.agents ?? {};
   return Object.keys(overrides).filter((name) => {
     if (AGENT_ALIASES[name] !== undefined) {
+      return false;
+    }
+
+    if (RETIRED_AGENT_NAMES.has(name)) {
       return false;
     }
 

@@ -19,7 +19,7 @@ Responsibilities:
 
 1. Compute the disabled set via `getDisabledAgents()`:
    - from `config.disabled_agents`
-   - with protected-agent guard (`orchestrator`, `councillor` never disabled)
+   - with protected-agent guard (`orchestrator` never disabled)
    - Note: `planner` is NOT protected — it can be disabled by the user.
 2. Build built-in subagents from `SUBAGENT_FACTORIES` (`SUBAGENT_NAMES`).
 3. Discover custom agent names from `config.agents` keys that are not built-ins
@@ -36,8 +36,6 @@ Responsibilities:
 7. Apply permission defaults per agent (`applyDefaultPermissions`).
 8. Apply compatibility fallbacks:
    - `frontend-developer` / `backend-developer` may inherit `librarian` model when not explicitly configured.
-   - `council` may inherit deprecated `council.master.model` when no explicit
-     `council` override and default remains unresolved.
 9. Build orchestrator using prompt files + disabled-agent filtering.
 10. Build planner (if not disabled) using the same pattern as orchestrator.
 11. Normalize/collect display names and inject `@displayName` references into:
@@ -59,8 +57,6 @@ Responsibilities:
   - `orchestrator` → `mode: primary`
   - `planner` → `mode: primary`
   - built-in specialists → `mode: subagent`
-  - `council` → `mode: all`
-  - `councillor` → `mode: subagent`, `hidden: true`
 - If `displayName` is set:
   - internal key remains registered but hidden
   - host-facing key becomes normalized display name
@@ -68,7 +64,6 @@ Responsibilities:
 Permission defaults:
 
 - `question` defaults to `allow` unless existing explicit deny.
-- `council_session` defaults to `allow` only for `council`.
 - Nested `skill` permissions come from `getSkillPermissionsForAgent` and are
   merged with existing permission maps.
 
@@ -108,6 +103,5 @@ src/index.ts
 - `orchestrator.ts` (delegation-first prompt: ALWAYS delegate substantive work; direct action only for integration/verification or when subagent "Don't delegate when" rule applies)
 - `planner.ts` (interview-first prompt: delegates exploration/research to specialists; produces structured `<planner-plan>` output)
 - `shared-agent-content.ts` (shared specialist catalog, communication rules, rendering helpers)
-- `council.ts`, `councillor.ts` (council tool orchestration + formatting)
 - `explorer.ts`, `librarian.ts`, `oracle.ts`, `designer.ts`, `frontend-developer.ts`, `backend-developer.ts`,
   `observer.ts` (specialist factory prompts/config)

@@ -166,7 +166,6 @@ export function loadPluginConfig(directory: string): PluginConfig {
         projectConfig.sessionManager,
       ),
       fallback: deepMerge(config.fallback, projectConfig.fallback),
-      council: deepMerge(config.council, projectConfig.council),
     };
   }
 

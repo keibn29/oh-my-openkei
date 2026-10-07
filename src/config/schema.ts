@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { AGENT_ALIASES, ALL_AGENT_NAMES } from './constants';
-import { CouncilConfigSchema } from './council-schema';
 
 const MANUAL_AGENT_NAMES = [
   'orchestrator',
@@ -319,14 +318,13 @@ export const PluginConfigSchema = z
       .describe(
         'Agent names to disable completely. ' +
           'Disabled agents are not instantiated and cannot be delegated to. ' +
-          'Orchestrator and council internal agents (councillor) cannot be disabled. ' +
+          'The orchestrator cannot be disabled. ' +
           "By default, 'observer' is disabled. Remove it from this list and configure a vision-capable model to enable.",
       ),
     disabled_mcps: z.array(z.string()).optional(),
     websearch: WebsearchConfigSchema.optional(),
     sessionManager: SessionManagerConfigSchema.optional(),
     fallback: FailoverConfigSchema.optional(),
-    council: CouncilConfigSchema.optional(),
   })
   .superRefine((value, ctx) => {
     if (value.agents) {

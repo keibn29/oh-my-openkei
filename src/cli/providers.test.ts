@@ -10,7 +10,6 @@ describe('providers', () => {
     expect(keys).toContain('planner');
     expect(keys).toContain('sprinter');
     expect(keys).toContain('oracle');
-    expect(keys).toContain('council');
     expect(keys).toContain('librarian');
     expect(keys).toContain('explorer');
     expect(keys).toContain('designer');
@@ -18,6 +17,8 @@ describe('providers', () => {
     expect(keys).toContain('backend-developer');
     expect(keys).toContain('trigger-developer');
     expect(keys).toContain('business-analyst');
+    // Retired agents must not be shipped in the install preset
+    expect(keys).not.toContain('council');
     // Each entry has model and optional variant
     for (const entry of Object.values(MODEL_MAPPINGS)) {
       expect(typeof entry.model).toBe('string');
@@ -48,8 +49,6 @@ describe('providers', () => {
     expect(agents.sprinter.skills).toEqual(['*']);
     expect(agents.oracle.model).toBe('openai/gpt-5.5-fast');
     expect(agents.oracle.variant).toBe('high');
-    expect(agents.council.model).toBe('openai/gpt-5.4-fast');
-    expect(agents.council.variant).toBe('xhigh');
     expect(agents.librarian.model).toBe('minimax-coding-plan/MiniMax-M2.7');
     expect(agents.librarian.variant).toBeUndefined();
     expect(agents.explorer.model).toBe('minimax-coding-plan/MiniMax-M2.7');
@@ -88,8 +87,6 @@ describe('providers', () => {
     expect(agents.sprinter.variant).toBe('low');
     expect(agents.oracle.model).toBe('openai/gpt-5.5-fast');
     expect(agents.oracle.variant).toBe('high');
-    expect(agents.council.model).toBe('openai/gpt-5.4-fast');
-    expect(agents.council.variant).toBe('xhigh');
     expect(agents.librarian.model).toBe('minimax-coding-plan/MiniMax-M2.7');
     expect(agents.explorer.model).toBe('minimax-coding-plan/MiniMax-M2.7');
     expect(agents.designer.model).toBe('opencode-go/kimi-k2.6');

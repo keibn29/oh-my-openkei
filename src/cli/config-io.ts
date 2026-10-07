@@ -279,7 +279,6 @@ export function writeLiteConfig(
 const DEFAULT_AGENT_COLORS: Record<string, string> = {
   orchestrator: 'success',
   planner: 'primary',
-  council: 'info',
   'business-analyst': 'warning',
   sprinter: 'error',
 };

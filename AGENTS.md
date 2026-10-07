@@ -68,11 +68,10 @@ oh-my-openkei/
 │   ├── agents/       # Agent factories (orchestrator, explorer, oracle, etc.)
 │   ├── cli/          # CLI entry point
 │   ├── config/       # Constants, schemas, MCP defaults
-│   ├── council/      # Council manager (multi-LLM session orchestration)
 │   ├── hooks/        # OpenCode lifecycle hooks
 │   ├── mcp/          # MCP server definitions
 │   ├── skills/       # Skill definitions (included in package publish)
-│   ├── tools/        # Tool definitions (council, webfetch, AST-grep, etc.)
+│   ├── tools/        # Tool definitions (webfetch, AST-grep, etc.)
 │   └── utils/        # Shared utilities (logging, env, session helpers)
 ├── dist/             # Built JavaScript and declarations
 ├── docs/             # User-facing documentation
@@ -172,7 +171,6 @@ OpenCode has a built-in `/review` command that automatically performs comprehens
 - The main plugin export is `src/index.ts`
 - Agent factories are in `src/agents/` — each agent has its own file + optional `.test.ts`
 - Skills are located in `src/skills/` (included in package publish)
-- Council manager (multi-LLM orchestration) is in `src/council/`
 - 468 tests across 35 files — run `bun test` to verify
 
 ## Repository Map

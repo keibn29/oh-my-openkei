@@ -38,11 +38,6 @@ This preset configures all agents to use the same model:
         "skills": [],
         "mcps": []
       },
-      "council": {
-        "model": "minimax-coding-plan/MiniMax-M2.7",
-        "skills": [],
-        "mcps": []
-      },
       "librarian": {
         "model": "minimax-coding-plan/MiniMax-M2.7",
         "skills": [],

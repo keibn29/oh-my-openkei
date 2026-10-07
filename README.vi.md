@@ -114,12 +114,6 @@ Cấu hình mặc định được tạo ra:
         "skills": [],
         "mcps": []
       },
-      "council": {
-        "model": "openai/gpt-5.4-fast",
-        "variant": "xhigh",
-        "skills": [],
-        "mcps": []
-      },
       "librarian": {
         "model": "minimax-coding-plan/MiniMax-M2.7",
         "skills": [],
@@ -198,13 +192,12 @@ Nếu bất kỳ agent nào không phản hồi, hãy kiểm tra xác thực nh�
 
 #### Luồng Định Tuyến
 
-- **Orchestrator** có thể phân công cho `debugger`, `explorer`, `librarian`, `oracle`, `designer`, `frontend-developer`, `backend-developer`, `observer` và `council`.
+- **Orchestrator** có thể phân công cho `debugger`, `explorer`, `librarian`, `oracle`, `designer`, `frontend-developer`, `backend-developer` và `observer`.
 - **Planner** chỉ lập kế hoạch và chỉ có thể phân công cho `explorer`, `librarian`, `oracle` và `designer`.
 - **Sprinter** tự thực thi và không phân công.
 - **Business Analyst** có thể phân công nghiên cứu cho `explorer`, `librarian` và `oracle`.
 - **Specialists** là những người thực thi lá cây: sau khi được phân công, họ thực hiện công việc có giới hạn và trả kết quả về.
 - **Observer** bị vô hiệu hóa theo mặc định cho đến khi bạn bật nó một cách rõ ràng trong cấu hình.
-- **Council** có sẵn, nhưng được thiết kế đắt đỏ một cách có chủ ý và được giữ trên một lộ trình nghiêm ngặt hơn so với phân công thông thường.
 
 #### Orchestrator
 
@@ -303,17 +296,6 @@ Các agent sau đây được phân công bởi các primary agent dựa trên l
 **Mô hình đề xuất:** `cerebras/zai-glm-4.7`, `fireworks-ai/accounts/fireworks/routers/kimi-k2p5-turbo`, `openai/gpt-5.4-mini`  
 **Hướng dẫn chọn model:** Chọn một model lập trình nhanh, đáng tin cậy cho các tác vụ backend thông thường. Nhận các tác vụ phía máy chủ có giới hạn từ Orchestrator như triển khai API, công việc cơ sở dữ liệu và thay đổi logic dịch vụ.
 
-#### Council
-
-> [!NOTE] > **Tại sao Orchestrator không tự động gọi Council thường xuyên hơn?** Điều này là có chủ ý. Council chạy nhiều model cùng một lúc, vì vậy việc phân công tự động được giữ ở mức hạn chế vì đây thường là đường dẫn có chi phí cao nhất trong hệ thống. Trong thực tế, Council được thiết kế để sử dụng thủ công khi bạn muốn, ví dụ: `@council compare these two architectures`.
-
-**Vai trò:** Đồng thuận và tổng hợp đa LLM  
-**Prompt:** [council.ts](src/agents/council.ts)  
-**Hướng dẫn:** [docs/council.md](docs/council.md)  
-**Thiết lập mặc định:** Theo cấu hình — các councillor đến từ `council.presets` và model Council agent đến từ cấu hình `council` thông thường của bạn  
-**Thiết lập đề xuất:** Mô hình Council mạnh + các councillor đa dạng từ nhiều nhà cung cấp  
-**Hướng dẫn chọn model:** Sử dụng một model tổng hợp mạnh cho Council agent và các model đa dạng làm councillor. Giá trị của Council đến từ việc so sánh các góc nhìn model khác nhau, không chỉ chọn một model mạnh nhất duy nhất ở mọi nơi.
-
 #### Observer
 
 > [!NOTE] > **Tại sao lại là một agent riêng?** Nếu model Orchestrator của bạn không phải là đa phương thức, hãy bật Observer để xử lý hình ảnh, ảnh chụp màn hình, PDF và các tệp trực quan khác. Observer bị vô hiệu hóa theo mặc định và cung cấp cho Orchestrator một trình đọc đa phương thức chuyên dụng mà không buộc bạn phải thay đổi model suy luận chính. Đặt `disabled_agents: []` và một model `observer` trong cấu hình của bạn.
@@ -347,7 +329,6 @@ Sử dụng phần này như một bản đồ: bắt đầu với cài đặt, 
 
 | Tài liệu                                             | Nội dung bao gồm                                                               |
 | ---------------------------------------------------- | ------------------------------------------------------------------------------ |
-| **[Council](docs/council.md)**                       | Chạy nhiều model song song và tổng hợp một câu trả lời duy nhất với `@council` |
 | **[Session Management](docs/session-management.md)** | Tái sử dụng phiên agent con một cách tường minh bằng `task_id`/bí danh, hoặc tạo phiên mới khi bỏ trống `task_id` |
 | **[Codemap](docs/codemap.md)**                       | Tạo bản đồ phân cấp codemap để hiểu cơ sở mã nguồn lớn nhanh hơn               |
 

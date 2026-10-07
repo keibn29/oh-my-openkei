@@ -29,7 +29,7 @@ export function resolvePrompt(
   return base;
 }
 
-// Which specialists the orchestrator can delegate to (all except councillor)
+// Which specialists the orchestrator can delegate to
 const ORCHESTRATOR_DELEGATE_SET = [
   'debugger',
   'explorer',
@@ -40,7 +40,6 @@ const ORCHESTRATOR_DELEGATE_SET = [
   'backend-developer',
   'trigger-developer',
   'observer',
-  'council',
 ] as const;
 
 // Validation routing lines that reference agents

@@ -9,7 +9,7 @@ Complete reference for all configuration files and options in oh-my-openkei.
 | File | Purpose |
 |------|---------|
 | `~/.config/opencode/opencode.json` | OpenCode core settings (plugin registration, providers) |
-| `~/.config/opencode/oh-my-openkei.json` | Plugin settings — agents, MCPs, council |
+| `~/.config/opencode/oh-my-openkei.json` | Plugin settings — agents, MCPs |
 | `~/.config/opencode/oh-my-openkei.jsonc` | Same, but with JSONC (comments + trailing commas). Takes precedence over `.json` if both exist |
 | `.opencode/oh-my-openkei.json` | Project-local overrides (optional, checked first) |
 
@@ -102,22 +102,6 @@ All config files support **JSONC** (JSON with Comments):
 | `fallback.retryDelayMs` | number | `500` | Delay between retry attempts |
 | `fallback.chains.<agent>` | string[] | — | Ordered fallback model IDs for an agent |
 | `fallback.retry_on_empty` | boolean | `true` | Treat silent empty provider responses (0 tokens) as failures and retry. Set `false` to accept empty responses |
-| `council.presets` | object | — | **Required if using council.** Named councillor presets |
-| `council.presets.<name>.<councillor>.model` | string | — | Councillor model |
-| `council.presets.<name>.<councillor>.variant` | string | — | Councillor variant |
-| `council.presets.<name>.<councillor>.prompt` | string | — | Optional role guidance for the councillor |
-| `council.default_preset` | string | `"default"` | Default preset when none is specified |
-| `council.timeout` | number | `180000` | Per-councillor timeout (ms) |
-| `council.councillor_execution_mode` | string | `"parallel"` | Run councillors in `parallel` or `serial`; use `serial` for single-model setups |
-| `council.councillor_retries` | number | `3` | Max retries per councillor on empty provider response (0–5) |
-
-### Council configuration note
-
-- The **Council agent model** is configured like any other agent, for example in
-  `presets.<name>.council.model`.
-- The **councillor models** are configured separately under
-  `council.presets.<name>.<councillor>.model`.
-- Deprecated `council.master*` fields should not be used in new configs.
 
 ### Startup Toast
 

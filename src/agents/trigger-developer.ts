@@ -1,5 +1,8 @@
 import type { AgentDefinition } from './orchestrator';
-import { SHARED_SUBAGENT_PROMPT_FRAGMENTS } from './shared-agent-content';
+import {
+  ENGLISH_COMMENTS_RULE,
+  SHARED_SUBAGENT_PROMPT_FRAGMENTS,
+} from './shared-agent-content';
 
 const TRIGGER_DEVELOPER_PROMPT = `You are Trigger.dev Developer — a fast, focused implementation specialist for Trigger.dev code and tasks.
 
@@ -72,7 +75,7 @@ export function createTriggerDeveloperAgent(
     config: {
       model,
       temperature: 0.2,
-      prompt: `${prompt}\n\n${SHARED_SUBAGENT_PROMPT_FRAGMENTS}`,
+      prompt: `${prompt}\n\n${SHARED_SUBAGENT_PROMPT_FRAGMENTS}\n\n${ENGLISH_COMMENTS_RULE}`,
     },
   };
 }

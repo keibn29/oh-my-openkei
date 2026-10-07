@@ -2,7 +2,6 @@ import { describe, expect, test } from 'bun:test';
 import type { PluginConfig } from '../config';
 import {
   AgentOverrideConfigSchema,
-  CouncilConfigSchema,
   DEFAULT_DISABLED_AGENTS,
   DEFAULT_MODELS,
   PluginConfigSchema,
@@ -316,14 +315,6 @@ describe('orchestrator agent', () => {
     expect((orchestrator?.config.permission as any).question).toBe('allow');
   });
 
-  test('orchestrator is denied access to council_session', () => {
-    const agents = createAgents();
-    const orchestrator = agents.find((a) => a.name === 'orchestrator');
-    expect((orchestrator?.config.permission as any).council_session).toBe(
-      'deny',
-    );
-  });
-
   test('orchestrator accepts overrides', () => {
     const config: PluginConfig = {
       agents: {
@@ -439,12 +430,6 @@ describe('planner agent', () => {
     const planner = agents.find((a) => a.name === 'planner');
     expect(planner?.config.permission).toBeDefined();
     expect((planner?.config.permission as any).question).toBe('allow');
-  });
-
-  test('planner is denied access to council_session', () => {
-    const agents = createAgents();
-    const planner = agents.find((a) => a.name === 'planner');
-    expect((planner?.config.permission as any).council_session).toBe('deny');
   });
 
   test('planner accepts overrides', () => {
@@ -567,12 +552,6 @@ describe('sprinter agent', () => {
     expect((sprinter?.config.permission as any).question).toBe('allow');
   });
 
-  test('sprinter is denied access to council_session', () => {
-    const agents = createAgents();
-    const sprinter = agents.find((a) => a.name === 'sprinter');
-    expect((sprinter?.config.permission as any).council_session).toBe('deny');
-  });
-
   test('sprinter gets wildcard skill permission by default', () => {
     const agents = createAgents();
     const sprinter = agents.find((a) => a.name === 'sprinter');
@@ -649,7 +628,7 @@ describe('planner delegation scope', () => {
     expect(specialistsSection).toContain('@oracle\n- Role:');
     expect(specialistsSection).toContain('@designer\n- Role:');
 
-    // Execution/council agents must NOT appear as specialist blocks
+    // Execution agents and retired names must NOT appear as specialist blocks
     expect(specialistsSection).not.toContain('@frontend-developer\n- Role:');
     expect(specialistsSection).not.toContain('@backend-developer\n- Role:');
     expect(specialistsSection).not.toContain('@council\n- Role:');
@@ -838,6 +817,14 @@ describe('developer agent skills in prompt', () => {
     expect(frontend.config.prompt).toContain('they are MANDATORY');
   });
 
+  test('backend-developer custom prompt still includes the appended skill requirement', () => {
+    const backend = createBackendDeveloperAgent(
+      'test/model',
+      'Custom backend prompt',
+    );
+    expect(backend.config.prompt).toContain('they are MANDATORY');
+  });
+
   test('business-analyst prompt uses custom skill-loading instruction', () => {
     const agents = createAgents();
     const ba = agents.find((a) => a.name === 'business-analyst');
@@ -903,38 +890,42 @@ describe('developer agent skills in prompt', () => {
     expect(prompt).toContain('write the final structured analysis document');
   });
 
-  test('backend-developer custom prompt still includes the appended skill requirement', () => {
+  test('developer prompts require English code comments', () => {
+    const agents = createAgents();
+    for (const name of [
+      'frontend-developer',
+      'backend-developer',
+      'trigger-developer',
+    ]) {
+      const prompt = agents.find((a) => a.name === name)?.config
+        .prompt as string;
+      expect(prompt).toContain(
+        'Write all code comments you add or modify in English, regardless of the conversation language.',
+      );
+    }
+  });
+
+  test('English comment rule survives a custom prompt override', () => {
     const backend = createBackendDeveloperAgent(
       'test/model',
       'Custom backend prompt',
     );
-    expect(backend.config.prompt).toContain('they are MANDATORY');
+    expect(backend.config.prompt).toContain(
+      'Write all code comments you add or modify in English, regardless of the conversation language.',
+    );
   });
 });
 
 describe('tool permissions', () => {
-  test('council agent is allowed to invoke council_session', () => {
+  test('no agent is granted the removed council_session tool', () => {
     const agents = createAgents();
-    const council = agents.find((a) => a.name === 'council');
-    expect((council?.config.permission as any).council_session).toBe('allow');
-  });
-
-  test('oracle is denied access to council_session', () => {
-    const agents = createAgents();
-    const oracle = agents.find((a) => a.name === 'oracle');
-    expect((oracle?.config.permission as any).council_session).toBe('deny');
-  });
-
-  test('explorer is denied access to council_session', () => {
-    const agents = createAgents();
-    const explorer = agents.find((a) => a.name === 'explorer');
-    expect((explorer?.config.permission as any).council_session).toBe('deny');
-  });
-
-  test('councillor is denied access to council_session', () => {
-    const agents = createAgents();
-    const councillor = agents.find((a) => a.name === 'councillor');
-    expect((councillor?.config.permission as any).council_session).toBe('deny');
+    for (const agent of agents) {
+      const permission = (agent.config.permission ?? {}) as Record<
+        string,
+        unknown
+      >;
+      expect(permission.council_session).toBeUndefined();
+    }
   });
 });
 
@@ -945,7 +936,6 @@ describe('permission profiles', () => {
     'oracle',
     'observer',
     'librarian',
-    'council',
   ];
   const CAN_EDIT_NAMES = [
     'orchestrator',
@@ -1016,23 +1006,6 @@ describe('permission profiles', () => {
     expect(permission['*']).toBeUndefined();
   });
 
-  test('councillor maintains its own wildcard-deny permission profile', () => {
-    const agents = createAgents();
-    const councillor = agents.find((a) => a.name === 'councillor');
-    expect(councillor).toBeDefined();
-    const permission = councillor?.config.permission as Record<string, unknown>;
-    // Councillor has its own '*': 'deny' set at the factory level
-    expect(permission['*']).toBe('deny');
-    // Question is explicitly denied for councillor
-    expect(permission.question).toBe('deny');
-    // Read-only tools are explicitly allowed
-    expect(permission.read).toBe('allow');
-    expect(permission.glob).toBe('allow');
-    expect(permission.grep).toBe('allow');
-    // Edit is implicitly covered by '*': 'deny'
-    expect(permission.edit).toBeUndefined();
-  });
-
   test('read-only agents still have question permission set to allow', () => {
     const agents = createAgents({ disabled_agents: [] });
     for (const name of READ_ONLY_NAMES) {
@@ -1041,16 +1014,6 @@ describe('permission profiles', () => {
       const permission = agent?.config.permission as Record<string, unknown>;
       expect(permission.question).toBe('allow');
     }
-  });
-
-  test('council retains council_session permission explicitly', () => {
-    const agents = createAgents({ disabled_agents: [] });
-    const council = agents.find((a) => a.name === 'council');
-    expect(council).toBeDefined();
-    const permission = council?.config.permission as Record<string, unknown>;
-    // Even with '*': 'deny', council_session is explicitly allowed
-    expect(permission['*']).toBe('deny');
-    expect(permission.council_session).toBe('allow');
   });
 
   test('read-only agents have ast_grep_search allowed for structural search', () => {
@@ -1120,13 +1083,12 @@ describe('agent classification', () => {
 
     // Subagents
     for (const name of SUBAGENT_NAMES) {
-      // Council is a dual-mode agent ("all"), rest are subagents
-      if (name === 'council') {
-        expect(configs[name].mode).toBe('all');
-      } else {
-        expect(configs[name].mode).toBe('subagent');
-      }
+      expect(configs[name].mode).toBe('subagent');
     }
+
+    // Retired agents are gone entirely
+    expect(configs.council).toBeUndefined();
+    expect(configs.councillor).toBeUndefined();
   });
 });
 
@@ -1146,9 +1108,9 @@ describe('createAgents', () => {
     expect(names).toContain('trigger-developer');
   });
 
-  test('creates exactly 14 agents by default (4 primary + 10 subagents, observer disabled)', () => {
+  test('creates exactly 12 agents by default (4 primary + 8 subagents, observer disabled)', () => {
     const agents = createAgents();
-    expect(agents.length).toBe(14);
+    expect(agents.length).toBe(12);
   });
 });
 
@@ -1169,101 +1131,48 @@ describe('getAgentConfigs', () => {
   });
 });
 
-describe('council agent model resolution', () => {
-  test('council agent uses default model', () => {
-    const agents = createAgents();
-    const council = agents.find((a) => a.name === 'council');
-    expect(council?.config.model).toBe(DEFAULT_MODELS.council);
+describe('retired agents', () => {
+  test('council and councillor are not instantiated', () => {
+    const names = createAgents({ disabled_agents: [] }).map((a) => a.name);
+    expect(names).not.toContain('council');
+    expect(names).not.toContain('councillor');
   });
 
-  test('councillor agent uses default model', () => {
-    const agents = createAgents();
-    const councillor = agents.find((a) => a.name === 'councillor');
-    expect(councillor?.config.model).toBe(DEFAULT_MODELS.councillor);
-  });
-
-  test('council falls back to legacy master.model when no preset override', () => {
-    // Simulates a pre-1.0.0 config with council.master.model but no council
-    // entry in the agent preset — the exact scenario from issue #369.
+  test('leftover config keys do not resurrect retired agents', () => {
     const config: PluginConfig = {
+      disabled_agents: [],
       agents: {
-        oracle: { model: 'openai/gpt-5.5' },
-      },
-      council: {
-        presets: {
-          default: {
-            alpha: { model: 'openai/gpt-5.4-mini' },
-          },
-        },
-        _legacyMasterModel: 'anthropic/claude-opus-4-6',
+        council: { model: 'openai/gpt-5.4-mini' },
+        councillor: { model: 'openai/gpt-5.4-mini' },
       },
     };
-    const agents = createAgents(config);
-    const council = agents.find((a) => a.name === 'council');
-    expect(council?.config.model).toBe('anthropic/claude-opus-4-6');
+    const names = createAgents(config).map((a) => a.name);
+    expect(names).not.toContain('council');
+    expect(names).not.toContain('councillor');
+    // An unrelated custom agent is still discovered
+    expect(
+      getEnabledAgentNames({
+        ...config,
+        agents: { ...config.agents, auditor: { model: 'openai/gpt-5.4-mini' } },
+      }),
+    ).toContain('auditor');
   });
 
-  test('council preset override takes precedence over legacy master.model', () => {
-    // If user has explicit council in preset, that wins — legacy is ignored.
+  test('business-analyst is restored and its old config overrides still apply', () => {
     const config: PluginConfig = {
+      disabled_agents: [],
       agents: {
-        council: { model: 'google/gemini-3-pro' },
-      },
-      council: {
-        presets: {
-          default: {
-            alpha: { model: 'openai/gpt-5.4-mini' },
-          },
-        },
-        _legacyMasterModel: 'anthropic/claude-opus-4-6',
-      },
-    };
-    const agents = createAgents(config);
-    const council = agents.find((a) => a.name === 'council');
-    expect(council?.config.model).toBe('google/gemini-3-pro');
-  });
-
-  test('council uses default when no legacy master and no preset override', () => {
-    // No legacy master, no preset override → standard default
-    const config: PluginConfig = {
-      council: {
-        presets: {
-          default: {
-            alpha: { model: 'openai/gpt-5.4-mini' },
-          },
+        'business-analyst': {
+          model: 'openai/gpt-5.5',
+          temperature: 0.4,
         },
       },
     };
-    const agents = createAgents(config);
-    const council = agents.find((a) => a.name === 'council');
-    expect(council?.config.model).toBe(DEFAULT_MODELS.council);
-  });
-
-  test('end-to-end: raw master.model config flows through schema to council agent', () => {
-    // Integration test: start from raw user config with deprecated master.model,
-    // parse through CouncilConfigSchema, then pass to createAgents.
-    // This validates the full seam between schema transform and agent resolution.
-    const rawCouncilConfig = {
-      master: { model: 'anthropic/claude-opus-4-6' },
-      presets: {
-        default: {
-          alpha: { model: 'openai/gpt-5.4-mini' },
-        },
-      },
-    };
-
-    const parsed = CouncilConfigSchema.safeParse(rawCouncilConfig);
-    expect(parsed.success).toBe(true);
-
-    if (parsed.success) {
-      const config: PluginConfig = {
-        council: parsed.data,
-      };
-      const agents = createAgents(config);
-      const council = agents.find((a) => a.name === 'council');
-      // Legacy master.model should flow through schema → agent
-      expect(council?.config.model).toBe('anthropic/claude-opus-4-6');
-    }
+    const ba = createAgents(config).find((a) => a.name === 'business-analyst');
+    expect(ba).toBeDefined();
+    expect(ba?.config.model).toBe('openai/gpt-5.5');
+    expect(ba?.config.temperature).toBe(0.4);
+    expect(getAgentConfigs(config)['business-analyst']?.mode).toBe('primary');
   });
 });
 
@@ -1549,12 +1458,12 @@ describe('disabled_agents', () => {
 
   test('protected agents cannot be disabled', () => {
     const config: PluginConfig = {
-      disabled_agents: ['orchestrator', 'councillor'],
+      disabled_agents: ['orchestrator', 'planner'],
     };
-    const agents = createAgents(config);
-    const names = agents.map((a) => a.name);
-    expect(names).toContain('orchestrator');
-    expect(names).toContain('councillor');
+    const disabled = getDisabledAgents(config);
+    expect(disabled.has('orchestrator')).toBe(false);
+    expect(disabled.has('planner')).toBe(true);
+    expect(createAgents(config).map((a) => a.name)).toContain('orchestrator');
   });
 
   test('planner can be disabled', () => {
@@ -1567,36 +1476,24 @@ describe('disabled_agents', () => {
     expect(names).toContain('orchestrator'); // orchestrator stays
   });
 
-  test('disabling council disables council agent', () => {
-    const config: PluginConfig = {
-      disabled_agents: ['council'],
-    };
-    const agents = createAgents(config);
-    const names = agents.map((a) => a.name);
-    expect(names).not.toContain('council');
-    // councillor is protected, it stays
-    expect(names).toContain('councillor');
-  });
-
   test('agent count decreases when agents are disabled', () => {
     const agents = createAgents();
-    expect(agents.length).toBe(14); // 4 primary + 10 subagents (observer disabled, trigger-developer enabled)
+    expect(agents.length).toBe(12); // 4 primary + 8 subagents (observer disabled, trigger-developer enabled)
 
     const disabledConfig: PluginConfig = {
       disabled_agents: ['observer', 'designer'],
     };
     const disabledAgents = createAgents(disabledConfig);
-    expect(disabledAgents.length).toBe(13); // 4 primary + 11 subagents - observer - designer
+    expect(disabledAgents.length).toBe(11); // 4 primary + 9 subagents - observer - designer
   });
 
   test('getDisabledAgents respects protection rules', () => {
     const config: PluginConfig = {
-      disabled_agents: ['orchestrator', 'designer', 'councillor'],
+      disabled_agents: ['orchestrator', 'designer'],
     };
     const disabled = getDisabledAgents(config);
     expect(disabled.has('designer')).toBe(true);
     expect(disabled.has('orchestrator')).toBe(false);
-    expect(disabled.has('councillor')).toBe(false);
   });
 
   test('getEnabledAgentNames filters correctly', () => {
@@ -1629,7 +1526,7 @@ describe('disabled_agents', () => {
       disabled_agents: [],
     };
     const agents = createAgents(config);
-    expect(agents.length).toBe(15); // 4 primary + 11 subagents (observer enabled)
+    expect(agents.length).toBe(13); // 4 primary + 9 subagents (observer enabled)
     expect(agents.map((a) => a.name)).toContain('observer');
   });
 });
@@ -1702,18 +1599,6 @@ describe('question tool instruction in agent prompts', () => {
     const agents = createAgents();
     const agent = agents.find((a) => a.name === 'backend-developer');
     expect(agent?.config.prompt).toContain(expectedText);
-  });
-
-  test('council prompt includes question tool instruction', () => {
-    const agents = createAgents();
-    const agent = agents.find((a) => a.name === 'council');
-    expect(agent?.config.prompt).toContain(expectedText);
-  });
-
-  test('councillor prompt does NOT include question tool instruction (question is denied)', () => {
-    const agents = createAgents();
-    const agent = agents.find((a) => a.name === 'councillor');
-    expect(agent?.config.prompt).not.toContain(expectedText);
   });
 
   test('frontend-developer custom prompt still includes question tool instruction', () => {
@@ -1815,12 +1700,6 @@ describe('debugger agent', () => {
     expect(permission.ast_grep_search).toBe('allow');
   });
 
-  test('debugger is denied access to council_session', () => {
-    const agents = createAgents();
-    const agent = agents.find((a) => a.name === 'debugger');
-    expect((agent?.config.permission as any).council_session).toBe('deny');
-  });
-
   test('debugger prompt emphasizes investigation over implementation', () => {
     const agents = createAgents();
     const agent = agents.find((a) => a.name === 'debugger');
@@ -1868,12 +1747,6 @@ describe('trigger-developer agent', () => {
     expect(agent).toBeDefined();
     const permission = agent?.config.permission as Record<string, unknown>;
     expect(permission['*']).toBeUndefined();
-  });
-
-  test('trigger-developer is denied access to council_session', () => {
-    const agents = createAgents();
-    const agent = agents.find((a) => a.name === 'trigger-developer');
-    expect((agent?.config.permission as any).council_session).toBe('deny');
   });
 
   test('trigger-developer accepts model override', () => {

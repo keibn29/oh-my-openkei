@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, test } from 'bun:test';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import OhMyOpenKei from './index';
@@ -49,6 +49,56 @@ function taskEnvelope(sessionId: string, body = 'done'): string {
 }
 
 type Hooks = Awaited<ReturnType<typeof OhMyOpenKei>>;
+
+async function createPluginHooks(): Promise<Hooks> {
+  const workdir = mkdtempSync(join(configDir, 'work-'));
+  return (await OhMyOpenKei({
+    client: createClient() as never,
+    directory: workdir,
+    worktree: workdir,
+  } as never)) as Hooks;
+}
+
+describe('plugin registration surface', () => {
+  test('council tool and retired agents are not registered', async () => {
+    const hooks = await createPluginHooks();
+
+    const toolNames = Object.keys(hooks.tool ?? {});
+    expect(toolNames).not.toContain('council_session');
+    expect(toolNames).toContain('webfetch');
+
+    const agentNames = Object.keys(hooks.agent ?? {});
+    expect(agentNames).not.toContain('council');
+    expect(agentNames).not.toContain('councillor');
+    expect(agentNames).toContain('business-analyst');
+  });
+
+  test('a leftover council config block cannot register the council tool', async () => {
+    // `council` is no longer part of PluginConfigSchema, so a stale config
+    // file must not be able to bring the council engine or its tool back.
+    const workdir = join(mkdtempSync(join(configDir, 'work-')), 'project');
+    mkdirSync(join(workdir, '.opencode'), { recursive: true });
+    writeFileSync(
+      join(workdir, '.opencode', 'oh-my-openkei.json'),
+      JSON.stringify({
+        council: {
+          default_preset: 'default',
+          presets: { default: { alpha: { model: 'openai/gpt-5.4-mini' } } },
+        },
+      }),
+    );
+
+    const hooks: Hooks = await OhMyOpenKei({
+      client: createClient() as never,
+      directory: workdir,
+      worktree: workdir,
+    } as never);
+
+    expect(Object.keys(hooks.tool ?? {})).not.toContain('council_session');
+    expect(Object.keys(hooks.agent ?? {})).not.toContain('council');
+    expect(Object.keys(hooks.agent ?? {})).not.toContain('councillor');
+  });
+});
 
 describe('plugin chat.message session reuse', () => {
   test('a new user message keeps a remembered alias usable', async () => {

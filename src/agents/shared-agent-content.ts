@@ -149,20 +149,6 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
 - **Rule of thumb:** Server/data code? → @backend-developer. Client/UI code? → @frontend-developer. Strategy/review instead of execution? → @oracle.`,
   },
   {
-    name: 'council',
-    restrictedTo: 'orchestrator',
-    description: `@council
-- Role: Multi-LLM consensus engine that runs several councillors, synthesizes their views, and returns a structured council report.
-- Permissions: Read files
-- Stats: 3x slower than {owner}, 3x or more cost of {owner}
-- Capabilities: Runs multiple models in parallel, compares their answers, resolves disagreements, and produces a final synthesized answer plus councillor details and consensus summary.
-- **Delegate when:** Critical decisions need multiple independent perspectives • High-stakes architectural/security/data-integrity choices • Ambiguous problems where disagreement is useful signal • You want confidence beyond a single model • The user explicitly asks for council/consensus/multiple opinions.
-- **Don't delegate when:** Straightforward tasks you're confident about • Speed matters more than confidence • Routine implementation/debugging • A single specialist is clearly the right tool • You only need current docs/search/code review rather than multi-model consensus.
-- **How to call:** Send the full question/task and relevant context. Be explicit about what decision, trade-off, or answer the council should resolve. Do not ask council to do routine code edits.
-- **Result handling:** Council returns a structured response that may include: synthesized Council Response, individual Councillor Details, and Council Summary/confidence. Preserve that structure when the user asked for council output. Do not pretend the council only returned a final answer. If you need to act on the council result, first briefly state the council's recommendation, then proceed.
-- **Rule of thumb:** Need second/third opinions from different models? → @council. Need one expert agent or direct execution? → use the specialist or yourself.`,
-  },
-  {
     name: 'observer',
     restrictedTo: 'orchestrator',
     description: `@observer
@@ -174,14 +160,6 @@ export const SHARED_SPECIALIST_DESCRIPTIONS: Array<{
 - **Don't delegate when:** Plain text files that Read can handle directly • Files that need editing afterward (need literal content from Read)
 - **Rule of thumb:** Even if your model supports vision, delegate visual analysis to @observer — it isolates large image/PDF bytes from your context window, returning only concise structured text. Need exact file contents for editing? → Read it yourself.
 - **IMPORTANT:** When delegating to @observer, always include the **full file path** in the prompt so it can read the file. Example: "Analyze the screenshot at /path/to/file.png — describe the UI elements and error messages."`,
-  },
-  {
-    name: 'councillor',
-    restrictedTo: 'orchestrator',
-    description: `@councillor
-- Role: Internal specialist used by @council for multi-LLM consensus
-- Permissions: Read files
-- Note: Do not call @councillor directly; use @council instead`,
   },
 ];
 
@@ -227,6 +205,13 @@ export function renderSpecialists(
  */
 export const SHARED_SUBAGENT_PROMPT_FRAGMENTS =
   'When you need to ask the user a question, you MUST use the `question` tool. Do NOT ask questions as a normal chat message and then wait for the user to answer in a follow-up prompt.';
+
+/**
+ * Language rule for code comments. Appended after the resolved prompt (custom
+ * replacement or base text) so a custom prompt cannot drop the rule.
+ */
+export const ENGLISH_COMMENTS_RULE =
+  'Write all code comments you add or modify in English, regardless of the conversation language.';
 
 /**
  * Shared communication rules text used by all primary agents.

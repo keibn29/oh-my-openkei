@@ -184,7 +184,7 @@ describe('displayName', () => {
     expect(sdkConfigs.orchestrator.hidden).toBe(true);
   });
 
-  test('keeps internal-only council agents hidden even with displayName configured', () => {
+  test('retired council agents are never resurrected by a displayName config', () => {
     const config: PluginConfig = {
       disabled_agents: [],
       agents: {
@@ -195,6 +195,6 @@ describe('displayName', () => {
     const sdkConfigs = getAgentConfigs(config);
 
     expect(sdkConfigs.reviewer).toBeUndefined();
-    expect(sdkConfigs.councillor?.hidden).toBe(true);
+    expect(sdkConfigs.councillor).toBeUndefined();
   });
 });

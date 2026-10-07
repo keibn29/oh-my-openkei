@@ -4,9 +4,8 @@ import { buildBusinessAnalystPrompt } from './agents/business-analyst';
 import { buildOrchestratorPrompt } from './agents/orchestrator';
 import { buildPlannerPrompt } from './agents/planner';
 import { buildSprinterPrompt } from './agents/sprinter';
-import { loadPluginConfig } from './config';
+import { loadPluginConfig, RETIRED_AGENT_NAMES } from './config';
 import { parseList } from './config/agent-mcps';
-import { CouncilManager } from './council';
 import {
   createApplyPatchHook,
   createAutoUpdateCheckerHook,
@@ -22,12 +21,7 @@ import {
 } from './hooks';
 import { processImageAttachments } from './hooks/image-hook';
 import { createBuiltinMcps } from './mcp';
-import {
-  ast_grep_replace,
-  ast_grep_search,
-  createCouncilTool,
-  createWebfetchTool,
-} from './tools';
+import { ast_grep_replace, ast_grep_search, createWebfetchTool } from './tools';
 import {
   createDisplayNameMentionRewriter,
   resolveRuntimeAgentName,
@@ -111,7 +105,6 @@ const OhMyOpenKei: Plugin = async (ctx) => {
   let plannerDelegateValidationHook: ReturnType<
     typeof createPlannerDelegateValidationHookWithSession
   >;
-  let councilTools: Record<string, unknown>;
   let webfetch: ReturnType<typeof createWebfetchTool>;
   let rewriteDisplayNameMentions: ReturnType<
     typeof createDisplayNameMentionRewriter
@@ -193,11 +186,6 @@ const OhMyOpenKei: Plugin = async (ctx) => {
 
     depthTracker = new SubagentDepthTracker();
 
-    // Initialize council tools (only when council is configured)
-    councilTools = config.council
-      ? createCouncilTool(ctx, new CouncilManager(ctx, config, depthTracker))
-      : {};
-
     mcps = createBuiltinMcps(config.disabled_mcps, config.websearch);
     webfetch = createWebfetchTool(ctx);
 
@@ -264,7 +252,6 @@ const OhMyOpenKei: Plugin = async (ctx) => {
       });
 
     toolCount =
-      Object.keys(councilTools).length +
       1 + // webfetch
       2; // ast_grep_search, ast_grep_replace
   } catch (err) {
@@ -329,7 +316,6 @@ const OhMyOpenKei: Plugin = async (ctx) => {
     agent: agents,
 
     tool: {
-      ...councilTools,
       webfetch,
       ast_grep_search,
       ast_grep_replace,
@@ -427,6 +413,10 @@ const OhMyOpenKei: Plugin = async (ctx) => {
         // to frontend-developer / backend-developer above. Never create a
         // phantom configAgent['fixer'] entry.
         if (agentName === 'fixer') continue;
+
+        // Skip retired agents — a leftover fallback chain must never recreate
+        // a configAgent entry for an agent that no longer exists.
+        if (RETIRED_AGENT_NAMES.has(agentName)) continue;
 
         if (!effectiveArrays[agentName]) {
           // Agent has no _modelArray — seed from its current string model

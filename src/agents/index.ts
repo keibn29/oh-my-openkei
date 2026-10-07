@@ -16,8 +16,6 @@ import {
 import { getAgentMcpList } from '../config/agent-mcps';
 import { createBackendDeveloperAgent } from './backend-developer';
 import { createBusinessAnalystAgent } from './business-analyst';
-import { createCouncilAgent } from './council';
-import { createCouncillorAgent } from './councillor';
 import { createDebuggerAgent } from './debugger';
 import { createDesignerAgent } from './designer';
 import { createExplorerAgent } from './explorer';
@@ -43,16 +41,11 @@ type AgentFactory = (
   customAppendPrompt?: string,
 ) => AgentDefinition;
 
-const COUNCIL_TOOL_ALLOWED_AGENTS = new Set(['council']);
-
 /**
  * Subagents that are read-only at the config/permission layer.
  * These agents use `'*': 'deny'` with an allowlist of safe read-only tools,
  * so that mutating tools (edit, bash, task, etc.) are blocked by OpenCode's
  * permission system — not merely by prompt instructions.
- *
- * Councillor is excluded because its factory already sets `'*': 'deny'` with
- * a per-tool allowlist.
  */
 const READ_ONLY_SUBAGENTS = new Set([
   'debugger',
@@ -60,7 +53,6 @@ const READ_ONLY_SUBAGENTS = new Set([
   'oracle',
   'observer',
   'librarian',
-  'council',
 ]);
 
 function normalizeDisplayName(displayName: string): string {
@@ -208,7 +200,7 @@ function injectDisplayNames(
  * If configuredSkills is provided, it honors that list instead of defaults.
  *
  * Note: If the agent already explicitly sets question to 'deny', that is
- * respected (e.g. councillor should not ask questions).
+ * respected.
  */
 function applyDefaultPermissions(
   agent: AgentDefinition,
@@ -225,17 +217,13 @@ function applyDefaultPermissions(
     configuredSkills,
   );
 
-  // Respect explicit deny on question (councillor)
+  // Respect an explicit deny on question set by the agent's own factory
   const questionPerm = existing.question === 'deny' ? 'deny' : 'allow';
-  const councilSessionPerm = COUNCIL_TOOL_ALLOWED_AGENTS.has(agent.name)
-    ? (existing.council_session ?? 'allow')
-    : 'deny';
 
   if (READ_ONLY_SUBAGENTS.has(agent.name)) {
     agent.config.permission = {
       '*': 'deny',
       question: questionPerm,
-      council_session: councilSessionPerm,
       read: 'allow',
       glob: 'allow',
       grep: 'allow',
@@ -257,7 +245,6 @@ function applyDefaultPermissions(
   agent.config.permission = {
     ...existing,
     question: questionPerm,
-    council_session: councilSessionPerm,
     // Apply skill permissions as nested object under 'skill' key
     skill: {
       ...(typeof existing.skill === 'object' ? existing.skill : {}),
@@ -286,8 +273,6 @@ const SUBAGENT_FACTORIES: Record<SubagentName, AgentFactory> = {
   'backend-developer': createBackendDeveloperAgent,
   'trigger-developer': createTriggerDeveloperAgent,
   observer: createObserverAgent,
-  council: createCouncilAgent,
-  councillor: createCouncillorAgent,
 };
 
 // Public API
@@ -379,21 +364,6 @@ export function createAgents(config?: PluginConfig): AgentDefinition[] {
     applyDefaultPermissions(agent, override?.skills);
     return agent;
   });
-
-  // 2b. Backward compat: if council has no preset override and still uses the
-  // hardcoded default model, fall back to the deprecated council.master.model.
-  // See https://github.com/keibn29/oh-my-openkei/issues/369
-  const legacyMasterModel = config?.council?._legacyMasterModel;
-  if (legacyMasterModel) {
-    const councilAgent = builtInSubAgents.find((a) => a.name === 'council');
-    if (
-      councilAgent &&
-      !getAgentOverride(config, 'council')?.model &&
-      councilAgent.config.model === DEFAULT_MODELS.council
-    ) {
-      councilAgent.config.model = legacyMasterModel;
-    }
-  }
 
   const customSubAgents = protoCustomAgents.map((agent) => {
     const override = getAgentOverride(config, agent.name);
@@ -602,15 +572,7 @@ export function getAgentConfigs(
       hidden?: boolean;
     },
   ): void => {
-    if (name === 'council') {
-      // Council is callable both as a primary agent (user-facing)
-      // and as a subagent (orchestrator can delegate to it)
-      sdkConfig.mode = 'all';
-    } else if (name === 'councillor') {
-      // Internal agent — subagent mode, hidden from @ autocomplete
-      sdkConfig.mode = 'subagent';
-      sdkConfig.hidden = true;
-    } else if (isSubagent(name)) {
+    if (isSubagent(name)) {
       sdkConfig.mode = 'subagent';
     } else if ((PRIMARY_AGENT_NAMES as readonly string[]).includes(name)) {
       sdkConfig.mode = 'primary';
@@ -618,8 +580,6 @@ export function getAgentConfigs(
       sdkConfig.mode = 'subagent';
     }
   };
-
-  const isInternalOnly = (name: string): boolean => name === 'councillor';
 
   const entries: Array<[string, SDKAgentConfig]> = [];
 
@@ -644,7 +604,7 @@ export function getAgentConfigs(
       ? normalizeDisplayName(a.displayName)
       : undefined;
 
-    if (normalizedDisplayName && !isInternalOnly(a.name)) {
+    if (normalizedDisplayName) {
       entries.push([normalizedDisplayName, sdkConfig]);
       entries.push([a.name, { ...sdkConfig, hidden: true }]);
       continue;

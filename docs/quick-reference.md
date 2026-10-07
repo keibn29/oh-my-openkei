@@ -12,7 +12,6 @@
 
 | Doc | Contents |
 |-----|----------|
-| [Council Agent](council.md) | Multi-LLM consensus, presets, role prompts, timeouts |
 | [Codemap Skill](codemap.md) | Hierarchical codemap generation |
 
 ### Primary Agents

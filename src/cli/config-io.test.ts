@@ -274,9 +274,10 @@ describe('config-io', () => {
     const saved = JSON.parse(readFileSync(configPath, 'utf-8'));
     expect(saved.agent.orchestrator.color).toBe('success');
     expect(saved.agent.planner.color).toBe('primary');
-    expect(saved.agent.council.color).toBe('info');
     expect(saved.agent['business-analyst'].color).toBe('warning');
     expect(saved.agent.sprinter.color).toBe('error');
+    // Retired agents should not have colors set
+    expect(saved.agent.council).toBeUndefined();
     // Other agents should not have colors set
     expect(saved.agent.oracle).toBeUndefined();
     expect(saved.agent.designer).toBeUndefined();

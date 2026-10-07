@@ -46,8 +46,6 @@ const AGENT_ALIAS_PREFIX: Record<AgentName, string> = {
   'backend-developer': 'bed',
   'trigger-developer': 'trg',
   observer: 'obs',
-  council: 'cnc',
-  councillor: 'clr',
 };
 
 function aliasPrefix(agentType: AgentName): string {

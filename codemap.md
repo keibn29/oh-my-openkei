@@ -18,7 +18,7 @@ This codemap intentionally covers the plugin repository itself and excludes the 
 | Path | Role |
 |---|---|
 | `package.json` | Package manifest, dependency graph, release scripts, published file list. |
-| `src/index.ts` | Main plugin bootstrap: wires agents, tools, MCPs, hooks, council/session managers, task-session tracking, and config merge behavior. |
+| `src/index.ts` | Main plugin bootstrap: wires agents, tools, MCPs, hooks, session managers, task-session tracking, and config merge behavior. |
 | `src/cli/index.ts` | CLI entrypoint for installation/bootstrap workflows. |
 | `src/config/schema.ts` | Source-of-truth runtime config schema used by validation and schema generation. |
 | `scripts/generate-schema.ts` | Generates `oh-my-openkei.schema.json` from the Zod config schema. |
@@ -37,7 +37,7 @@ This codemap intentionally covers the plugin repository itself and excludes the 
    - Agent definitions are produced by `src/agents/`.
    - Tool factories from `src/tools/` and MCP definitions from `src/mcp/` are registered.
    - Hooks from `src/hooks/` are attached.
-   - Delegation/council orchestration, task-session aliasing, and runtime preset handling are initialized.
+   - Delegation orchestration, task-session aliasing, and runtime preset handling are initialized.
 
 2. **Interactive request handling**
    - The orchestrator prompt drives routing decisions.
@@ -45,7 +45,7 @@ This codemap intentionally covers the plugin repository itself and excludes the 
    - Hooks can transform prompts/messages, normalize system message arrays, repair tool failures, or intercept runtime commands before/after execution.
 
 3. **Delegated execution**
-   - OpenCode child sessions are created by delegation/council flows and tracked by plugin utilities.
+   - OpenCode child sessions are created by delegation flows and tracked by plugin utilities.
    - `src/hooks/task-session-manager/` remembers reusable child sessions and injects short aliases into the orchestrator prompt.
 
 4. **Install/release path**
@@ -59,7 +59,6 @@ This codemap intentionally covers the plugin repository itself and excludes the 
 - `src/config/` feeds `src/agents/`, session/delegation utilities, and MCP registration.
 - `src/cli/skills.ts` and `src/cli/custom-skills.ts` bridge install-time skill packaging with runtime permission policy.
 - Session/delegation utilities cooperate with helpers in `src/utils/` for depth tracking, result extraction, task output parsing, and alias state.
-- `src/tools/council.ts` delegates into `src/council/`.
 - `src/hooks/task-session-manager/` depends on `src/utils/session-manager.ts` and `src/utils/task.ts` to support child-session reuse.
 - `src/hooks/filter-available-skills/` and agent permission logic rely on shared skill names from the CLI/config layer.
 

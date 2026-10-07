@@ -39,7 +39,6 @@ Built-in Model Context Protocol (MCP) servers ship with oh-my-openkei and give a
 | `frontend-developer` | none |
 | `backend-developer` | none |
 | `trigger-developer` | `trigger` |
-| `councillor` | none |
 
 ---
 

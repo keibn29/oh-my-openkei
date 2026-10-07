@@ -6,7 +6,6 @@
 
 - AST-aware search/replace via `ast-grep` stack.
 - Remote fetch/transform utility via `smartfetch` (`webfetch` tool).
-- Council orchestration via `createCouncilTool` (`council.ts`).
 
 It is the bridge between plugin runtime integration (`src/index.ts`) and the lower-level
 implementations in feature folders.
@@ -15,7 +14,6 @@ implementations in feature folders.
 
 - `ast_grep_search`, `ast_grep_replace` from `./ast-grep`
 - `createWebfetchTool`, `WEBFETCH_DESCRIPTION`, and related types from `./smartfetch`
-- `createCouncilTool`
 
 ## Design patterns
 
@@ -28,17 +26,6 @@ implementations in feature folders.
   possible (for richer UI surfaces).
 
 ## Subsystems and data flow
-
-### Council tool path
-
-- `createCouncilTool` defines `council_session`.
-- `execute` performs guarded invocation:
-  - validates `toolContext` and `sessionID`,
-  - only allows direct use by `agent: 'council'` (or missing agent for backward compatibility),
-  - calls `CouncilManager.runCouncil(prompt, preset, parentSessionId)`.
-- On success, appends a councillor response summary and normalized model list to output.
-- On failure, returns a concise error string.
-- Shows config deprecation warnings when `CouncilManager` exposes deprecated field metadata.
 
 ### Smartfetch path
 
@@ -64,6 +51,5 @@ implementations in feature folders.
 ## Integration points in `src/index.ts`
 
 - Tool registration:
-  - `council` tools (only when `config.council` exists),
   - `webfetch`,
   - AST tools.

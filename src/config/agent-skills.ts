@@ -34,8 +34,6 @@ export const DEFAULT_AGENT_SKILLS: Record<AgentName, string[]> = {
     'karpathy-guidelines',
   ],
   observer: [],
-  council: [],
-  councillor: [],
 };
 
 /**

@@ -25,8 +25,6 @@ export const DEFAULT_AGENT_MCPS: Record<AgentName, string[]> = {
   'backend-developer': [],
   'trigger-developer': ['trigger'], // focused: only the native Trigger.dev MCP
   observer: [],
-  council: [],
-  councillor: [],
 };
 
 /**

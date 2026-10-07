@@ -24,7 +24,6 @@ Cross-cutting runtime utilities used by orchestration, hooks, and plugin I/O.
 - **Parent-scoped resumable session store**: `SessionManager` groups tasks by `{parentSessionId, agentType}` and maintains LRU-ish ordering by last-used counter so active resumable sessions stay in memory. Alias counters live for the parent lifetime, so a dropped alias is never recycled onto an unrelated child.
 - **Provider-safe env access**: `getEnv` falls back from `Bun.env` to `process.env` and normalizes blank values.
 - **Graceful shutdown protocol**: Multiplexer pane close path sends Ctrl+C before kill, then rebalances layout state.
-- **Session extraction model**: `extractSessionResult`/`parseModelReference` style helpers are centralized under `session.ts`.
 - **In-place system normalization**: `collapseSystemInPlace` purposely mutates `system` array to preserve references held by OpenCode internals.
 - **Resilient polling**: `pollUntilStable` requires consecutive confirmations before success.
 
@@ -52,11 +51,6 @@ Cross-cutting runtime utilities used by orchestration, hooks, and plugin I/O.
 - `pollUntilStable(fn, options)` repeatedly calls async predicate and tracks consecutive true states.
 - Returns once stable threshold is met, timeout elapses, or abort signal is raised.
 
-### `session.ts`
-
-- Composes prompt parts and extracts normalized session output for text/call/result flows.
-- Hosts shared parsing/formatting utilities used by council and tool execution layers.
-
 ### `task.ts`
 
 - Recovers the child session ID from host metadata (`metadata.sessionId`, only a
@@ -75,7 +69,6 @@ Cross-cutting runtime utilities used by orchestration, hooks, and plugin I/O.
 ## Integration
 
 - **Consumers**
-  - `src/council/council-manager.ts`: depth control and session extraction helpers.
   - `src/hooks/*`: marker detection, polling, and session-aware state helpers.
   - `src/hooks/task-session-manager`: `SessionManager`, `parseTaskIdFromTaskOutput`, and `deriveTaskSessionLabel` provide resumable-session workflow; the plugin’s system-transform passes the hook output through `collapseSystemInPlace` after this manager injects prompts.
 
