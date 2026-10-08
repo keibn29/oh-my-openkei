@@ -93,7 +93,7 @@ All config files support **JSONC** (JSON with Comments):
 | `agents.<agent>.displayName` | string | — | Custom user-facing alias for the agent in the active config |
 | `showStartupToast` | boolean | `true` | Show the startup activation toast (`oh-my-openkei is active`) when OpenCode starts |
 | `autoUpdate` | boolean | `true` | Automatically install plugin updates in the background; set to `false` for notification-only mode |
-| `sessionManager.maxSessionsPerAgent` | integer | `2` | Maximum remembered resumable child sessions per specialist type in the current orchestrator session (1–10). See [Session Management](session-management.md) |
+| `sessionManager.maxSessionsPerAgent` | integer | `2` | Capacity of *settled* resumable child sessions per specialist type in the current orchestrator session (1–10). Children of running or interrupted delegations are protected from that capacity and are extra. See [Session Management](session-management.md) |
 | `sessionManager.readContextMinLines` | integer | `10` | Minimum number of lines read from a file before it appears in resumable-session context (0–1000) |
 | `sessionManager.readContextMaxFiles` | integer | `8` | Maximum number of recent read-context files shown per remembered child session (0–50) |
 | `disabled_mcps` | string[] | `[]` | MCP server IDs to disable globally |

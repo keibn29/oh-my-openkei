@@ -21,7 +21,7 @@ Cross-cutting runtime utilities used by orchestration, hooks, and plugin I/O.
 ## Design
 
 - **Deterministic lifecycle tracking**: `SubagentDepthTracker` maps session IDs → depth and is cleaned on session deletion.
-- **Parent-scoped resumable session store**: `SessionManager` groups tasks by `{parentSessionId, agentType}` and maintains LRU-ish ordering by last-used counter so active resumable sessions stay in memory. Alias counters live for the parent lifetime, so a dropped alias is never recycled onto an unrelated child.
+- **Parent-scoped resumable session store**: `SessionManager` groups tasks by `{parentSessionId, agentType}` and maintains LRU-ish ordering by last-used counter so active resumable sessions stay in memory. Alias counters live for the parent lifetime, so a dropped alias is never recycled onto an unrelated child. `maxSessionsPerAgent` caps *settled* history only: each entry carries a set of protection owner keys (`protect`/`releaseProtection`, idempotent per owner), and any entry with a non-empty set is exempt from trimming.
 - **Provider-safe env access**: `getEnv` falls back from `Bun.env` to `process.env` and normalizes blank values.
 - **Graceful shutdown protocol**: Multiplexer pane close path sends Ctrl+C before kill, then rebalances layout state.
 - **In-place system normalization**: `collapseSystemInPlace` purposely mutates `system` array to preserve references held by OpenCode internals.

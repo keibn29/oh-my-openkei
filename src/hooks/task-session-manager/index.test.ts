@@ -1,4 +1,5 @@
 import { describe, expect, mock, test } from 'bun:test';
+import type { ToolPart, ToolState } from '@opencode-ai/sdk';
 import { createTaskSessionManagerHook } from './index';
 
 function taskEnvelope(sessionId: string, body = 'done'): string {
@@ -67,6 +68,56 @@ async function promptFor(
 
 type Hook = ReturnType<typeof createTaskSessionManagerHook>;
 
+/** Record a `task` call in `tool.execute.before` and return its args. */
+async function startTask(
+  hook: Hook,
+  input: {
+    callId: string;
+    agent: string;
+    description?: string;
+    taskId?: string;
+    parentId?: string;
+  },
+): Promise<Record<string, unknown>> {
+  const args: Record<string, unknown> = {
+    subagent_type: input.agent,
+    ...(input.description === undefined
+      ? {}
+      : { description: input.description }),
+    ...(input.taskId === undefined ? {} : { task_id: input.taskId }),
+  };
+
+  await hook['tool.execute.before'](
+    {
+      tool: 'task',
+      sessionID: input.parentId ?? 'parent-1',
+      callID: input.callId,
+    },
+    { args },
+  );
+  return args;
+}
+
+/** `tool.execute.after` alone, for a call already recorded by `startTask`. */
+async function settleTask(
+  hook: Hook,
+  input: { callId: string; output: unknown; parentId?: string },
+): Promise<void> {
+  await hook['tool.execute.after'](
+    {
+      tool: 'task',
+      sessionID: input.parentId ?? 'parent-1',
+      callID: input.callId,
+    },
+    { output: input.output },
+  );
+}
+
+/** A completed delegation reported the legacy `task_id:` result header. */
+function taskResult(childId: string): string {
+  return `task_id: ${childId} (for resuming to continue this task)`;
+}
+
 /**
  * The host reports a child session while its `task` call is still in flight,
  * so provisional tracking only applies when the parent has a pending call.
@@ -80,6 +131,87 @@ async function childCreated(
     event: {
       type: 'session.created',
       properties: { info: { id: childId, parentID: parentId } },
+    },
+  });
+}
+
+/**
+ * A tool state in the shape the SDK declares for each status, so the fixture
+ * exercises the same payload the host publishes. `sessionId` lands in the
+ * metadata the plugin reads; pass `metadata` to supply an unusable shape
+ * instead.
+ */
+function taskPartState(
+  status: ToolState['status'],
+  metadata: Record<string, unknown> | undefined,
+): ToolState {
+  const input = { subagent_type: 'explorer' };
+  const time = { start: 1, end: 2 };
+  const reported = metadata ?? undefined;
+
+  switch (status) {
+    case 'pending':
+      return { status, input, raw: JSON.stringify(input) };
+    case 'running':
+      // `ToolStateRunning` requires `time.start`, not just metadata.
+      return {
+        status,
+        input,
+        ...(reported ? { metadata: reported } : {}),
+        time: { start: time.start },
+      };
+    case 'completed':
+      return {
+        status,
+        input,
+        output: 'done',
+        title: 'task',
+        metadata: reported ?? {},
+        time,
+      };
+    case 'error':
+      return {
+        status,
+        input,
+        error: 'aborted',
+        ...(reported ? { metadata: reported } : {}),
+        time,
+      };
+  }
+}
+
+/**
+ * A native `task` tool part shaped by the SDK's own `ToolPart` type: the parent
+ * session, the originating `callID`, the tool state, and — once the child exists
+ * — the child session id in the state metadata.
+ */
+async function taskPart(
+  hook: Hook,
+  input: {
+    parentId: string;
+    callId: string;
+    status: ToolState['status'];
+    sessionId?: string;
+    metadata?: Record<string, unknown>;
+  },
+): Promise<void> {
+  const part: ToolPart = {
+    id: `prt_${input.parentId}_${input.callId}`,
+    sessionID: input.parentId,
+    messageID: 'msg-1',
+    type: 'tool',
+    callID: input.callId,
+    tool: 'task',
+    state: taskPartState(
+      input.status,
+      input.metadata ?? (input.sessionId ? { sessionId: input.sessionId } : {}),
+    ),
+  };
+
+  await hook.event({
+    event: {
+      type: 'message.part.updated',
+      properties: { part },
     },
   });
 }
@@ -1441,7 +1573,7 @@ describe('task-session-manager hook', () => {
     expect(prompt).not.toContain('replacement');
   });
 
-  test('releases a provisional child when the call yields no parseable id', async () => {
+  test('keeps the early-registered child when the call yields no parseable id', async () => {
     const { hook } = createHook();
 
     await hook['tool.execute.before'](
@@ -1457,9 +1589,13 @@ describe('task-session-manager hook', () => {
       { output: '[ERROR] rate limit exceeded, try again later' },
     );
 
-    // A later read from the orphan is not tracked ...
-    await readFromChild(hook, 'child-1', 'read-2', '/tmp/src/late.ts', 20);
-    // ... so a later delegation reporting the same child inherits no context.
+    // The child was attributed unambiguously before the call failed, so the
+    // alias stands and the read it made is still attached to it.
+    const prompt = await promptFor(hook, 'parent-1');
+    expect(prompt).toContain('exp-1 no metadata');
+    expect(prompt).toContain('orphan.ts');
+
+    // A later delegation reporting the same child keeps that same alias.
     await runTask(
       hook,
       { sessionID: 'parent-1', callID: 'call-2' },
@@ -1469,10 +1605,1481 @@ describe('task-session-manager hook', () => {
       },
     );
 
+    expect(await promptFor(hook, 'parent-1')).toContain('exp-1 retry');
+  });
+
+  test('registers an aborted fresh delegation from session.created alone', async () => {
+    const { hook } = createHook();
+
+    await hook['tool.execute.before'](
+      { tool: 'task', sessionID: 'parent-1', callID: 'call-1' },
+      { args: { subagent_type: 'explorer', description: 'aborted run' } },
+    );
+    // The user stops the run here: the child exists, but `after` never runs.
+    await childCreated(hook, 'child-1', 'parent-1');
+
     const prompt = await promptFor(hook, 'parent-1');
-    expect(prompt).toContain('exp-1 retry');
-    expect(prompt).not.toContain('orphan.ts');
-    expect(prompt).not.toContain('late.ts');
+    expect(prompt).toContain('exp-1 aborted run');
+
+    // And the alias resolves on the next turn.
+    await runTask(
+      hook,
+      { sessionID: 'parent-1', callID: 'call-2' },
+      {
+        args: {
+          subagent_type: 'explorer',
+          description: 'continue',
+          task_id: 'exp-1',
+        },
+        output: 'task_id: child-1 (for resuming to continue this task)',
+      },
+    );
+
+    const resumed = await promptFor(hook, 'parent-1');
+    expect(resumed).toContain('exp-1 continue');
+    expect(resumed).not.toContain('exp-2');
+  });
+
+  test('a normal result does not duplicate or renumber an early alias', async () => {
+    const { hook } = createHook();
+
+    await hook['tool.execute.before'](
+      { tool: 'task', sessionID: 'parent-1', callID: 'call-1' },
+      { args: { subagent_type: 'explorer', description: 'routing' } },
+    );
+    await childCreated(hook, 'child-1', 'parent-1');
+    await hook['tool.execute.after'](
+      { tool: 'task', sessionID: 'parent-1', callID: 'call-1' },
+      { output: 'task_id: child-1 (for resuming to continue this task)' },
+    );
+
+    const prompt = await promptFor(hook, 'parent-1');
+    expect(prompt).toContain('exp-1 routing');
+    expect(prompt).not.toContain('exp-2');
+  });
+
+  test('reconciles a changed child id from an early registration', async () => {
+    const { hook } = createHook();
+
+    await hook['tool.execute.before'](
+      { tool: 'task', sessionID: 'parent-1', callID: 'call-1' },
+      { args: { subagent_type: 'explorer', description: 'routing' } },
+    );
+    await childCreated(hook, 'child-1', 'parent-1');
+    await readFromChild(hook, 'child-1', 'read-1', '/tmp/src/stale.ts', 20);
+
+    // The host reports a different child than the one it announced.
+    await hook['tool.execute.after'](
+      { tool: 'task', sessionID: 'parent-1', callID: 'call-1' },
+      { output: 'task_id: child-2 (for resuming to continue this task)' },
+    );
+
+    const prompt = await promptFor(hook, 'parent-1');
+    expect(prompt).toContain('exp-2 routing');
+    expect(prompt).not.toContain('stale.ts');
+
+    // The stale early child is no longer resumable.
+    await expect(
+      hook['tool.execute.before'](
+        { tool: 'task', sessionID: 'parent-1', callID: 'call-2' },
+        { args: { subagent_type: 'explorer', task_id: 'exp-1' } },
+      ),
+    ).rejects.toThrow(/exp-1/);
+  });
+
+  test('does not guess a session.created child while several calls are in flight', async () => {
+    const { hook } = createHook();
+
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'first',
+    });
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'oracle',
+      description: 'second',
+    });
+    await childCreated(hook, 'child-1', 'parent-1');
+
+    // No pending call may claim the child: only an exact task part knows which
+    // call owns it.
+    expect(await promptFor(hook, 'parent-1')).toEqual('base');
+
+    // ... and exact correlation still works with both calls in flight.
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-1',
+    });
+
+    expect(await promptFor(hook, 'parent-1')).toContain('exp-1 first');
+  });
+
+  test('aliases concurrent mixed-agent calls from exact task parts alone', async () => {
+    const { hook } = createHook();
+
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'routing files',
+    });
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'oracle',
+      description: 'auth review',
+    });
+
+    // Interrupted run: parts arrive interleaved, out of order, and with an
+    // early metadata-less snapshot. No `tool.execute.after` ever runs.
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-2',
+      status: 'running',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-2',
+      status: 'running',
+      sessionId: 'child-oracle',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-explorer',
+    });
+
+    const prompt = await promptFor(hook, 'parent-1');
+    expect(prompt).toContain('exp-1 routing files');
+    expect(prompt).toContain('ora-1 auth review');
+
+    // Each alias resolves to its own child, not a sibling's.
+    const explorer = await startTask(hook, {
+      callId: 'call-3',
+      agent: 'explorer',
+      description: 'more routing',
+      taskId: 'exp-1',
+    });
+    const oracle = await startTask(hook, {
+      callId: 'call-4',
+      agent: 'oracle',
+      description: 'more review',
+      taskId: 'ora-1',
+    });
+    expect(explorer.task_id).toBe('child-explorer');
+    expect(oracle.task_id).toBe('child-oracle');
+  });
+
+  test('keeps three interrupted same-agent children with identical descriptions', async () => {
+    const { hook } = createHook();
+
+    for (const callId of ['call-1', 'call-2', 'call-3']) {
+      await startTask(hook, {
+        callId,
+        agent: 'explorer',
+        description: 'investigate',
+      });
+    }
+    // Interleaved and reversed, with no `after` and the default window of 2.
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-3',
+      status: 'running',
+      sessionId: 'child-3',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-1',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-2',
+      status: 'running',
+      sessionId: 'child-2',
+    });
+
+    // All three survive the cap, because unsettled children are protected.
+    const aliases = ['exp-1', 'exp-2', 'exp-3'];
+    expect(await promptFor(hook, 'parent-1')).toContain('exp-3 investigate');
+
+    const resolved = new Map<string, unknown>();
+    for (const alias of aliases) {
+      const args = await startTask(hook, {
+        callId: `resume-${alias}`,
+        agent: 'explorer',
+        description: `continue ${alias}`,
+        taskId: alias,
+      });
+      resolved.set(alias, args.task_id);
+    }
+
+    // Identical labels must not make two aliases point at one child.
+    expect([...resolved.values()].sort()).toEqual([
+      'child-1',
+      'child-2',
+      'child-3',
+    ]);
+  });
+
+  test('keeps a completed sibling and an interrupted sibling', async () => {
+    const { hook } = createHook();
+
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'finishes',
+    });
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'oracle',
+      description: 'interrupted',
+    });
+
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'completed',
+      sessionId: 'child-1',
+    });
+    await settleTask(hook, { callId: 'call-1', output: taskResult('child-1') });
+
+    // Sibling two is aborted: an error part and no `after` at all.
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-2',
+      status: 'error',
+      sessionId: 'child-2',
+    });
+
+    const prompt = await promptFor(hook, 'parent-1');
+    expect(prompt).toContain('exp-1 finishes');
+    expect(prompt).toContain('ora-1 interrupted');
+  });
+
+  test('binds a child that arrives after a metadata-less error part', async () => {
+    const { hook } = createHook();
+
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'aborted run',
+    });
+
+    // An error part with no child id must not settle the call: the host may
+    // still publish the child-bearing snapshot.
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'error',
+    });
+    expect(await promptFor(hook, 'parent-1')).toEqual('base');
+
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-1',
+    });
+
+    expect(await promptFor(hook, 'parent-1')).toContain('exp-1 aborted run');
+  });
+
+  test('treats repeated and reordered task parts as idempotent', async () => {
+    const { hook } = createHook();
+
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'routing',
+    });
+
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-1',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'completed',
+      sessionId: 'child-1',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-1',
+    });
+    await settleTask(hook, { callId: 'call-1', output: taskResult('child-1') });
+
+    const prompt = await promptFor(hook, 'parent-1');
+    expect(prompt).toContain('exp-1 routing');
+    expect(prompt).not.toContain('exp-2');
+  });
+
+  test('a session.created fallback never overrides an exact binding', async () => {
+    const { hook } = createHook();
+
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'routing',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-exact',
+    });
+
+    // A stale creation event for a sibling of the same parent arrives late; the
+    // weaker source must not take the child the task part already claimed.
+    await childCreated(hook, 'child-other', 'parent-1');
+
+    expect(await promptFor(hook, 'parent-1')).toContain('exp-1 routing');
+
+    const args = await startTask(hook, {
+      callId: 'call-2',
+      agent: 'explorer',
+      description: 'continue',
+      taskId: 'exp-1',
+    });
+    expect(args.task_id).toBe('child-exact');
+  });
+
+  test('a task part replacing the bound child drops only that call binding', async () => {
+    const { hook } = createHook();
+
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'routing',
+    });
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'oracle',
+      description: 'review',
+    });
+
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-stale',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-2',
+      status: 'running',
+      sessionId: 'child-oracle',
+    });
+    // The host swapped the child of call-1 only.
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-final',
+    });
+
+    const prompt = await promptFor(hook, 'parent-1');
+    expect(prompt).toContain('exp-2 routing');
+    expect(prompt).toContain('ora-1 review');
+  });
+
+  test('a reused call id settles the old execution before the new one', async () => {
+    const { hook } = createHook({ maxSessionsPerAgent: 1 });
+
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'first attempt',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-old',
+    });
+
+    // The host retries the same call id: the first execution must be cleaned up
+    // without deleting the retry that takes the same slot.
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'retry',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-new',
+    });
+    await settleTask(hook, {
+      callId: 'call-1',
+      output: taskResult('child-new'),
+    });
+
+    // The retry is registered: the old execution's cleanup no longer deletes
+    // the call that took its slot. Its alias is the next one because the first
+    // number was already spent on the abandoned child.
+    expect(await promptFor(hook, 'parent-1')).toContain('exp-2 retry');
+
+    const args = await startTask(hook, {
+      callId: 'call-2',
+      agent: 'explorer',
+      description: 'continue',
+      taskId: 'exp-2',
+    });
+    expect(args.task_id).toBe('child-new');
+  });
+
+  test('a resumed child survives a metadata-less abort and history pressure', async () => {
+    const { hook } = createHook({ maxSessionsPerAgent: 1 });
+
+    await startTask(hook, {
+      callId: 'call-0',
+      agent: 'explorer',
+      description: 'routing',
+    });
+    await settleTask(hook, { callId: 'call-0', output: taskResult('child-0') });
+
+    // A resume that is aborted without ever reporting a child again.
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'interrupted',
+      taskId: 'exp-1',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'error',
+    });
+    await settleTask(hook, { callId: 'call-1', output: '[ERROR] aborted' });
+
+    // A same-agent sibling then settles, which the window would normally use
+    // to evict the older child.
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'explorer',
+      description: 'later',
+    });
+    await settleTask(hook, { callId: 'call-2', output: taskResult('child-1') });
+
+    const prompt = await promptFor(hook, 'parent-1');
+    expect(prompt).toContain('exp-2 later');
+    const args = await startTask(hook, {
+      callId: 'call-3',
+      agent: 'explorer',
+      description: 'continue',
+      taskId: 'exp-1',
+    });
+    expect(args.task_id).toBe('child-0');
+  });
+
+  test('one completion does not unprotect a child another execution holds', async () => {
+    const { hook } = createHook({ maxSessionsPerAgent: 1 });
+
+    await startTask(hook, {
+      callId: 'call-0',
+      agent: 'explorer',
+      description: 'routing',
+    });
+    await settleTask(hook, { callId: 'call-0', output: taskResult('child-0') });
+
+    // Two concurrent resumes of the same child.
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'one',
+      taskId: 'exp-1',
+    });
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'explorer',
+      description: 'two',
+      taskId: 'exp-1',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-0',
+    });
+    // The second execution is interrupted, so it keeps its own claim.
+    // The second execution is interrupted before reporting anything, so it is
+    // still active and still holds the child.
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-2',
+      status: 'error',
+    });
+
+    // The first one completes normally and answers the interrupted thread.
+    await settleTask(hook, { callId: 'call-1', output: taskResult('child-0') });
+
+    // History pressure must not take the alias the interrupted call still needs.
+    await startTask(hook, {
+      callId: 'call-3',
+      agent: 'explorer',
+      description: 'later',
+    });
+    await settleTask(hook, { callId: 'call-3', output: taskResult('child-1') });
+
+    expect(await promptFor(hook, 'parent-1')).toContain('exp-1');
+    const args = await startTask(hook, {
+      callId: 'call-4',
+      agent: 'explorer',
+      description: 'continue',
+      taskId: 'exp-1',
+    });
+    expect(args.task_id).toBe('child-0');
+  });
+
+  test('a later successful continuation clears stale recovery retention', async () => {
+    const { hook } = createHook({ maxSessionsPerAgent: 1 });
+
+    await startTask(hook, {
+      callId: 'call-0',
+      agent: 'explorer',
+      description: 'routing',
+    });
+    await settleTask(hook, { callId: 'call-0', output: taskResult('child-0') });
+
+    // An interrupted delegation leaves recovery retention on child-0.
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'interrupted',
+      taskId: 'exp-1',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'error',
+      sessionId: 'child-0',
+    });
+
+    // Answering it successfully ends that retention, so the capped history may
+    // now evict the child.
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'explorer',
+      description: 'continue',
+      taskId: 'exp-1',
+    });
+    await settleTask(hook, { callId: 'call-2', output: taskResult('child-0') });
+
+    await startTask(hook, {
+      callId: 'call-3',
+      agent: 'explorer',
+      description: 'later',
+    });
+    await settleTask(hook, { callId: 'call-3', output: taskResult('child-1') });
+
+    expect(await promptFor(hook, 'parent-1')).toContain('exp-2 later');
+    expect(await promptFor(hook, 'parent-1')).not.toContain('exp-1');
+  });
+
+  test('recovery retention is bounded, releasing the oldest first', async () => {
+    const { hook } = createHook({ maxSessionsPerAgent: 1 });
+
+    // 201 interrupted delegations, each retaining its child for recovery.
+    for (let index = 0; index < 201; index += 1) {
+      await startTask(hook, {
+        callId: `call-${index}`,
+        agent: 'explorer',
+        description: `child-${index}`,
+      });
+      await taskPart(hook, {
+        parentId: 'parent-1',
+        callId: `call-${index}`,
+        status: 'error',
+        sessionId: `child-${index}`,
+      });
+    }
+
+    // The oldest retention overflowed the window, so child-0 is no longer
+    // protected. One more settled delegation is enough for the capped history
+    // to take it; it is released, not deleted.
+    await startTask(hook, {
+      callId: 'call-last',
+      agent: 'explorer',
+      description: 'child-last',
+    });
+    await settleTask(hook, {
+      callId: 'call-last',
+      output: taskResult('child-last'),
+    });
+
+    const prompt = await promptFor(hook, 'parent-1');
+    expect(prompt).toContain('child-200');
+    expect(prompt).toContain('child-last');
+    expect(prompt).not.toContain('child-0');
+  });
+
+  test('an interrupted child never has an unprotected gap under pressure', async () => {
+    const { hook } = createHook({ maxSessionsPerAgent: 1 });
+
+    await startTask(hook, {
+      callId: 'call-0',
+      agent: 'explorer',
+      description: 'routing',
+    });
+    await settleTask(hook, { callId: 'call-0', output: taskResult('child-0') });
+
+    // History pressure is already at capacity before the interruption, so the
+    // handoff from the active owner to recovery ownership must be atomic: any
+    // gap would let trimming evict the child right there.
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'pressure',
+    });
+    await settleTask(hook, { callId: 'call-1', output: taskResult('child-1') });
+
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'explorer',
+      description: 'interrupted',
+      taskId: 'exp-2',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-2',
+      status: 'error',
+    });
+    await settleTask(hook, { callId: 'call-2', output: '[ERROR] aborted' });
+
+    expect(await promptFor(hook, 'parent-1')).toContain('exp-2');
+    const args = await startTask(hook, {
+      callId: 'call-4',
+      agent: 'explorer',
+      description: 'continue',
+      taskId: 'exp-2',
+    });
+    expect(args.task_id).toBe('child-1');
+  });
+
+  test('a resume replacing itself under one key keeps the child protected', async () => {
+    const { hook } = createHook({ maxSessionsPerAgent: 1 });
+
+    await startTask(hook, {
+      callId: 'call-0',
+      agent: 'explorer',
+      description: 'routing',
+    });
+    await settleTask(hook, { callId: 'call-0', output: taskResult('child-0') });
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'pressure',
+    });
+    await settleTask(hook, { callId: 'call-1', output: taskResult('child-1') });
+
+    // The same composite key resumes the same child again: the replacement must
+    // clean up the previous execution before taking the slot's shared owner.
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'explorer',
+      description: 'first attempt',
+      taskId: 'exp-2',
+    });
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'explorer',
+      description: 'retry',
+      taskId: 'exp-2',
+    });
+
+    // While the replacement is still in flight it must hold the slot's owner:
+    // history pressure right now would evict the child if the previous
+    // execution's cleanup had already released that shared owner.
+    await startTask(hook, {
+      callId: 'call-3',
+      agent: 'explorer',
+      description: 'pressure',
+    });
+    await settleTask(hook, { callId: 'call-3', output: taskResult('child-2') });
+    expect(await promptFor(hook, 'parent-1')).toContain('exp-2');
+
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-2',
+      status: 'error',
+    });
+    await settleTask(hook, { callId: 'call-2', output: '[ERROR] aborted' });
+
+    expect(await promptFor(hook, 'parent-1')).toContain('exp-2');
+    const args = await startTask(hook, {
+      callId: 'call-4',
+      agent: 'explorer',
+      description: 'continue',
+      taskId: 'exp-2',
+    });
+    expect(args.task_id).toBe('child-1');
+  });
+
+  test('deleting a parent frees its children retention capacity', async () => {
+    const { hook } = createHook({ maxSessionsPerAgent: 1 });
+
+    for (const parentId of ['parent-1', 'parent-2']) {
+      await startTask(hook, {
+        callId: 'call-0',
+        agent: 'explorer',
+        description: 'routing',
+        parentId,
+      });
+      await settleTask(hook, {
+        callId: 'call-0',
+        output: taskResult(`child-${parentId}`),
+        parentId,
+      });
+      await startTask(hook, {
+        callId: 'call-1',
+        agent: 'explorer',
+        description: 'interrupted',
+        taskId: 'exp-1',
+        parentId,
+      });
+      await taskPart(hook, {
+        parentId,
+        callId: 'call-1',
+        status: 'error',
+        sessionId: `child-${parentId}`,
+      });
+    }
+
+    // Both children are retained; dropping one parent must release exactly that
+    // parent's retention, not touch the other.
+    await hook.event({
+      event: { type: 'session.deleted', properties: { sessionID: 'parent-1' } },
+    });
+
+    // The surviving parent's child keeps its protection: settling another
+    // same-agent child of that parent cannot evict it.
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'explorer',
+      description: 'newest',
+      parentId: 'parent-2',
+    });
+    await settleTask(hook, {
+      callId: 'call-2',
+      output: taskResult('child-new'),
+      parentId: 'parent-2',
+    });
+
+    const prompt = await promptFor(hook, 'parent-2');
+    expect(prompt).toContain('exp-2 newest');
+    expect(prompt).toContain('exp-1');
+    const args = await startTask(hook, {
+      callId: 'call-3',
+      agent: 'explorer',
+      description: 'continue',
+      taskId: 'exp-1',
+      parentId: 'parent-2',
+    });
+    expect(args.task_id).toBe('child-parent-2');
+  });
+
+  test('replacing a retained child clears its retention membership', async () => {
+    const { hook } = createHook({ maxSessionsPerAgent: 1 });
+
+    await startTask(hook, {
+      callId: 'call-0',
+      agent: 'explorer',
+      description: 'routing',
+    });
+    await settleTask(hook, { callId: 'call-0', output: taskResult('child-0') });
+
+    // Retain child-0 for recovery.
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'interrupted',
+      taskId: 'exp-1',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'error',
+      sessionId: 'child-0',
+    });
+
+    // A later continuation replaces that child, so it is forgotten for good.
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'explorer',
+      description: 'continue',
+      taskId: 'exp-1',
+    });
+    await settleTask(hook, { callId: 'call-2', output: taskResult('child-1') });
+
+    // Re-registering the forgotten id in another parent must not inherit the
+    // stale retention: a leftover membership would silently skip protecting it,
+    // leaving the new child evictable as if it were settled history.
+    await startTask(hook, {
+      callId: 'call-3',
+      agent: 'explorer',
+      description: 'reused id',
+      parentId: 'parent-2',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-2',
+      callId: 'call-3',
+      status: 'error',
+      sessionId: 'child-0',
+    });
+    await startTask(hook, {
+      callId: 'call-4',
+      agent: 'explorer',
+      description: 'pressure',
+      parentId: 'parent-2',
+    });
+    await settleTask(hook, {
+      callId: 'call-4',
+      output: taskResult('child-new'),
+      parentId: 'parent-2',
+    });
+
+    const args = await startTask(hook, {
+      callId: 'call-5',
+      agent: 'explorer',
+      description: 'continue',
+      taskId: 'exp-1',
+      parentId: 'parent-2',
+    });
+    expect(args.task_id).toBe('child-0');
+  });
+
+  test('deleting a parent leaves no retention behind for its children', async () => {
+    const { hook } = createHook({ maxSessionsPerAgent: 1 });
+
+    // One retained child, and one child whose call is still in flight.
+    await startTask(hook, {
+      callId: 'call-0',
+      agent: 'explorer',
+      description: 'retained',
+    });
+    await settleTask(hook, {
+      callId: 'call-0',
+      output: taskResult('child-old'),
+    });
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'interrupted',
+      taskId: 'exp-1',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'error',
+      sessionId: 'child-old',
+    });
+
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'explorer',
+      description: 'in flight',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-2',
+      status: 'running',
+      sessionId: 'child-live',
+    });
+
+    await hook.event({
+      event: { type: 'session.deleted', properties: { sessionID: 'parent-1' } },
+    });
+
+    // Teardown must not hand either child to recovery retention, so reusing the
+    // same ids in another parent protects them for the right reason and cannot
+    // be skipped by a leftover membership.
+    for (const [callId, childId, description] of [
+      ['call-3', 'child-old', 'reused old'],
+      ['call-4', 'child-live', 'reused live'],
+    ]) {
+      await startTask(hook, {
+        callId,
+        agent: 'explorer',
+        description,
+        parentId: 'parent-2',
+      });
+      await taskPart(hook, {
+        parentId: 'parent-2',
+        callId,
+        status: 'error',
+        sessionId: childId,
+      });
+    }
+    await startTask(hook, {
+      callId: 'call-5',
+      agent: 'explorer',
+      description: 'pressure',
+      parentId: 'parent-2',
+    });
+    await settleTask(hook, {
+      callId: 'call-5',
+      output: taskResult('child-new'),
+      parentId: 'parent-2',
+    });
+
+    const args = await startTask(hook, {
+      callId: 'call-6',
+      agent: 'explorer',
+      description: 'continue',
+      taskId: 'exp-1',
+      parentId: 'parent-2',
+    });
+    expect(args.task_id).toBe('child-old');
+    const second = await startTask(hook, {
+      callId: 'call-7',
+      agent: 'explorer',
+      description: 'continue again',
+      taskId: 'exp-2',
+      parentId: 'parent-2',
+    });
+    expect(second.task_id).toBe('child-live');
+  });
+
+  test('deleting a retained child frees its recovery capacity', async () => {
+    const { hook } = createHook({ maxSessionsPerAgent: 1 });
+
+    // One live child and one doomed child, both retained for recovery. The live
+    // one is retained first, so a leftover membership for the doomed child would
+    // be the *newer* entry and overflow would evict the live one instead.
+    for (const childId of ['child-live', 'child-doomed']) {
+      await startTask(hook, {
+        callId: `call-${childId}`,
+        agent: 'explorer',
+        description: childId,
+      });
+      await settleTask(hook, {
+        callId: `call-${childId}`,
+        output: taskResult(childId),
+      });
+      await startTask(hook, {
+        callId: `interrupt-${childId}`,
+        agent: 'explorer',
+        description: `${childId} interrupted`,
+        taskId: childId === 'child-live' ? 'exp-1' : 'exp-2',
+      });
+      await taskPart(hook, {
+        parentId: 'parent-1',
+        callId: `interrupt-${childId}`,
+        status: 'error',
+        sessionId: childId,
+      });
+    }
+
+    await hook.event({
+      event: {
+        type: 'session.deleted',
+        properties: { sessionID: 'child-doomed' },
+      },
+    });
+
+    // Fill the window to exactly its bound. A leftover membership for the
+    // deleted child would occupy one slot, pushing a live retained child out.
+    for (let index = 0; index < 199; index += 1) {
+      await startTask(hook, {
+        callId: `fill-${index}`,
+        agent: 'explorer',
+        description: `fill-${index}`,
+      });
+      await taskPart(hook, {
+        parentId: 'parent-1',
+        callId: `fill-${index}`,
+        status: 'error',
+        sessionId: `filler-${index}`,
+      });
+    }
+
+    // Settled history is the pressure that actually evicts: a child that lost
+    // its protection would lose its slot here.
+    await startTask(hook, {
+      callId: 'settle',
+      agent: 'explorer',
+      description: 'settled',
+    });
+    await settleTask(hook, { callId: 'settle', output: taskResult('settled') });
+
+    // The live child kept its protection, so its alias still resolves.
+    const args = await startTask(hook, {
+      callId: 'check',
+      agent: 'explorer',
+      description: 'continue',
+      taskId: 'exp-1',
+    });
+    expect(args.task_id).toBe('child-live');
+  });
+
+  test('a re-registered child id is retained again after a confirmed missing one', async () => {
+    const { hook } = createHook({ maxSessionsPerAgent: 1 });
+
+    await startTask(hook, {
+      callId: 'call-0',
+      agent: 'explorer',
+      description: 'routing',
+    });
+    await settleTask(hook, { callId: 'call-0', output: taskResult('child-0') });
+
+    // The host confirms the remembered child is gone, so it is forgotten.
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'resume',
+      taskId: 'exp-1',
+    });
+    await settleTask(hook, {
+      callId: 'call-1',
+      output: '[ERROR] Session not found',
+    });
+    expect(await promptFor(hook, 'parent-1')).toEqual('base');
+
+    // A later fresh delegation reuses that id and is interrupted. Retention must
+    // apply to the new child, not be skipped by stale state from the old one.
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'explorer',
+      description: 'pressure',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-2',
+      status: 'error',
+      sessionId: 'child-0',
+    });
+    await startTask(hook, {
+      callId: 'call-3',
+      agent: 'explorer',
+      description: 'newest',
+    });
+    await settleTask(hook, { callId: 'call-3', output: taskResult('child-1') });
+
+    // The re-registered child kept exp-2 (the next number after the forgotten
+    // exp-1); resolving it proves the retention applied to the new child.
+    const args = await startTask(hook, {
+      callId: 'call-4',
+      agent: 'explorer',
+      description: 'continue',
+      taskId: 'exp-2',
+    });
+    expect(args.task_id).toBe('child-0');
+  });
+
+  test('a settled child rejoins the capped history', async () => {
+    const { hook } = createHook({ maxSessionsPerAgent: 2 });
+
+    // Three settled delegations: the oldest is evicted by the cap.
+    for (const [index, childId] of [
+      'child-1',
+      'child-2',
+      'child-3',
+    ].entries()) {
+      await startTask(hook, {
+        callId: `call-${index}`,
+        agent: 'explorer',
+        description: childId,
+      });
+      await settleTask(hook, {
+        callId: `call-${index}`,
+        output: taskResult(childId),
+      });
+    }
+
+    const prompt = await promptFor(hook, 'parent-1');
+    expect(prompt).toContain('child-3');
+    expect(prompt).toContain('child-2');
+    expect(prompt).not.toContain('child-1');
+  });
+
+  test('is not poisoned by an earlier interrupted call with no task part', async () => {
+    const { hook } = createHook();
+
+    await startTask(hook, {
+      callId: 'call-stuck',
+      agent: 'explorer',
+      description: 'never reported',
+    });
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'explorer',
+      description: 'later work',
+    });
+    await childCreated(hook, 'child-2', 'parent-1');
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-2',
+      status: 'running',
+      sessionId: 'child-2',
+    });
+
+    // Exact correlation needs only its own call, so a stranded call cannot hold
+    // a later one back.
+    expect(await promptFor(hook, 'parent-1')).toContain('exp-1 later work');
+  });
+
+  test('registers nothing for a part with a wrong parent, call, or status', async () => {
+    const { hook } = createHook();
+
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'routing',
+    });
+
+    // Right call id, wrong parent session.
+    await taskPart(hook, {
+      parentId: 'other-parent',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-1',
+    });
+    // Right parent, unknown call id.
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-unknown',
+      status: 'running',
+      sessionId: 'child-2',
+    });
+    // Unusable metadata and an unknown tool state.
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'running',
+      metadata: { sessionId: { no: 1 } },
+    });
+    await hook.event({
+      event: {
+        type: 'message.part.updated',
+        properties: {
+          part: {
+            id: 'prt_1',
+            sessionID: 'parent-1',
+            messageID: 'msg-1',
+            type: 'tool',
+            callID: 'call-1',
+            tool: 'task',
+            state: { status: 'queued', input: {} },
+          },
+        },
+      },
+    });
+    await hook.event({
+      event: { type: 'message.part.updated', properties: { part: 'nonsense' } },
+    });
+    await hook.event({
+      event: { type: 'message.part.updated', properties: {} },
+    });
+
+    expect(await promptFor(hook, 'parent-1')).toEqual('base');
+  });
+
+  test('keeps parent sessions independent for the same call id', async () => {
+    const { hook } = createHook();
+
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'parent one',
+      parentId: 'parent-1',
+    });
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'oracle',
+      description: 'parent two',
+      parentId: 'parent-2',
+    });
+
+    // A result for one parent must not consume the other parent's call.
+    await settleTask(hook, {
+      callId: 'call-1',
+      output: taskResult('child-1'),
+      parentId: 'parent-1',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-2',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-2',
+    });
+
+    expect(await promptFor(hook, 'parent-1')).toContain('exp-1 parent one');
+    const other = await promptFor(hook, 'parent-2');
+    expect(other).toContain('ora-1 parent two');
+    expect(other).not.toContain('parent one');
+
+    // Each parent still resolves its own alias.
+    const args = await startTask(hook, {
+      callId: 'call-2',
+      agent: 'oracle',
+      description: 'more',
+      taskId: 'ora-1',
+      parentId: 'parent-2',
+    });
+    expect(args.task_id).toBe('child-2');
+  });
+
+  test('an errored child keeps its protection against the per-agent window', async () => {
+    const { hook } = createHook({ maxSessionsPerAgent: 1 });
+
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'interrupted',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-1',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'error',
+      sessionId: 'child-1',
+    });
+
+    // Two later delegations settle normally; the window evicts settled history
+    // but never the interrupted child.
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'explorer',
+      description: 'second',
+    });
+    await settleTask(hook, { callId: 'call-2', output: taskResult('child-2') });
+    await startTask(hook, {
+      callId: 'call-3',
+      agent: 'explorer',
+      description: 'third',
+    });
+    await settleTask(hook, { callId: 'call-3', output: taskResult('child-3') });
+
+    const prompt = await promptFor(hook, 'parent-1');
+    expect(prompt).toContain('exp-1 interrupted');
+    expect(prompt).toContain('exp-3 third');
+    expect(prompt).not.toContain('second');
+  });
+
+  test('a repeated session.created takes only one provisional reference', async () => {
+    const { hook } = createHook();
+
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'first',
+    });
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'oracle',
+      description: 'second',
+    });
+    // Ambiguous, so no call claims the child, and creation is announced twice.
+    await childCreated(hook, 'child-1', 'parent-1');
+    await childCreated(hook, 'child-1', 'parent-1');
+    await readFromChild(hook, 'child-1', 'read-1', '/tmp/src/stale.ts', 12);
+
+    await settleTask(hook, { callId: 'call-2', output: taskResult('child-2') });
+    await settleTask(hook, { callId: 'call-1', output: '[ERROR] rate limit' });
+
+    // One release must be enough to forget the child, so the read collected
+    // while it was provisional does not follow it forever.
+    await startTask(hook, {
+      callId: 'call-3',
+      agent: 'oracle',
+      description: 'retry',
+    });
+    await settleTask(hook, { callId: 'call-3', output: taskResult('child-1') });
+
+    expect(await promptFor(hook, 'parent-1')).not.toContain('stale.ts');
+  });
+
+  test('overlapping resumes of one alias share it and settle independently', async () => {
+    const { hook } = createHook();
+
+    await startTask(hook, {
+      callId: 'call-0',
+      agent: 'explorer',
+      description: 'routing',
+    });
+    await settleTask(hook, { callId: 'call-0', output: taskResult('child-0') });
+
+    const first = await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'one',
+      taskId: 'exp-1',
+    });
+    const second = await startTask(hook, {
+      callId: 'call-2',
+      agent: 'explorer',
+      description: 'two',
+      taskId: 'exp-1',
+    });
+    expect(first.task_id).toBe('child-0');
+    expect(second.task_id).toBe('child-0');
+
+    await settleTask(hook, { callId: 'call-1', output: taskResult('child-0') });
+
+    // The alias survives for the still-running sibling; no duplicate was made.
+    expect(await promptFor(hook, 'parent-1')).not.toContain('exp-2');
+    await settleTask(hook, { callId: 'call-2', output: taskResult('child-0') });
+    expect(await promptFor(hook, 'parent-1')).toContain('exp-1 two');
+  });
+
+  test('deleting the parent releases resume references it owned', async () => {
+    const { hook } = createHook();
+
+    await startTask(hook, {
+      callId: 'call-0',
+      agent: 'explorer',
+      description: 'routing',
+    });
+    await settleTask(hook, { callId: 'call-0', output: taskResult('child-0') });
+
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'one',
+      taskId: 'exp-1',
+    });
+    await readFromChild(hook, 'child-0', 'read-1', '/tmp/src/mid.ts', 12);
+
+    await hook.event({
+      event: { type: 'session.deleted', properties: { sessionID: 'parent-1' } },
+    });
+
+    // The child is forgotten with the parent, so a later delegation that names
+    // it inherits none of the reads collected while the resume was in flight.
+    await startTask(hook, {
+      callId: 'call-2',
+      agent: 'oracle',
+      description: 'review',
+      parentId: 'parent-2',
+    });
+    await settleTask(hook, {
+      callId: 'call-2',
+      output: taskResult('child-0'),
+      parentId: 'parent-2',
+    });
+
+    const prompt = await promptFor(hook, 'parent-2');
+    expect(prompt).toContain('ora-1 review');
+    expect(prompt).not.toContain('mid.ts');
+  });
+
+  test('deleting a bound child invalidates its pending call for good', async () => {
+    const { hook } = createHook();
+
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'aborted run',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-1',
+    });
+    expect(await promptFor(hook, 'parent-1')).toContain('exp-1 aborted run');
+
+    await hook.event({
+      event: { type: 'session.deleted', properties: { sessionID: 'child-1' } },
+    });
+
+    // The call owned that child, so neither a late task part nor the late
+    // result may bring the alias back.
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-1',
+    });
+    await settleTask(hook, { callId: 'call-1', output: taskResult('child-1') });
+
+    expect(await promptFor(hook, 'parent-1')).toEqual('base');
+  });
+
+  test('a late part cannot resurrect a deleted child after tombstone churn', async () => {
+    const { hook } = createHook();
+
+    await startTask(hook, {
+      callId: 'call-1',
+      agent: 'explorer',
+      description: 'aborted run',
+    });
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'running',
+      sessionId: 'child-1',
+    });
+    await hook.event({
+      event: { type: 'session.deleted', properties: { sessionID: 'child-1' } },
+    });
+
+    // More deletions than the remembered-deletion bound, so the tombstone can
+    // no longer reject the id on its own. The invalidated call must still hold.
+    for (let index = 0; index < 250; index += 1) {
+      await hook.event({
+        event: {
+          type: 'session.deleted',
+          properties: { sessionID: `ses_other_${index}` },
+        },
+      });
+    }
+
+    await taskPart(hook, {
+      parentId: 'parent-1',
+      callId: 'call-1',
+      status: 'completed',
+      sessionId: 'child-1',
+    });
+    await settleTask(hook, { callId: 'call-1', output: taskResult('child-1') });
+
+    expect(await promptFor(hook, 'parent-1')).toEqual('base');
+    await expect(
+      hook['tool.execute.before'](
+        { tool: 'task', sessionID: 'parent-1', callID: 'call-2' },
+        { args: { subagent_type: 'explorer', task_id: 'exp-1' } },
+      ),
+    ).rejects.toThrow(/exp-1/);
+  });
+
+  test('deleting an early-registered child removes its alias', async () => {
+    const { hook } = createHook();
+
+    await hook['tool.execute.before'](
+      { tool: 'task', sessionID: 'parent-1', callID: 'call-1' },
+      { args: { subagent_type: 'explorer', description: 'aborted run' } },
+    );
+    await childCreated(hook, 'child-1', 'parent-1');
+
+    await hook.event({
+      event: {
+        type: 'session.deleted',
+        properties: { sessionID: 'child-1' },
+      },
+    });
+
+    expect(await promptFor(hook, 'parent-1')).toEqual('base');
+    await expect(
+      hook['tool.execute.before'](
+        { tool: 'task', sessionID: 'parent-1', callID: 'call-2' },
+        { args: { subagent_type: 'explorer', task_id: 'exp-1' } },
+      ),
+    ).rejects.toThrow(/exp-1/);
   });
 
   test('ignores a child created while the parent has no call in flight', async () => {
@@ -1529,7 +3136,7 @@ describe('task-session-manager hook', () => {
     expect(prompt).not.toContain('late.ts');
   });
 
-  test('releases resumed tracking when a pending call is evicted', async () => {
+  test('eviction releases the resume reference but keeps the child recoverable', async () => {
     const { hook } = createHook({ maxSessionsPerAgent: 1 });
 
     await runTask(
@@ -1564,13 +3171,13 @@ describe('task-session-manager hook', () => {
         { args: { subagent_type: 'oracle', description: 'filler' } },
       );
     }
-    // One completed call, so pruned context reflects the released marker.
     await hook['tool.execute.after'](
       { tool: 'task', sessionID: 'parent-1', callID: 'filler-0' },
       { output: '[ERROR] aborted before any result' },
     );
 
-    // ses_child1 is neither remembered nor in flight any more.
+    // The execution is forgotten, but its child is retained for recovery, so
+    // the alias and the reads it made both survive the eviction.
     await readFromChild(hook, 'ses_child1', 'read-2', '/tmp/src/after.ts', 12);
     await runTask(
       hook,
@@ -1581,10 +3188,35 @@ describe('task-session-manager hook', () => {
       },
     );
 
-    const prompt = await promptFor(hook, 'parent-1');
-    expect(prompt).toContain('explorer:');
-    expect(prompt).not.toContain('stale.ts');
-    expect(prompt).not.toContain('after.ts');
+    const retained = await promptFor(hook, 'parent-1');
+    expect(retained).toContain('explorer:');
+    expect(retained).toContain('stale.ts');
+    expect(retained).toContain('after.ts');
+
+    // A successful continuation is a deliberate answer to that retained thread:
+    // it ends the retention, and the capped history may now take the child.
+    await runTask(
+      hook,
+      { sessionID: 'parent-1', callID: 'call-5' },
+      { args: { subagent_type: 'explorer', task_id: 'exp-1' } },
+    );
+    await hook['tool.execute.after'](
+      { tool: 'task', sessionID: 'parent-1', callID: 'call-5' },
+      { output: taskEnvelope('ses_child1') },
+    );
+    await runTask(
+      hook,
+      { sessionID: 'parent-1', callID: 'call-6' },
+      {
+        args: { subagent_type: 'explorer', description: 'newest' },
+        output: taskEnvelope('ses_child3'),
+      },
+    );
+
+    const pruned = await promptFor(hook, 'parent-1');
+    expect(pruned).toContain('newest');
+    expect(pruned).not.toContain('stale.ts');
+    expect(pruned).not.toContain('after.ts');
   });
 
   test('keeps a marker shared by two concurrent resumes of the same alias', async () => {

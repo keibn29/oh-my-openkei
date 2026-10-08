@@ -19,16 +19,70 @@ of raw child session IDs.
   registered agent gets an alias and no agent is silently skipped.
 - Task labels are derived from `description`/`prompt` via
   `deriveTaskSessionLabel` and converted to compact aliases by `SessionManager`.
-- In-flight calls are tracked by `callID` in a capped ordered map (`MAX_PENDING_TASK_CALLS`)
-  to rewrite inputs and correlate outputs safely. Eviction, replacement of the
-  same `callID`, and the `tool.execute.after` handler all release the tracking
-  a call held.
-- Tracked child ids are reference counted (`managedTaskRefs`), so one finishing
-  call cannot clear a marker a concurrent call still needs.
-- `session.created` carries no `callID`, so a child is tracked *provisionally*
-  (`provisionalParentByChild`) only while its managed parent has a call in
-  flight, and released when no call of that parent remains — unless a result
-  names the child as its own id.
+- Unsettled calls are keyed by **parent session *and* `callID`** (`pendingCallKey`).
+  A call id is not assumed unique across sessions, so a result or task part must
+  name both halves before it may consume a call.
+- A child reference is owned by whoever acquired it and released only by that
+  owner: one per in-flight resume (taken in `tool.execute.before`) and one per
+  provisional child (the `provisionalParentByChild` entry *is* that reference, so
+  a repeated `session.created` cannot take a second one). Binding a child to a
+  call acquires nothing, so a call can never release a sibling's reference.
+- **Exact correlation** is the primary source: `message.part.updated` for a
+  native `task` ToolPart carries the parent `sessionID`, the `callID`, and the
+  child session ID in the tool state `metadata` (reused from
+  `taskSessionIdFromMetadata` in `src/utils/task.ts`). Only the tool state's
+  metadata is read, an unknown tool state is ignored, and the part must name both
+  the same call and the same parent — otherwise it registers nothing
+  (fail-closed).
+- A bound child is remembered immediately, so an aborted delegation (which never
+  reaches `tool.execute.after`) still leaves a usable alias. An `error` part
+  settles the call only when it carried a child id; a metadata-less error part
+  leaves the call pending so a later child-bearing part can still bind. Nothing
+  is settled from parent idleness.
+- `session.created` additionally registers the child as a fallback only when
+  attribution is unambiguous — exactly one pending call for that parent, a fresh
+  delegation, and no child bound yet. No FIFO/oldest fallback is used, because
+  that would file a child under the wrong delegation, and it never overrides a
+  binding an exact event already made.
+- Both sources write one binding (`boundChildId`) through `rememberChildForCall`,
+  which `tool.execute.after` also uses: the same child is idempotent (alias
+  preserved, not renumbered), and a genuinely different child supersedes only the
+  earlier binding of that same call. A child can be bound by several calls at once
+  (two concurrent resumes), so superseding is scoped to the call doing it and never
+  touches a sibling's view of the child.
+- A resume binds its already-known child in `tool.execute.before`, before any part
+  or result exists, so an abort that reports nothing cannot lose it. This does not
+  rewrite the stored label: an unresolved resume keeps describing the thread the
+  alias was created for.
+- **Protection is ownership-based.** `SessionManager` stores a set of owner keys per
+  entry and exempts non-empty sets from `maxSessionsPerAgent` trimming; the value is
+  the capacity of settled history.
+  - `active:<parent>\0<callId>` — one per in-flight execution of that child, added by
+    `rememberChildForCall`. Replay is a no-op.
+  - `recovery:<childId>` — taken when an execution ends interrupted, failed, or is
+    evicted from the pending window. It belongs to the child, so it outlives the
+    call, and it is bounded by `MAX_RECOVERY_RETAINED_CHILDREN` (200, oldest first):
+    overflow releases the oldest rather than deleting it.
+  - `settleCall(call, outcome)` takes an explicit outcome:
+    `completed` releases this execution's active owner *and* the child's recovery
+    owner; `interrupted` establishes the recovery owner **before** releasing the
+    active owner, so trimming never observes an unprotected gap; `discarded`
+    (session-deletion teardown) releases only the active owner, so dropping a
+    parent cannot create retention. One execution finishing therefore never
+    unprotects a child another execution still holds.
+- `settleCall` is the single end-of-call path: it removes the call from the
+  unsettled set, releases the references the call owns, and ends its protection.
+- `rememberPendingCall(call, beforeInsert?)` centralizes replacement ordering for a
+  reused `(parent, callID)`: the previous execution is settled first (settling
+  removes the key, so inserting first would delete the new call, and both
+  executions share the slot's active owner key), then `beforeInsert` runs — where a
+  resume takes its protection — and the new call is inserted last and never settled
+  here.
+- `forgetChild` clears everything about a child the plugin is forgetting: alias,
+  read context, provisional reference, and recovery retention membership. Parent
+  deletion runs it for every child of that parent via
+  `SessionManager.taskIdsForParent`, after settling the parent's pending calls as
+  `discarded`.
 - Session governance is feature-gated by `shouldManageSession(sessionID)`, allowing
   the hook to run only for orchestrator-managed sessions.
 
@@ -45,27 +99,42 @@ of raw child session IDs.
    of that thrown error to the model has not been verified.
 6. Without `task_id` (or with a blank/non-string value) the argument is removed
    and the call is recorded as a fresh delegation.
-7. `tool.execute.after` reads the task ID from `task` metadata or result text.
-8. A result naming an already-deleted child is rejected, for a fresh
-   delegation and a replacement alike, and never registers an alias.
-9. Otherwise the ID is parsed once: `remember()` registers the alias and any
-   read context collected for that child is attached.
-10. If this call was a resume attempt, and the returned ID changed, the stale
-    predecessor alias and its read context are dropped.
-11. If the host confirms the child is missing (`Session not found` /
+7. On `message.part.updated`, a native `task` tool part is correlated by
+   `callID` **and** parent `sessionID` to its pending call, and the child from
+   the tool state metadata is remembered and pinned immediately — the alias
+   exists before any result, so an interrupted delegation stays reusable.
+8. An `error` state settles that call (no `after` will ever run) but only when it
+   carried a child id, so a later child-bearing part can still bind a
+   metadata-less failure.
+9. `tool.execute.after` reads the task ID from `task` metadata or result text and
+   registers it through the same binding logic, so a child already reported by a
+   part keeps its alias.
+10. A result naming an already-deleted child registers nothing: the child's alias
+    was dropped when it was deleted.
+11. Otherwise the ID is bound: the alias is registered and any read context
+    collected for that child is attached.
+12. If this call was a resume attempt, or had already bound a child, and the ID
+    that arrives is different, only that one call's stale alias and read context
+    are dropped; siblings keep theirs.
+13. If the host confirms the child is missing (`Session not found` /
     `Session no session`), the predecessor alias is dropped. Cancellations and
     generic failures keep it so the thread can be retried.
-12. Pending tracking for a consumed call is released on every path, read
-    context is pruned for anything no longer remembered, and provisional
-    children of a parent with no call left in flight are released.
-13. `experimental.chat.system.transform` injects a rendered block from
+14. The call settles: a result with a child id also clears that child's recovery
+    retention, so the capped history applies again, while an id-less result hands
+    the child to recovery retention instead. Read context is pruned for anything no
+    longer remembered, and provisional children of a parent with no call left in
+    flight are released.
+15. `experimental.chat.system.transform` injects a rendered block from
     `SessionManager.formatForPrompt` under `### Resumable Sessions`.
-14. On `session.deleted`, the hook records the id as deleted (bounded FIFO of
-    200), then releases tracking *before* dropping state: pending calls that
-    own or resume the session are invalidated, provisional children and read
-    context are released, and remembered aliases are cleared. A resume of a
-    deleted child therefore cannot be revived by a late result even after the
-    bounded tombstone window has churned past the id.
+16. On `session.deleted`, the hook records the id as deleted (bounded FIFO of
+    200), then releases tracking *before* dropping state: every pending call that
+    owns the session — as its parent, as the child it resumed, **or as the child
+    already bound to it** — is settled, so neither a late result nor a late task
+    part can re-register an alias, even after the bounded tombstone window has
+    churned past the id. Provisional children, recovery retention and read context
+    are released and remembered aliases are cleared. A child that was never
+    correlated to a call has no call to invalidate here and relies on the bounded
+    tombstone alone.
 
 ## Integration
 
@@ -79,7 +148,8 @@ of raw child session IDs.
 - Exposes no side effects outside hook handling and `SessionManager`.
 - Depends on:
   - `SessionManager` and `deriveTaskSessionLabel` (from `src/utils/session-manager.ts`)
-  - `parseTaskIdFromTaskOutput` (from `src/utils/task.ts`)
+  - `parseTaskIdFromTaskOutput` and `taskSessionIdFromMetadata`
+    (from `src/utils/task.ts`)
   - `ALL_AGENT_NAMES` (from `src/config/constants.ts`)
   - plugin configuration (`maxSessionsPerAgent`) and runtime session filtering from
     `src/index.ts` (`shouldManageSession`).

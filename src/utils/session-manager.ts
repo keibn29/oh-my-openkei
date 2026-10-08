@@ -15,6 +15,14 @@ export interface RememberedTaskSession {
   contextFiles: ContextFile[];
   createdAt: number;
   lastUsedAt: number;
+  /**
+   * Identities that currently need this entry kept in the resumable list.
+   * Exempt from `maxSessionsPerAgent` trimming while non-empty, so unsettled
+   * and interrupted delegations cannot evict each other. A set rather than a
+   * count: re-adding the same owner is a no-op, and one owner finishing never
+   * unprotects an entry another owner still needs.
+   */
+  protectionOwners: Set<string>;
 }
 
 type SessionGroupMap = Map<AgentName, RememberedTaskSession[]>;
@@ -147,6 +155,7 @@ export class SessionManager {
       contextFiles: [],
       createdAt: now,
       lastUsedAt: now,
+      protectionOwners: new Set(),
     };
 
     group.push(remembered);
@@ -196,6 +205,22 @@ export class SessionManager {
         for (const entry of group) {
           ids.add(entry.taskId);
         }
+      }
+    }
+    return ids;
+  }
+
+  /**
+   * Ids remembered for one parent only. Used when a parent is deleted, so the
+   * per-child state this plugin keeps alongside them can be cleared without
+   * touching another parent's children.
+   */
+  taskIdsForParent(parentSessionId: string): Set<string> {
+    const ids = new Set<string>();
+    for (const group of this.sessionsByParent.get(parentSessionId)?.values() ??
+      []) {
+      for (const entry of group) {
+        ids.add(entry.taskId);
       }
     }
     return ids;
@@ -359,9 +384,63 @@ export class SessionManager {
 
   private trimGroup(group: RememberedTaskSession[]): void {
     group.sort((a, b) => b.lastUsedAt - a.lastUsedAt);
-    if (group.length > this.maxSessionsPerAgent) {
-      group.length = this.maxSessionsPerAgent;
+    // Protected entries are never evicted, so the group may exceed the window
+    // while delegations are in flight or were interrupted. Settled history is
+    // still capped, newest first.
+    let settled = 0;
+    const kept = group.filter((entry) => {
+      if (entry.protectionOwners.size > 0) return true;
+      settled += 1;
+      return settled <= this.maxSessionsPerAgent;
+    });
+    if (kept.length !== group.length) {
+      group.splice(0, group.length, ...kept);
     }
+  }
+
+  /**
+   * Protect a child from `maxSessionsPerAgent` trimming on behalf of `owner`.
+   * Idempotent: re-protecting for an owner that already holds it changes nothing,
+   * so replayed events cannot inflate the set.
+   */
+  protect(taskId: string, owner: string): void {
+    const found = this.findRemembered(taskId);
+    if (!found) return;
+    found.entry.protectionOwners.add(owner);
+  }
+
+  /**
+   * Drop one owner's protection. The entry rejoins the capped history only once
+   * no owner remains.
+   */
+  releaseProtection(taskId: string, owner: string): void {
+    const found = this.findRemembered(taskId);
+    if (!found) return;
+    if (!found.entry.protectionOwners.delete(owner)) return;
+    if (found.entry.protectionOwners.size > 0) return;
+
+    const group = this.getAgentGroup(
+      found.parentSessionId,
+      found.agentType,
+      false,
+    );
+    if (group) this.trimGroup(group);
+  }
+
+  private findRemembered(taskId: string):
+    | {
+        entry: RememberedTaskSession;
+        parentSessionId: string;
+        agentType: AgentName;
+      }
+    | undefined {
+    for (const [parentSessionId, groups] of this.sessionsByParent) {
+      for (const [agentType, group] of groups) {
+        const entry = group.find((item) => item.taskId === taskId);
+        if (entry) return { entry, parentSessionId, agentType };
+      }
+    }
+    return undefined;
   }
 
   private trimContextFiles(entry: RememberedTaskSession): void {

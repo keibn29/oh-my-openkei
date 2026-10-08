@@ -57,7 +57,9 @@ function isUsableSessionId(value: string): boolean {
  * `unknown` at the hook boundary, so anything that is not a non-array record
  * with a usable `sessionId` string is ignored and the result text is used.
  */
-function sessionIdFromMetadata(metadata: unknown): string | undefined {
+export function taskSessionIdFromMetadata(
+  metadata: unknown,
+): string | undefined {
   const record = asRecord(metadata);
   const candidate = record?.sessionId;
   if (typeof candidate !== 'string') return undefined;
@@ -123,7 +125,7 @@ export function parseTaskIdFromTaskOutput(
   output: string,
   metadata?: unknown,
 ): string | undefined {
-  const fromMetadata = sessionIdFromMetadata(metadata);
+  const fromMetadata = taskSessionIdFromMetadata(metadata);
   if (fromMetadata) return fromMetadata;
 
   // `trim()` also drops a leading byte-order mark, so a BOM-prefixed

@@ -32,6 +32,71 @@ describe('SessionManager', () => {
     expect(prompt).not.toContain('exp-2 second thread');
   });
 
+  test('protected sessions are exempt from the limit until unprotected', () => {
+    const manager = new SessionManager(1);
+
+    const remember = (taskId: string, owners: string[]) => {
+      const entry = manager.remember({
+        parentSessionId: 'parent-1',
+        taskId,
+        agentType: 'explorer',
+        label: `${taskId} thread`,
+      });
+      for (const owner of owners) manager.protect(taskId, owner);
+      return entry;
+    };
+
+    // One protected child plus two settled ones under a window of one: the
+    // settled window evicted the older settled child, but not the protected one.
+    const first = remember('task-1', ['active:call-1']);
+    remember('task-2', []);
+    remember('task-3', []);
+    expect([...first.protectionOwners]).toEqual(['active:call-1']);
+
+    const prompt = manager.formatForPrompt('parent-1');
+    expect(prompt).toContain('task-1 thread');
+    expect(prompt).toContain('task-3 thread');
+    expect(prompt).not.toContain('task-2 thread');
+
+    // A second owner keeps it protected after the first finishes.
+    manager.protect('task-1', 'recovery:task-1');
+    manager.releaseProtection('task-1', 'active:call-1');
+    expect(manager.formatForPrompt('parent-1')).toContain('task-1 thread');
+
+    // Once no owner remains the window applies again and drops the oldest.
+    manager.releaseProtection('task-1', 'recovery:task-1');
+    const trimmed = manager.formatForPrompt('parent-1');
+    expect(trimmed).not.toContain('task-1 thread');
+    expect(trimmed).toContain('task-3 thread');
+  });
+
+  test('protection is idempotent and dropping removes every owner', () => {
+    const manager = new SessionManager(1);
+
+    manager.remember({
+      parentSessionId: 'parent-1',
+      taskId: 'task-1',
+      agentType: 'explorer',
+      label: 'first thread',
+    });
+    manager.protect('task-1', 'active:call-1');
+    manager.protect('task-1', 'active:call-1');
+    manager.remember({
+      parentSessionId: 'parent-1',
+      taskId: 'task-2',
+      agentType: 'explorer',
+      label: 'second thread',
+    });
+
+    expect(manager.formatForPrompt('parent-1')).toContain('exp-1 first thread');
+    expect(
+      manager.resolve('parent-1', 'explorer', 'task-1')?.protectionOwners.size,
+    ).toBe(1);
+
+    manager.drop('parent-1', 'explorer', 'task-1');
+    expect(manager.formatForPrompt('parent-1')).not.toContain('first thread');
+  });
+
   test('clears parent-scoped sessions', () => {
     const manager = new SessionManager(2);
 

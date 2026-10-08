@@ -600,7 +600,11 @@ const OhMyOpenKei: Plugin = async (ctx) => {
         input as {
           event: {
             type: string;
-            properties?: { info?: { id?: string }; sessionID?: string };
+            properties?: {
+              info?: { id?: string; parentID?: string };
+              sessionID?: string;
+              part?: unknown;
+            };
           };
         },
       );

@@ -54,7 +54,7 @@ and managers for all hook-based runtime behaviors used by
 | `experimental.chat.system.transform` | Inject system-level directives | `post-file-tool-nudge`, `task-session-manager` |
 | `chat.headers` | Mutate request headers | `chat-headers` |
 | `command.execute.before` | Handle slash-command UX | |
-| `event` | React to session lifecycle and runtime failures | `foreground-fallback`, `post-file-tool-nudge`, `auto-update-checker`, `task-session-manager` |
+| `event` | React to session lifecycle, task-part correlation, and runtime failures | `foreground-fallback`, `post-file-tool-nudge`, `auto-update-checker`, `task-session-manager` |
 
 ## Implementation Notes
 
@@ -64,9 +64,11 @@ and managers for all hook-based runtime behaviors used by
   foreground rate-limit failures by aborting the current prompt and re-queuing the
   latest user message on the next model in a per-agent chain.
 - `createTaskSessionManagerHook` tracks task sessions for resumability: generates
-  user-facing aliases, resolves alias/task IDs before delegation, remembers fresh
-  task IDs after completion, and drops stale entries on missing-session failure,
-  renamed task IDs, or session deletion.
+  user-facing aliases, resolves alias/task IDs before delegation, registers a
+  child exactly by `callID` from the host's `message.part.updated` task part (with
+  an unambiguous `session.created` fallback) so an aborted delegation is still
+  reusable, remembers fresh task IDs after completion, and drops stale entries
+  on missing-session failure, renamed task IDs, or session deletion.
 
 ## Integration
 
